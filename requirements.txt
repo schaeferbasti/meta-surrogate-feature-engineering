@@ -1,0 +1,6 @@
+lightgbm==4.5.0
+numpy==1.26.4
+openfe==0.0.12
+openml==0.15.0
+pandas==2.2.3
+scikit-learn==1.4.0
