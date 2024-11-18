@@ -8,8 +8,8 @@ import openml
 from openfe import OpenFE, transform
 
 import lightgbm as lgb
-from autogluon.tabular.src.autogluon.tabular import TabularPredictor
-from autogluon.tabular.src.autogluon.tabular.models import LGBModel
+from autogluon.tabular import TabularPredictor
+from autogluon.tabular.models import LGBModel
 from tabrepo_2024_custom import zeroshot2024
 
 def run_lgbm(X_train, y_train, X_test, y_test):
