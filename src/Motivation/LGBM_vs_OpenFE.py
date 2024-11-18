@@ -47,14 +47,7 @@ def run_tuned_autogluon_lgbm(X_train, y_train, X_test, y_test):
     X_train["target"] = y_train
 
     allowed_models = [
-        "LR",
-        "FASTAI",
-        "NN_TORCH",
         "GBM",
-        "CAT",
-        "XGB",
-        "RF",
-        "XT",
     ]
 
     for k in list(zeroshot2024.keys()):
@@ -70,7 +63,7 @@ def run_tuned_autogluon_lgbm(X_train, y_train, X_test, y_test):
     )
 
     predictor.fit(
-        time_limit=int(60 * 60 * 4),
+        time_limit=int(60 * 60 * 1),
         train_data=X_train,
         presets="best_quality",
         dynamic_stacking=False,
@@ -143,60 +136,60 @@ def main():
         X_train, y_train, X_test, y_test = get_openml_dataset(dataset_id)
         X_train, y_train, X_test, y_test = factorize_data(X_train, y_train, X_test, y_test)
         X_train_openfe, y_train_openfe, X_test_openfe, y_test_openfe = get_openfe_data(X_train, y_train, X_test, y_test)
-        #try:
-        lgbm_results = run_lgbm(X_train, y_train, X_test, y_test)
-        f = open("results.txt", "a")
-        f.write("LGBM Results " + str(lgbm_results) + "\n")
-        f.close()
-        """except Exception as e:
+        try:
+            lgbm_results = run_lgbm(X_train, y_train, X_test, y_test)
+            f = open("results.txt", "a")
+            f.write("LGBM Results " + str(lgbm_results) + "\n")
+            f.close()
+        except Exception as e:
             f = open("results.txt", "a")
             f.write("LGBM Results " + str(e) + "\n")
             f.close()
-        try:"""
-        lgbm_openfe_results = run_lgbm(X_train_openfe, y_train_openfe, X_test_openfe, y_test_openfe)
-        f = open("results.txt", "a")
-        f.write("LGBM OpenFE Results " + str(lgbm_openfe_results) + "\n")
-        f.close()
-        """except Exception as e:
+        try:
+            lgbm_openfe_results = run_lgbm(X_train_openfe, y_train_openfe, X_test_openfe, y_test_openfe)
+            f = open("results.txt", "a")
+            f.write("LGBM OpenFE Results " + str(lgbm_openfe_results) + "\n")
+            f.close()
+        except Exception as e:
             f = open("results.txt", "a")
             f.write("LGBM OpenFE Results " + str(e) + "\n")
             f.close()
-        try:"""
-        autogluon_lgbm_results = run_autogluon_lgbm(X_train, y_train, X_test, y_test)
-        f = open("results.txt", "a")
-        f.write("Autogluon LGBM Results " + str(autogluon_lgbm_results) + "\n")
-        f.close()
-        """except Exception as e:
+        try:
+            autogluon_lgbm_results = run_autogluon_lgbm(X_train, y_train, X_test, y_test)
+            f = open("results.txt", "a")
+            f.write("Autogluon LGBM Results " + str(autogluon_lgbm_results) + "\n")
+            f.close()
+        except Exception as e:
             f = open("results.txt", "a")
             f.write("Autogluon LGBM Results " + str(e) + "\n")
             f.close()
-        try:"""
-        autogluon_lgbm_openfe_results = run_autogluon_lgbm(X_train_openfe, y_train_openfe, X_test_openfe, y_test_openfe)
-        f = open("results.txt", "a")
-        f.write("Autogluon LGBM OpenFE Results " + str(autogluon_lgbm_openfe_results) + "\n")
-        f.close()
-        """except Exception as e:
+        try:
+            autogluon_lgbm_openfe_results = run_autogluon_lgbm(X_train_openfe, y_train_openfe, X_test_openfe, y_test_openfe)
+            f = open("results.txt", "a")
+            f.write("Autogluon LGBM OpenFE Results " + str(autogluon_lgbm_openfe_results) + "\n")
+            f.close()
+        except Exception as e:
             f = open("results.txt", "a")
             f.write("Autogluon LGBM OpenFE Results " + str(e) + "\n")
             f.close()
-        try:"""
-        tuned_autogluon_lgbm_results = run_tuned_autogluon_lgbm(X_train, y_train, X_test, y_test)
-        f = open("results.txt", "a")
-        f.write("Tuned Autogluon LGBM Results " + str(tuned_autogluon_lgbm_results) + "\n")
-        f.close()
-        """except Exception as e:
+        try:
+            tuned_autogluon_lgbm_results = run_tuned_autogluon_lgbm(X_train, y_train, X_test, y_test)
+            f = open("results.txt", "a")
+            f.write("Tuned Autogluon LGBM Results " + str(tuned_autogluon_lgbm_results) + "\n")
+            f.close()
+        except Exception as e:
             f = open("results.txt", "a")
             f.write("Tuned Autogluon LGBM Results " + str(e) + "\n")
             f.close()
-        try:"""
-        tuned_autogluon_lgbm_openfe_results = run_tuned_autogluon_lgbm(X_train_openfe, y_train_openfe, X_test_openfe, y_test_openfe)
-        f = open("results.txt", "a")
-        f.write("Tuned Autogluon LGBM OpenFE Results " + str(tuned_autogluon_lgbm_openfe_results) + "\n")
-        f.close()
-        """except Exception as e:
+        try:
+            tuned_autogluon_lgbm_openfe_results = run_tuned_autogluon_lgbm(X_train_openfe, y_train_openfe, X_test_openfe, y_test_openfe)
+            f = open("results.txt", "a")
+            f.write("Tuned Autogluon LGBM OpenFE Results " + str(tuned_autogluon_lgbm_openfe_results) + "\n")
+            f.close()
+        except Exception as e:
             f = open("results.txt", "a")
             f.write("Tuned Autogluon LGBM OpenFE Results " + str(e) + "\n")
-            f.close()"""
+            f.close()
 
 
 if __name__ == '__main__':
