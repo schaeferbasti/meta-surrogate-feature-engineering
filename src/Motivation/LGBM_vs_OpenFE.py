@@ -8,8 +8,8 @@ import openml
 from openfe import OpenFE, transform
 
 import lightgbm as lgb
-from autogluon.tabular import TabularPredictor
-from autogluon.tabular.models import LGBModel
+from autogluon.tabular.src.autogluon.tabular import TabularPredictor
+from autogluon.tabular.src.autogluon.tabular.models import LGBModel
 from tabrepo_2024_custom import zeroshot2024
 
 def run_lgbm(X_train, y_train, X_test, y_test):
@@ -127,7 +127,7 @@ def main():
     f = open("results.txt", "w")
     f.write("Test different versions of LGBM with OpenFE \n" + str(datetime.datetime.now()) +"\n\n")
     f.close()
-    dataset_ids = [167210, 146818, 359960, 359968, 168757, 359965, 359958, 146820, 359974]
+    dataset_ids = [190411, 359983, 189354, 189356, 10090, 359979, 146818, 359955, 359960, 359968, 359959, 168757, 359954, 359969, 359970, 359984, 168911, 359981, 359962, 359965, 190392, 190137, 359958, 168350, 359956, 359975, 359963, 168784, 190146, 146820, 359974, 2073, 359944, 359950, 359942, 359951, 360945, 167210, 359930, 359948, 359931, 359932, 359933, 359934, 359939, 359945, 359935, 359940]
     for dataset_id in dataset_ids:
         f = open("results.txt", "a")
         f.write("Dataset: " + str(dataset_id) + "\n")
