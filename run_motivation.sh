@@ -11,7 +11,7 @@
 #SBATCH --error logs/%x-%A.err    # STDERR  short: -e logs/%x-%A.out
 
 # Define the amount of memory required per node
-#SBATCH --mem 48GB
+#SBATCH --mem 32GB
 #SBATCH --cpus-per-task=8
 #SBATCH --gres=localtmp:100
 
