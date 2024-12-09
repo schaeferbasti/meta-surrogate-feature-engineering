@@ -63,7 +63,7 @@ def run_tuned_autogluon_lgbm(X_train, y_train, X_test, y_test):
     )
 
     predictor.fit(
-        time_limit=int(60 * 60 * 1),
+        time_limit=int(60 * 60 * 4),
         train_data=X_train,
         presets="best_quality",
         dynamic_stacking=False,
@@ -132,6 +132,36 @@ def main():
         f = open("results.txt", "a")
         f.write("Dataset: " + str(dataset_id) + "\n")
         f.close()
+
+        """
+        If running on a SLURM cluster, we need to initialize Ray with extra options and a unique tempr dir.
+        Otherwise, given the shared filesystem, Ray will try to use the same temp dir for all workers and crash (semi-randomly).
+        """
+        import logging
+        import ray
+        import uuid
+        import base64
+        import time
+        log = logging.getLogger(__name__)
+        ray_mem_in_gb = 32
+        log.info(f"Running on SLURM, initializing Ray with unique temp dir with {ray_mem_in_gb}GB.")
+        ray_mem_in_b = int(ray_mem_in_gb * (1024.0 ** 3))
+        timestamp = time.time()
+        tmp_dir_base_path = "tmp_dir_base_path" + str(dataset_id) + str(timestamp)
+        uuid_short = base64.urlsafe_b64encode(uuid.uuid4().bytes).rstrip(b'=').decode('ascii')
+        ray_dir = f"{tmp_dir_base_path}/{uuid_short}/ray"
+        print(f"Start local ray instances. Using {os.environ.get('RAY_MEM_IN_GB')} GB for Ray.")
+        ray.init(
+            address="local",
+            _memory=ray_mem_in_b,
+            object_store_memory=int(ray_mem_in_b * 0.3),
+            _temp_dir=ray_dir,
+            include_dashboard=False,
+            logging_level=logging.INFO,
+            log_to_driver=True,
+            num_gpus=0,
+            num_cpus=8,
+        )
 
         X_train, y_train, X_test, y_test = get_openml_dataset(dataset_id)
         X_train, y_train, X_test, y_test = factorize_data(X_train, y_train, X_test, y_test)
