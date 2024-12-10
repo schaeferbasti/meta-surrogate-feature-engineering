@@ -137,12 +137,12 @@ def main():
     import ray
     import uuid
     import base64
-    import time
+    absolute_path = os.path.dirname(os.path.abspath(__file__))
     log = logging.getLogger(__name__)
     ray_mem_in_gb = 32
     log.info(f"Running on SLURM, initializing Ray with unique temp dir with {ray_mem_in_gb}GB.")
     ray_mem_in_b = int(ray_mem_in_gb * (1024.0 ** 3))
-    tmp_dir_base_path = "tmp_dir_base_path"
+    tmp_dir_base_path = absolute_path
     uuid_short = base64.urlsafe_b64encode(uuid.uuid4().bytes).rstrip(b'=').decode('ascii')
     ray_dir = f"{tmp_dir_base_path}/{uuid_short}/ray"
     print(f"Start local ray instances. Using {os.environ.get('RAY_MEM_IN_GB')} GB for Ray.")
