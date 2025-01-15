@@ -12,6 +12,7 @@ from autogluon.tabular import TabularPredictor
 from autogluon.tabular.models import LGBModel
 from tabrepo_2024_custom import zeroshot2024
 
+
 def run_lgbm(X_train, y_train, X_test, y_test):
     lgb_train = lgb.Dataset(X_train, y_train, params={'verbose': -1})
     lgb_eval = lgb.Dataset(X_test, y_test, params={'verbose': -1}, reference=lgb_train)
@@ -41,6 +42,7 @@ def run_autogluon_lgbm(X_train, y_train, X_test, y_test):
     y_pred = autogluon.predict(X=X_test)
     rmse_test = mean_squared_error(y_test, y_pred) ** 0.5
     return rmse_test
+
 
 def run_tuned_autogluon_lgbm(X_train, y_train, X_test, y_test):
     label = "target"
@@ -125,25 +127,22 @@ def factorize_data(X_train, y_train, X_test, y_test):
 
 def main():
     f = open("results.txt", "w")
-    f.write("Test different versions of LGBM with OpenFE \n" + str(datetime.datetime.now()) +"\n\n")
+    f.write("Test different versions of LGBM with OpenFE \n" + str(datetime.datetime.now()) + "\n\n")
     f.close()
 
     """
-            If running on a SLURM cluster, we need to initialize Ray with extra options and a unique tempr dir.
-            Otherwise, given the shared filesystem, Ray will try to use the same temp dir for all workers and crash (semi-randomly).
-            """
+    If running on a SLURM cluster, we need to initialize Ray with extra options and a unique tempr dir.
+    Otherwise, given the shared filesystem, Ray will try to use the same temp dir for all workers and crash (semi-randomly).
+    """
     import os
     import logging
     import ray
-    import uuid
-    import base64
     absolute_path = os.path.dirname(os.path.abspath(__file__))
     log = logging.getLogger(__name__)
-    ray_mem_in_gb = 32
+    ray_mem_in_gb = 48
     log.info(f"Running on SLURM, initializing Ray with unique temp dir with {ray_mem_in_gb}GB.")
     ray_mem_in_b = int(ray_mem_in_gb * (1024.0 ** 3))
     tmp_dir_base_path = absolute_path
-    # uuid_short = base64.urlsafe_b64encode(uuid.uuid4().bytes).rstrip(b'=').decode('ascii')
     ray_dir = f"{tmp_dir_base_path}"
     print(f"Start local ray instances. Using {os.environ.get('RAY_MEM_IN_GB')} GB for Ray.")
     ray.init(
@@ -158,7 +157,10 @@ def main():
         num_cpus=8,
     )
 
-    dataset_ids = [190411, 359983, 189354, 189356, 10090, 359979, 146818, 359955, 359960, 359968, 359959, 168757, 359954, 359969, 359970, 359984, 168911, 359981, 359962, 359965, 190392, 190137, 359958, 168350, 359956, 359975, 359963, 168784, 190146, 146820, 359974, 2073, 359944, 359950, 359942, 359951, 360945, 167210, 359930, 359948, 359931, 359932, 359933, 359934, 359939, 359945, 359935, 359940]
+    dataset_ids = [190411, 359983, 189354, 189356, 10090, 359979, 146818, 359955, 359960, 359968, 359959, 168757,
+                   359954, 359969, 359970, 359984, 168911, 359981, 359962, 359965, 190392, 190137, 359958, 168350,
+                   359956, 359975, 359963, 168784, 190146, 146820, 359974, 2073, 359944, 359950, 359942, 359951, 360945,
+                   167210, 359930, 359948, 359931, 359932, 359933, 359934, 359939, 359945, 359935, 359940]
     for dataset_id in dataset_ids:
         f = open("results.txt", "a")
         f.write("Dataset: " + str(dataset_id) + "\n")
@@ -195,7 +197,8 @@ def main():
             f.write("Autogluon LGBM Results " + str(e) + "\n")
             f.close()
         try:
-            autogluon_lgbm_openfe_results = run_autogluon_lgbm(X_train_openfe, y_train_openfe, X_test_openfe, y_test_openfe)
+            autogluon_lgbm_openfe_results = run_autogluon_lgbm(X_train_openfe, y_train_openfe, X_test_openfe,
+                                                               y_test_openfe)
             f = open("results.txt", "a")
             f.write("Autogluon LGBM OpenFE Results " + str(autogluon_lgbm_openfe_results) + "\n")
             f.close()
@@ -213,7 +216,8 @@ def main():
             f.write("Tuned Autogluon LGBM Results " + str(e) + "\n")
             f.close()
         try:
-            tuned_autogluon_lgbm_openfe_results = run_tuned_autogluon_lgbm(X_train_openfe, y_train_openfe, X_test_openfe, y_test_openfe)
+            tuned_autogluon_lgbm_openfe_results = run_tuned_autogluon_lgbm(X_train_openfe, y_train_openfe,
+                                                                           X_test_openfe, y_test_openfe)
             f = open("results.txt", "a")
             f.write("Tuned Autogluon LGBM OpenFE Results " + str(tuned_autogluon_lgbm_openfe_results) + "\n")
             f.close()
@@ -225,4 +229,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-    
