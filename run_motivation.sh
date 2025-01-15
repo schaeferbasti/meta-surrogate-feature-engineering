@@ -11,7 +11,7 @@
 #SBATCH --error logs/%x-%A.err    # STDERR  short: -e logs/%x-%A.out
 
 # Define the amount of memory required per node
-#SBATCH --mem 32GB
+#SBATCH --mem=48GB
 #SBATCH --cpus-per-task=8
 #SBATCH --gres=localtmp:100
 
@@ -46,6 +46,12 @@ start=`date +%s`
 
 # shellcheck disable=SC2048
 python3 src/Motivation/LGBM_vs_OpenFE_Cluster.py "$SLURM_ARRAY_TASK_ID" "$*"
+
+# Print the allocated memory per node
+echo "Allocated memory per node: $SLURM_MEM_PER_NODE MB"
+
+# Print the allocated memory per CPU
+echo "Allocated memory per CPU: $SLURM_MEM_PER_CPU MB"
 
 # shellcheck disable=SC2006
 end=`date +%s`
