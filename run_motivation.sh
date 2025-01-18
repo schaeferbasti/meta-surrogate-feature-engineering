@@ -12,7 +12,7 @@
 
 # Define the amount of memory required per node
 #SBATCH --mem=48GB
-#SBATCH --cpus-per-task=8
+#SBATCH -c 8
 #SBATCH --gres=localtmp:100
 
 #SBATCH --propagate=NONE
@@ -23,18 +23,17 @@ echo "Started at $(date)";
 # A few SLURM variables
 echo "Running job $SLURM_JOB_NAME using $SLURM_JOB_CPUS_PER_NODE cpus per node with given JID $SLURM_JOB_ID on queue $SLURM_JOB_PARTITION";
 
-# Activate your environment
-# You can also comment out this line, and activate your environment in the login node before submitting the job
-# shellcheck disable=SC1090
-source ~/miniconda3/bin/activate # Adjust to your path of Miniconda installation
-if conda info --envs | grep -q amltk_env; then echo "amltk_env already exists"; else conda create -y -n amltk_env; fi
-conda activate amltk_env
-echo "conda amltk_env activated"
+# Print the allocated memory per node
+echo "Allocated memory per node: $SLURM_MEM_PER_NODE MB"
 
-# Install requirements
-python3 -m pip install --upgrade pip
-pip install -r requirements.txt
-echo "Requirements installed"
+# Activate your environment
+# shellcheck disable=SC1090
+# source ~/miniconda3/bin/activate # Adjust to your path of Miniconda installation
+# if conda info --envs | grep -q amltk_env; then echo "amltk_env already exists"; else conda create -y -n amltk_env; fi
+# conda activate amltk_env
+# echo "conda amltk_env activated"
+source .venv/bin/activate
+echo "Virtual Environment Activated"
 
 # Set the PYTHONPATH to include the src directory
 export PYTHONPATH=$PWD/src:$PYTHONPATH
@@ -49,9 +48,6 @@ python3 src/Motivation/LGBM_vs_OpenFE_Cluster.py "$SLURM_ARRAY_TASK_ID" "$*"
 
 # Print the allocated memory per node
 echo "Allocated memory per node: $SLURM_MEM_PER_NODE MB"
-
-# Print the allocated memory per CPU
-echo "Allocated memory per CPU: $SLURM_MEM_PER_CPU MB"
 
 # shellcheck disable=SC2006
 end=`date +%s`
