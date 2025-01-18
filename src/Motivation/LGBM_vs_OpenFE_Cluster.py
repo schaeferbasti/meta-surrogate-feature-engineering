@@ -36,15 +36,29 @@ def run_lgbm(X_train, y_train, X_test, y_test):
     return rmse_test
 
 
-def run_autogluon_lgbm(X_train, y_train, X_test, y_test):
-    autogluon = LGBModel()
-    autogluon.fit(X=X_train, y=y_train)
-    y_pred = autogluon.predict(X=X_test)
-    rmse_test = mean_squared_error(y_test, y_pred) ** 0.5
-    return rmse_test
+def run_autogluon_lgbm(X_train, y_train, X_test, y_test, zeroshot=False):
+    import os
+    import logging
+    import ray
+    log = logging.getLogger(__name__)
+    ray_mem_in_gb = 48
+    log.info(f"Running on SLURM, initializing Ray with unique temp dir with {ray_mem_in_gb}GB.")
+    ray_mem_in_b = int(ray_mem_in_gb * (1024.0 ** 3))
+    tmp_dir_base_path = "/tmp"
+    ray_dir = f"{tmp_dir_base_path}"
+    print(f"Start local ray instances. Using {os.environ.get('RAY_MEM_IN_GB')} GB for Ray.")
+    ray.init(
+        address="local",
+        _memory=ray_mem_in_b,
+        object_store_memory=int(ray_mem_in_b * 0.3),
+        _temp_dir=ray_dir,
+        include_dashboard=False,
+        logging_level=logging.INFO,
+        log_to_driver=True,
+        num_gpus=0,
+        num_cpus=8,
+    )
 
-
-def run_tuned_autogluon_lgbm(X_train, y_train, X_test, y_test):
     label = "target"
     X_train["target"] = y_train
 
@@ -55,35 +69,38 @@ def run_tuned_autogluon_lgbm(X_train, y_train, X_test, y_test):
     for k in list(zeroshot2024.keys()):
         if k not in allowed_models:
             del zeroshot2024[k]
+        else:
+            if not zeroshot:
+                zeroshot2024[k] = zeroshot2024[k][:1]
 
     # -- Run AutoGluon
     predictor = TabularPredictor(
         label=label,
-        eval_metric="mcc",
-        problem_type="multiclass",
-        verbosity=-1,
+        eval_metric="log_loss",  # roc_auc (binary), log_loss (multiclass)
+        problem_type="multiclass",  # binary, multiclass
+        verbosity=4,
     )
 
     predictor.fit(
         time_limit=int(60 * 60 * 4),
+        memory_limit=48 * 1024 * 1024,
+        num_cpu=8,
+        num_gpu=0,
         train_data=X_train,
         presets="best_quality",
         dynamic_stacking=False,
         hyperparameters=zeroshot2024,
-        # Early Stopping
-        ag_args_fit={
-            "stopping_metric": "log_loss",
-        },
         # Validation Protocol
-        num_bag_folds=16,
+        num_bag_folds=8,
         num_bag_sets=1,
-        num_stack_levels=1,
+        num_stack_levels=0,
     )
     predictor.fit_summary(verbosity=-1)
-    y_pred = predictor.predict(X_test)
+    lb = predictor.leaderboard(X_test)
 
-    rmse_test = mean_squared_error(y_test, y_pred) ** 0.5
-    return rmse_test
+    ray.close(force=True)
+
+    return lb
 
 
 def get_openfe_data(X_train, y_train, X_test, y_test):
@@ -126,105 +143,64 @@ def factorize_data(X_train, y_train, X_test, y_test):
 
 
 def main():
-    f = open("results.txt", "w")
-    f.write("Test different versions of LGBM with OpenFE \n" + str(datetime.datetime.now()) + "\n\n")
-    f.close()
-
-    """
-    If running on a SLURM cluster, we need to initialize Ray with extra options and a unique tempr dir.
-    Otherwise, given the shared filesystem, Ray will try to use the same temp dir for all workers and crash (semi-randomly).
-    """
-    import os
-    import logging
-    import ray
-    absolute_path = os.path.dirname(os.path.abspath(__file__))
-    log = logging.getLogger(__name__)
-    ray_mem_in_gb = 48
-    log.info(f"Running on SLURM, initializing Ray with unique temp dir with {ray_mem_in_gb}GB.")
-    ray_mem_in_b = int(ray_mem_in_gb * (1024.0 ** 3))
-    tmp_dir_base_path = absolute_path
-    ray_dir = f"{tmp_dir_base_path}"
-    print(f"Start local ray instances. Using {os.environ.get('RAY_MEM_IN_GB')} GB for Ray.")
-    ray.init(
-        address="local",
-        _memory=ray_mem_in_b,
-        object_store_memory=int(ray_mem_in_b * 0.3),
-        _temp_dir=ray_dir,
-        include_dashboard=False,
-        logging_level=logging.INFO,
-        log_to_driver=True,
-        num_gpus=0,
-        num_cpus=8,
-    )
+    with open("results.txt", "w") as f:
+        f.write("Test different versions of LGBM with OpenFE \n" + str(datetime.datetime.now()) + "\n\n")
 
     dataset_ids = [190411, 359983, 189354, 189356, 10090, 359979, 146818, 359955, 359960, 359968, 359959, 168757,
                    359954, 359969, 359970, 359984, 168911, 359981, 359962, 359965, 190392, 190137, 359958, 168350,
                    359956, 359975, 359963, 168784, 190146, 146820, 359974, 2073, 359944, 359950, 359942, 359951, 360945,
                    167210, 359930, 359948, 359931, 359932, 359933, 359934, 359939, 359945, 359935, 359940]
     for dataset_id in dataset_ids:
-        f = open("results.txt", "a")
-        f.write("Dataset: " + str(dataset_id) + "\n")
-        f.close()
+        with open("results.txt", "a") as f:
+            f.write("Dataset: " + str(dataset_id) + "\n")
 
         X_train, y_train, X_test, y_test = get_openml_dataset(dataset_id)
         X_train, y_train, X_test, y_test = factorize_data(X_train, y_train, X_test, y_test)
         X_train_openfe, y_train_openfe, X_test_openfe, y_test_openfe = get_openfe_data(X_train, y_train, X_test, y_test)
         try:
             lgbm_results = run_lgbm(X_train, y_train, X_test, y_test)
-            f = open("results.txt", "a")
-            f.write("LGBM Results " + str(lgbm_results) + "\n")
-            f.close()
+            with open("results.txt", "a") as f:
+                f.write("LGBM Results " + str(lgbm_results) + "\n")
         except Exception as e:
-            f = open("results.txt", "a")
-            f.write("LGBM Results " + str(e) + "\n")
-            f.close()
+            with open("results.txt", "a") as f:
+                f.write("LGBM Results " + str(e) + "\n")
         try:
             lgbm_openfe_results = run_lgbm(X_train_openfe, y_train_openfe, X_test_openfe, y_test_openfe)
-            f = open("results.txt", "a")
-            f.write("LGBM OpenFE Results " + str(lgbm_openfe_results) + "\n")
-            f.close()
+            with open("results.txt", "a") as f:
+                f.write("LGBM OpenFE Results " + str(lgbm_openfe_results) + "\n")
         except Exception as e:
-            f = open("results.txt", "a")
-            f.write("LGBM OpenFE Results " + str(e) + "\n")
-            f.close()
+            with open("results.txt", "a") as f:
+                f.write("LGBM OpenFE Results " + str(e) + "\n")
         try:
-            autogluon_lgbm_results = run_autogluon_lgbm(X_train, y_train, X_test, y_test)
-            f = open("results.txt", "a")
-            f.write("Autogluon LGBM Results " + str(autogluon_lgbm_results) + "\n")
-            f.close()
+            autogluon_lgbm_results = run_autogluon_lgbm(X_train, y_train, X_test, y_test, zeroshot=False)
+            with open("results.txt", "a") as f:
+                f.write("Autogluon LGBM Results " + str(autogluon_lgbm_results) + "\n")
         except Exception as e:
-            f = open("results.txt", "a")
-            f.write("Autogluon LGBM Results " + str(e) + "\n")
-            f.close()
+            with open("results.txt", "a") as f:
+                f.write("Autogluon LGBM Results " + str(e) + "\n")
         try:
             autogluon_lgbm_openfe_results = run_autogluon_lgbm(X_train_openfe, y_train_openfe, X_test_openfe,
-                                                               y_test_openfe)
-            f = open("results.txt", "a")
-            f.write("Autogluon LGBM OpenFE Results " + str(autogluon_lgbm_openfe_results) + "\n")
-            f.close()
+                                                               y_test_openfe, zeroshot=False)
+            with open("results.txt", "a") as f:
+                f.write("Autogluon LGBM OpenFE Results " + str(autogluon_lgbm_openfe_results) + "\n")
         except Exception as e:
-            f = open("results.txt", "a")
-            f.write("Autogluon LGBM OpenFE Results " + str(e) + "\n")
-            f.close()
+            with open("results.txt", "a") as f:
+                f.write("Autogluon LGBM OpenFE Results " + str(e) + "\n")
         try:
-            tuned_autogluon_lgbm_results = run_tuned_autogluon_lgbm(X_train, y_train, X_test, y_test)
-            f = open("results.txt", "a")
-            f.write("Tuned Autogluon LGBM Results " + str(tuned_autogluon_lgbm_results) + "\n")
-            f.close()
+            tuned_autogluon_lgbm_results = run_autogluon_lgbm(X_train, y_train, X_test, y_test, zeroshot=True)
+            with open("results.txt", "a") as f:
+                f.write("Tuned Autogluon LGBM Results " + str(tuned_autogluon_lgbm_results) + "\n")
         except Exception as e:
-            f = open("results.txt", "a")
-            f.write("Tuned Autogluon LGBM Results " + str(e) + "\n")
-            f.close()
+            with open("results.txt", "a") as f:
+                f.write("Tuned Autogluon LGBM Results " + str(e) + "\n")
         try:
-            tuned_autogluon_lgbm_openfe_results = run_tuned_autogluon_lgbm(X_train_openfe, y_train_openfe,
-                                                                           X_test_openfe, y_test_openfe)
-            f = open("results.txt", "a")
-            f.write("Tuned Autogluon LGBM OpenFE Results " + str(tuned_autogluon_lgbm_openfe_results) + "\n")
-            f.close()
+            tuned_autogluon_lgbm_openfe_results = run_autogluon_lgbm(X_train_openfe, y_train_openfe,
+                                                                           X_test_openfe, y_test_openfe, zeroshot=True)
+            with open("results.txt", "a") as f:
+                f.write("Tuned Autogluon LGBM OpenFE Results " + str(tuned_autogluon_lgbm_openfe_results) + "\n")
         except Exception as e:
-            f = open("results.txt", "a")
-            f.write("Tuned Autogluon LGBM OpenFE Results " + str(e) + "\n")
-            f.close()
+            with open("results.txt", "a") as f:
+                f.write("Tuned Autogluon LGBM OpenFE Results " + str(e) + "\n")
 
 
 if __name__ == '__main__':
