@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define the partition on which the job shall run.
-#SBATCH --partition mlhiwidlc_gpu-rtx2080
+#SBATCH --partition bosch_cpu-cascadelake
 
 # Define a name for your job
 #SBATCH --job-name Motivation
