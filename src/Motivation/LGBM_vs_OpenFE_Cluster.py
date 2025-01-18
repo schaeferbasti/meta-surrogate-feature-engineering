@@ -100,7 +100,7 @@ def run_autogluon_lgbm(X_train, y_train, X_test, y_test, zeroshot=False):
     predictor.fit_summary(verbosity=-1)
     lb = predictor.leaderboard(X_test)
 
-    ray.close(force=True)
+    ray.shutdown()
 
     return lb
 
