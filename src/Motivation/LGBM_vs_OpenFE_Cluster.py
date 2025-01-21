@@ -154,17 +154,26 @@ def main():
     with open("results.txt", "w") as f:
         f.write("Test different versions of LGBM with OpenFE \n" + str(datetime.datetime.now()) + "\n\n")
     log_memory_usage()
-    dataset_ids = [190411, 359983, 189354, 189356, 10090, 359979, 146818, 359955, 359960, 359968, 359959, 168757,
+    dataset_ids = [190411, 189354, 189356, 359979, 146818, 359955, 359960, 359968, 359959, 168757,
                    359954, 359969, 359970, 359984, 168911, 359981, 359962, 359965, 190392, 190137, 359958, 168350,
                    359956, 359975, 359963, 168784, 190146, 146820, 359974, 2073, 359944, 359950, 359942, 359951, 360945,
                    167210, 359930, 359948, 359931, 359932, 359933, 359934, 359939, 359945, 359935, 359940]
+    # 359983, 10090
     for dataset_id in dataset_ids:
         with open("results.txt", "a") as f:
             f.write("Dataset: " + str(dataset_id) + "\n")
         log_memory_usage()
-        X_train, y_train, X_test, y_test = get_openml_dataset(dataset_id)
-        X_train, y_train, X_test, y_test = factorize_data(X_train, y_train, X_test, y_test)
-        X_train_openfe, y_train_openfe, X_test_openfe, y_test_openfe = get_openfe_data(X_train, y_train, X_test, y_test)
+        try:
+            f.write("Get OpenML Data")
+            X_train, y_train, X_test, y_test = get_openml_dataset(dataset_id)
+            f.write("Factorize Data")
+            X_train, y_train, X_test, y_test = factorize_data(X_train, y_train, X_test, y_test)
+            f.write("Use OpenFE")
+            X_train_openfe, y_train_openfe, X_test_openfe, y_test_openfe = get_openfe_data(X_train, y_train, X_test, y_test)
+        except Exception as e:
+            print(e)
+            continue
+        f.write("Start Experiments")
         try:
             log_memory_usage()
             lgbm_results = run_lgbm(X_train, y_train, X_test, y_test)
