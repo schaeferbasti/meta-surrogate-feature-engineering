@@ -165,13 +165,13 @@ def main():
         log_memory_usage()
         try:
             with open("results.txt", "a") as f:
-                f.write("Get OpenML Data")
+                f.write("Get OpenML Data\n")
             X_train, y_train, X_test, y_test = get_openml_dataset(dataset_id)
             with open("results.txt", "a") as f:
-                f.write("Factorize Data")
+                f.write("Factorize Data\n")
             X_train, y_train, X_test, y_test = factorize_data(X_train, y_train, X_test, y_test)
             with open("results.txt", "a") as f:
-                f.write("Use OpenFE")
+                f.write("Use OpenFE\n")
             X_train_openfe, y_train_openfe, X_test_openfe, y_test_openfe = get_openfe_data(X_train, y_train, X_test, y_test)
         except Exception as e:
             print(e)
