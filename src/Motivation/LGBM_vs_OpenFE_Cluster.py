@@ -176,7 +176,8 @@ def main():
         except Exception as e:
             print(e)
             continue
-        f.write("Start Experiments")
+        with open("results.txt", "a") as f:
+            f.write("Start Experiments\n")
         try:
             log_memory_usage()
             lgbm_results = run_lgbm(X_train, y_train, X_test, y_test)
