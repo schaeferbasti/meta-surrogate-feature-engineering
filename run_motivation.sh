@@ -32,7 +32,8 @@ echo "Allocated memory per node: $SLURM_MEM_PER_NODE MB"
 # if conda info --envs | grep -q amltk_env; then echo "amltk_env already exists"; else conda create -y -n amltk_env; fi
 # conda activate amltk_env
 # echo "conda amltk_env activated"
-source .venv/bin/activate
+virtualenv venv
+source venv/bin/activate
 echo "Virtual Environment Activated"
 
 # Set the PYTHONPATH to include the src directory
@@ -48,6 +49,8 @@ python3 src/Motivation/LGBM_vs_OpenFE_Cluster.py "$SLURM_ARRAY_TASK_ID" "$*"
 
 # Print the allocated memory per node
 echo "Allocated memory per node: $SLURM_MEM_PER_NODE MB"
+
+deactivate
 
 # shellcheck disable=SC2006
 end=`date +%s`
