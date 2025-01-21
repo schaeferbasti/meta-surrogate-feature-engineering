@@ -32,8 +32,8 @@ echo "Allocated memory per node: $SLURM_MEM_PER_NODE MB"
 # if conda info --envs | grep -q amltk_env; then echo "amltk_env already exists"; else conda create -y -n amltk_env; fi
 # conda activate amltk_env
 # echo "conda amltk_env activated"
-virtualenv venv
-source venv/bin/activate
+# virtualenv .venv
+source .venv/local/bin/activate
 echo "Virtual Environment Activated"
 
 # Set the PYTHONPATH to include the src directory
