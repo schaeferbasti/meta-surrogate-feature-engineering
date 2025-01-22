@@ -59,6 +59,7 @@ def run_autogluon_lgbm(X_train, y_train, X_test, y_test, zeroshot=False):
         log_to_driver=True,
         num_gpus=0,
         num_cpus=8,
+        ignore_reinit_error=True
     )
 
     label = "target"
