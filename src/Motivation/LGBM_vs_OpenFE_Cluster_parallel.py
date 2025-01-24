@@ -1,20 +1,19 @@
 import argparse
-
-import datetime
+import logging
 import os
-import psutil
 
-import pandas as pd
+import psutil
+import ray
 
 from sklearn.metrics import mean_squared_error
-import openml
+import pandas as pd
 
-from openfe import OpenFE, transform
-
-import lightgbm as lgb
 from autogluon.tabular import TabularPredictor
 from autogluon.tabular.models import LGBModel
 from tabrepo_2024_custom import zeroshot2024
+import openml
+from openfe import OpenFE, transform
+import lightgbm as lgb
 
 
 def run_lgbm(X_train, y_train, X_test, y_test):
@@ -41,9 +40,6 @@ def run_lgbm(X_train, y_train, X_test, y_test):
 
 
 def run_autogluon_lgbm(X_train, y_train, X_test, y_test, zeroshot=False):
-    import os
-    import logging
-    import ray
     log = logging.getLogger(__name__)
     ray_mem_in_gb = 48
     log.info(f"Running on SLURM, initializing Ray with unique temp dir with {ray_mem_in_gb}GB.")
@@ -154,75 +150,73 @@ def log_memory_usage():
 
 
 def main(args):
-    with open("results.txt", "w") as f:
-        f.write("Test different versions of LGBM with OpenFE \n" + str(datetime.datetime.now()) + "\n\n")
     log_memory_usage()
     dataset_id = args.dataset
     with open("results.txt", "a") as f:
         f.write("Dataset: " + str(dataset_id) + "\n")
     log_memory_usage()
     try:
-        with open("results.txt", "a") as f:
+        with open("results_" + str(dataset_id) + ".txt", "a") as f:
             f.write("Get OpenML Data\n")
         X_train, y_train, X_test, y_test = get_openml_dataset(dataset_id)
-        with open("results.txt", "a") as f:
+        with open("results_" + str(dataset_id) + ".txt", "a") as f:
             f.write("Factorize Data\n")
         X_train, y_train, X_test, y_test = factorize_data(X_train, y_train, X_test, y_test)
-        with open("results.txt", "a") as f:
+        with open("results_" + str(dataset_id) + ".txt", "a") as f:
             f.write("Use OpenFE\n")
         X_train_openfe, y_train_openfe, X_test_openfe, y_test_openfe = get_openfe_data(X_train, y_train, X_test, y_test)
     except Exception as e:
         print(e)
-    with open("results.txt", "a") as f:
+    with open("results_" + str(dataset_id) + ".txt", "a") as f:
         f.write("Start Experiments\n")
     try:
         log_memory_usage()
         lgbm_results = run_lgbm(X_train, y_train, X_test, y_test)
-        with open("results.txt", "a") as f:
-            f.write("LGBM Results " + str(lgbm_results) + "\n")
+        with open("results_" + str(dataset_id) + ".txt", "a") as f:
+            f.write("LGBM Results: " + str(lgbm_results) + "\n")
     except Exception as e:
-        with open("results.txt", "a") as f:
-            f.write("LGBM Results " + str(e) + "\n")
+        with open("results_" + str(dataset_id) + ".txt", "a") as f:
+            f.write("LGBM Results: " + str(e) + "\n")
     try:
         log_memory_usage()
         lgbm_openfe_results = run_lgbm(X_train_openfe, y_train_openfe, X_test_openfe, y_test_openfe)
-        with open("results.txt", "a") as f:
-            f.write("LGBM OpenFE Results " + str(lgbm_openfe_results) + "\n")
+        with open("results_" + str(dataset_id) + ".txt", "a") as f:
+            f.write("LGBM OpenFE Results: " + str(lgbm_openfe_results) + "\n")
     except Exception as e:
-        with open("results.txt", "a") as f:
-            f.write("LGBM OpenFE Results " + str(e) + "\n")
+        with open("results_" + str(dataset_id) + ".txt", "a") as f:
+            f.write("LGBM OpenFE Results: " + str(e) + "\n")
     try:
         log_memory_usage()
         autogluon_lgbm_results = run_autogluon_lgbm(X_train, y_train, X_test, y_test, zeroshot=False)
-        with open("results.txt", "a") as f:
-            f.write("Autogluon LGBM Results " + str(autogluon_lgbm_results) + "\n")
+        with open("results_" + str(dataset_id) + ".txt", "a") as f:
+            f.write("Autogluon LGBM Results: " + str(autogluon_lgbm_results) + "\n")
     except Exception as e:
-        with open("results.txt", "a") as f:
-            f.write("Autogluon LGBM Results " + str(e) + "\n")
+        with open("results_" + str(dataset_id) + ".txt", "a") as f:
+            f.write("Autogluon LGBM Results: " + str(e) + "\n")
     try:
         log_memory_usage()
         autogluon_lgbm_openfe_results = run_autogluon_lgbm(X_train_openfe, y_train_openfe, X_test_openfe, y_test_openfe, zeroshot=False)
-        with open("results.txt", "a") as f:
-            f.write("Autogluon LGBM OpenFE Results " + str(autogluon_lgbm_openfe_results) + "\n")
+        with open("results_" + str(dataset_id) + ".txt", "a") as f:
+            f.write("Autogluon LGBM OpenFE Results: " + str(autogluon_lgbm_openfe_results) + "\n")
     except Exception as e:
-        with open("results.txt", "a") as f:
-            f.write("Autogluon LGBM OpenFE Results " + str(e) + "\n")
+        with open("results_" + str(dataset_id) + ".txt", "a") as f:
+            f.write("Autogluon LGBM OpenFE Results: " + str(e) + "\n")
     try:
         log_memory_usage()
         tuned_autogluon_lgbm_results = run_autogluon_lgbm(X_train, y_train, X_test, y_test, zeroshot=True)
-        with open("results.txt", "a") as f:
-            f.write("Tuned Autogluon LGBM Results " + str(tuned_autogluon_lgbm_results) + "\n")
+        with open("results_" + str(dataset_id) + ".txt", "a") as f:
+            f.write("Tuned Autogluon LGBM Results: " + str(tuned_autogluon_lgbm_results) + "\n")
     except Exception as e:
-        with open("results.txt", "a") as f:
-            f.write("Tuned Autogluon LGBM Results " + str(e) + "\n")
+        with open("results_" + str(dataset_id) + ".txt", "a") as f:
+            f.write("Tuned Autogluon LGBM Results: " + str(e) + "\n")
     try:
         log_memory_usage()
         tuned_autogluon_lgbm_openfe_results = run_autogluon_lgbm(X_train_openfe, y_train_openfe, X_test_openfe, y_test_openfe, zeroshot=True)
-        with open("results.txt", "a") as f:
-            f.write("Tuned Autogluon LGBM OpenFE Results " + str(tuned_autogluon_lgbm_openfe_results) + "\n")
+        with open("results_" + str(dataset_id) + ".txt", "a") as f:
+            f.write("Tuned Autogluon LGBM OpenFE Results: " + str(tuned_autogluon_lgbm_openfe_results) + "\n")
     except Exception as e:
-        with open("results.txt", "a") as f:
-            f.write("Tuned Autogluon LGBM OpenFE Results " + str(e) + "\n")
+        with open("results_" + str(dataset_id) + ".txt", "a") as f:
+            f.write("Tuned Autogluon LGBM OpenFE Results: " + str(e) + "\n")
 
 
 if __name__ == '__main__':
