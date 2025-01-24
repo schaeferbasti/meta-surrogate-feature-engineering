@@ -84,7 +84,7 @@ def run_autogluon_lgbm(X_train, y_train, X_test, y_test, zeroshot=False):
 
     predictor.fit(
         time_limit=int(60 * 60 * 4),
-        memory_limit=48 * 1024 * 1024,
+        memory_limit=48,
         num_cpus=8,
         num_gpus=0,
         train_data=X_train,
