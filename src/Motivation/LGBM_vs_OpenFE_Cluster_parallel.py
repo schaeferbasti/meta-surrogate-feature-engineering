@@ -12,7 +12,7 @@ from autogluon.tabular import TabularPredictor
 from autogluon.tabular.models import LGBModel
 from tabrepo_2024_custom import zeroshot2024
 import openml
-from openfe import OpenFE, transform
+from openfe_parallel import OpenFE, transform
 import lightgbm as lgb
 
 
@@ -105,10 +105,10 @@ def run_autogluon_lgbm(X_train, y_train, X_test, y_test, zeroshot=False):
     return lb
 
 
-def get_openfe_data(X_train, y_train, X_test, y_test):
+def get_openfe_data(X_train, y_train, X_test, y_test, name):
     openFE = OpenFE()
-    features = openFE.fit(data=X_train, label=y_train, n_jobs=1)  # generate new features
-    X_train_openfe, X_test_openfe = transform(X_train, X_test, features, n_jobs=1)
+    features = openFE.fit(data=X_train, label=y_train, n_jobs=1, name=name)  # generate new features
+    X_train_openfe, X_test_openfe = openFE.transform(X_train, X_test, features, n_jobs=1)
     return X_train_openfe, y_train, X_test_openfe, y_test
 
 
@@ -164,7 +164,7 @@ def main(args):
     X_train, y_train, X_test, y_test = factorize_data(X_train, y_train, X_test, y_test)
     with open("results_" + str(dataset_id) + ".txt", "a") as f:
         f.write("Use OpenFE\n")
-    X_train_openfe, y_train_openfe, X_test_openfe, y_test_openfe = get_openfe_data(X_train, y_train, X_test, y_test)
+    X_train_openfe, y_train_openfe, X_test_openfe, y_test_openfe = get_openfe_data(X_train, y_train, X_test, y_test, str(dataset_id))
     with open("results_" + str(dataset_id) + ".txt", "a") as f:
         f.write("Start Experiments\n")
     try:
