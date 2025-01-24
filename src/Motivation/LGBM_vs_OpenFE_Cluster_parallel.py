@@ -218,6 +218,6 @@ def main(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Run Motivation')
-    parser.add_argument('--dataset', type=str, required=True, help='Motivation dataset')
+    parser.add_argument('--dataset', type=int, required=True, help='Motivation dataset')
     args = parser.parse_args()
     main(args)
