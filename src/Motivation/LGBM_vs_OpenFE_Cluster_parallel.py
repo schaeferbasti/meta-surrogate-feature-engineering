@@ -167,50 +167,30 @@ def main(args):
     X_train_openfe, y_train_openfe, X_test_openfe, y_test_openfe = get_openfe_data(X_train, y_train, X_test, y_test, str(dataset_id))
     with open("results_" + str(dataset_id) + ".txt", "a") as f:
         f.write("Start Experiments\n")
-    try:
-        log_memory_usage()
-        lgbm_results = run_lgbm(X_train, y_train, X_test, y_test)
-        with open("results_" + str(dataset_id) + ".txt", "a") as f:
-            f.write("LGBM Results: " + str(lgbm_results) + "\n")
-    except Exception as e:
-        print(str(e))
-    try:
-        log_memory_usage()
-        lgbm_openfe_results = run_lgbm(X_train_openfe, y_train_openfe, X_test_openfe, y_test_openfe)
-        with open("results_" + str(dataset_id) + ".txt", "a") as f:
-            f.write("LGBM OpenFE Results: " + str(lgbm_openfe_results) + "\n")
-    except Exception as e:
-        print(str(e))
-    try:
-        log_memory_usage()
-        autogluon_lgbm_results = run_autogluon_lgbm(X_train, y_train, X_test, y_test, zeroshot=False)
-        with open("results_" + str(dataset_id) + ".txt", "a") as f:
-            f.write("Autogluon LGBM Results: " + str(autogluon_lgbm_results) + "\n")
-    except Exception as e:
-        print(str(e))
-    try:
-        log_memory_usage()
-        autogluon_lgbm_openfe_results = run_autogluon_lgbm(X_train_openfe, y_train_openfe, X_test_openfe, y_test_openfe, zeroshot=False)
-        with open("results_" + str(dataset_id) + ".txt", "a") as f:
-            f.write("Autogluon LGBM OpenFE Results: " + str(autogluon_lgbm_openfe_results) + "\n")
-    except Exception as e:
-        print(str(e))
-
-    try:
-        log_memory_usage()
-        tuned_autogluon_lgbm_results = run_autogluon_lgbm(X_train, y_train, X_test, y_test, zeroshot=True)
-        with open("results_" + str(dataset_id) + ".txt", "a") as f:
-            f.write("Tuned Autogluon LGBM Results: " + str(tuned_autogluon_lgbm_results) + "\n")
-    except Exception as e:
-        print(str(e))
-
-    try:
-        log_memory_usage()
-        tuned_autogluon_lgbm_openfe_results = run_autogluon_lgbm(X_train_openfe, y_train_openfe, X_test_openfe, y_test_openfe, zeroshot=True)
-        with open("results_" + str(dataset_id) + ".txt", "a") as f:
-            f.write("Tuned Autogluon LGBM OpenFE Results: " + str(tuned_autogluon_lgbm_openfe_results) + "\n")
-    except Exception as e:
-        print(str(e))
+    log_memory_usage()
+    lgbm_results = run_lgbm(X_train, y_train, X_test, y_test)
+    with open("results_" + str(dataset_id) + ".txt", "a") as f:
+        f.write("LGBM Results: " + str(lgbm_results) + "\n")
+    log_memory_usage()
+    lgbm_openfe_results = run_lgbm(X_train_openfe, y_train_openfe, X_test_openfe, y_test_openfe)
+    with open("results_" + str(dataset_id) + ".txt", "a") as f:
+        f.write("LGBM OpenFE Results: " + str(lgbm_openfe_results) + "\n")
+    log_memory_usage()
+    autogluon_lgbm_results = run_autogluon_lgbm(X_train, y_train, X_test, y_test, zeroshot=False)
+    with open("results_" + str(dataset_id) + ".txt", "a") as f:
+        f.write("Autogluon LGBM Results: " + str(autogluon_lgbm_results) + "\n")
+    log_memory_usage()
+    autogluon_lgbm_openfe_results = run_autogluon_lgbm(X_train_openfe, y_train_openfe, X_test_openfe, y_test_openfe, zeroshot=False)
+    with open("results_" + str(dataset_id) + ".txt", "a") as f:
+        f.write("Autogluon LGBM OpenFE Results: " + str(autogluon_lgbm_openfe_results) + "\n")
+    log_memory_usage()
+    tuned_autogluon_lgbm_results = run_autogluon_lgbm(X_train, y_train, X_test, y_test, zeroshot=True)
+    with open("results_" + str(dataset_id) + ".txt", "a") as f:
+        f.write("Tuned Autogluon LGBM Results: " + str(tuned_autogluon_lgbm_results) + "\n")
+    log_memory_usage()
+    tuned_autogluon_lgbm_openfe_results = run_autogluon_lgbm(X_train_openfe, y_train_openfe, X_test_openfe, y_test_openfe, zeroshot=True)
+    with open("results_" + str(dataset_id) + ".txt", "a") as f:
+        f.write("Tuned Autogluon LGBM OpenFE Results: " + str(tuned_autogluon_lgbm_openfe_results) + "\n")
 
 
 if __name__ == '__main__':
