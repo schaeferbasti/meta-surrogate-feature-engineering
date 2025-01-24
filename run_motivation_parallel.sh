@@ -7,8 +7,8 @@
 #SBATCH --job-name Motivation
 
 # Define the files to write the outputs of the job to.
-#SBATCH --output logs/%x-%A.out   # STDOUT  %x and %A will be replaced by the job name and job id, respectively. short: -o logs/%x-%A.out
-#SBATCH --error logs/%x-%A.err    # STDERR  short: -e logs/%x-%A.out
+#SBATCH --output logs/%x-%A_%a.out   # STDOUT  %x and %A will be replaced by the job name and job id, respectively. short: -o logs/%x-%A.out
+#SBATCH --error logs/%x-%A_%a.err    # STDERR  short: -e logs/%x-%A.out
 
 # Define the amount of memory required per node
 #SBATCH --mem=48GB
