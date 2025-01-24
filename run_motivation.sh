@@ -15,6 +15,9 @@
 #SBATCH -c 8
 #SBATCH --gres=localtmp:100
 
+#Time Format = days-hours:minutes:seconds
+#SBATCH --time=2-00:00:00
+
 #SBATCH --propagate=NONE
 
 echo "Workingdir: $PWD";
