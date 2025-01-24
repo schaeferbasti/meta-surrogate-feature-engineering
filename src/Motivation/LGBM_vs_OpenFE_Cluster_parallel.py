@@ -12,7 +12,7 @@ from autogluon.tabular import TabularPredictor
 from autogluon.tabular.models import LGBModel
 from tabrepo_2024_custom import zeroshot2024
 import openml
-from openfe_parallel import OpenFE, transform
+from OpenFE.openfe_parallel import OpenFE
 import lightgbm as lgb
 
 
