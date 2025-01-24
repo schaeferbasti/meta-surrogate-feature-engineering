@@ -39,6 +39,8 @@ echo "Allocated memory per node: $SLURM_MEM_PER_NODE MB"
 source .venv/local/bin/activate
 echo "Virtual Environment Activated"
 
+#SBATCH --array=0-45  # Adjust based on the number of methods
+
 # Set the PYTHONPATH to include the src directory
 export PYTHONPATH=$PWD/src:$PYTHONPATH
 echo "PYTHONPATH set to $PYTHONPATH"
