@@ -20,6 +20,8 @@
 
 #SBATCH --propagate=NONE
 
+#SBATCH --array=0-45  # Adjust based on the number of methods
+
 echo "Workingdir: $PWD";
 echo "Started at $(date)";
 
@@ -38,8 +40,6 @@ echo "Allocated memory per node: $SLURM_MEM_PER_NODE MB"
 # virtualenv .venv
 source .venv/local/bin/activate
 echo "Virtual Environment Activated"
-
-#SBATCH --array=0-45  # Adjust based on the number of methods
 
 # Set the PYTHONPATH to include the src directory
 export PYTHONPATH=$PWD/src:$PYTHONPATH
