@@ -1,6 +1,6 @@
-import os
+from glob import glob
 
-files = os.listdir("../../results_*.txt")
+files = glob('*results_*.txt')
 for file in files:
     with open(file, 'r') as f:
         content = f.read()
