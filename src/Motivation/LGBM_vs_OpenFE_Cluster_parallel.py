@@ -14,7 +14,7 @@ from sklearn.model_selection import StratifiedKFold
 from autogluon.tabular import TabularPredictor
 from autogluon.tabular.models import LGBModel
 
-from src.datasets.Splits import _save_stratified_splits
+# from src.datasets.Splits import _save_stratified_splits
 from tabrepo_2024_custom import zeroshot2024
 import openml
 from OpenFE.openfe_parallel import OpenFE
@@ -171,6 +171,7 @@ def factorize_data(X_train, y_train, X_test, y_test):
     return X_train, y_train, X_test, y_test
 
 
+"""
 def fix_split_by_dropping_classes(
         x: np.ndarray,
         y: np.ndarray,
@@ -216,6 +217,7 @@ def fix_split_by_dropping_classes(
         splits[i][1] = [index for index in test_index if index not in invalid_index]
 
     return splits
+"""
 
 
 def log_memory_usage():
