@@ -135,10 +135,10 @@ def get_openml_dataset(openml_task_id: int) -> tuple[
 
 def factorize_data(X_train, y_train, X_test, y_test):
     lbl = preprocessing.LabelEncoder()
-    for column in X_train.select_dtypes(include=['object', 'category']).columns:
+    for column in X_train.columns: #select_dtypes(include=['object', 'category'])
         # X_train[column], _ = pd.factorize(X_train[column])
         X_train[column] = lbl.fit_transform(X_train[column].astype(int))
-    for column in X_test.select_dtypes(include=['object', 'category']).columns:
+    for column in X_test.columns:
         X_test[column] = lbl.fit_transform(X_test[column].astype(int))
     y_train_array, _ = pd.Series.factorize(y_train, use_na_sentinel=False)
     y_train = y_train.replace(y_train_array)
