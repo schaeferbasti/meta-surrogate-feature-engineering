@@ -178,10 +178,9 @@ def fix_split_by_dropping_classes(
         n_splits: int,
         spliter_kwargs: dict,
 ) -> list[list[list[int], list[int]]]:
-    """Fixes stratifed splits for edge case.
-    For each class that has fewer instances than number of splits, we oversample before split to n_splits and then remove all oversamples and
-    original samples from the splits; effectively removing the class from the data without touching the indices.
-    """
+    # Fixes stratifed splits for edge case.
+    # For each class that has fewer instances than number of splits, we oversample before split to n_splits and then remove all oversamples and
+    # original samples from the splits; effectively removing the class from the data without touching the indices.
     val, counts = np.unique(y, return_counts=True)
     too_low = val[counts < n_splits]
     too_low_counts = counts[counts < n_splits]
