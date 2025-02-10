@@ -64,6 +64,7 @@ def run_autogluon_lgbm(X_train, y_train, X_test, y_test, zeroshot=False):
 
     label = "target"
     X_train["target"] = y_train
+    X_test["target"] = y_test
 
     allowed_models = [
         "GBM",
