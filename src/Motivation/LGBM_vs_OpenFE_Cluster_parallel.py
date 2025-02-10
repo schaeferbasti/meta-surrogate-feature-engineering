@@ -1,5 +1,6 @@
 import argparse
 import logging
+import numpy as np
 import os
 
 import psutil
@@ -8,9 +9,12 @@ import ray
 from sklearn.metrics import mean_squared_error
 from sklearn import preprocessing
 import pandas as pd
+from sklearn.model_selection import StratifiedKFold
 
 from autogluon.tabular import TabularPredictor
 from autogluon.tabular.models import LGBModel
+
+from src.datasets.Splits import _save_stratified_splits
 from tabrepo_2024_custom import zeroshot2024
 import openml
 from OpenFE.openfe_parallel import OpenFE
@@ -134,6 +138,7 @@ def get_openml_dataset(openml_task_id: int) -> tuple[
     return train_x, train_y, test_x, test_y
 
 
+"""
 def factorize_data_old(X_train, y_train, X_test, y_test):
     lbl = preprocessing.LabelEncoder()
     for column in X_train.columns: #select_dtypes(include=['object', 'category'])
@@ -146,6 +151,8 @@ def factorize_data_old(X_train, y_train, X_test, y_test):
     y_test_array, _ = pd.Series.factorize(y_test, use_na_sentinel=False)
     y_test = y_test.replace(y_test_array)
     return X_train, y_train, X_test, y_test
+"""
+
 
 def factorize_data(X_train, y_train, X_test, y_test):
     # Identify categorical columns
@@ -159,9 +166,57 @@ def factorize_data(X_train, y_train, X_test, y_test):
 
     # Factorize target labels for consistency
     y_train, label_mapping = pd.factorize(y_train, use_na_sentinel=False)
-    y_test = pd.Series(y_test).map(dict(enumerate(label_mapping))).fillna(-1).astype(int)  # Ensure mapping consistency
+    y_test = pd.Series(y_test).map(dict(enumerate(label_mapping))).astype(int)  # Ensure mapping consistency
 
     return X_train, y_train, X_test, y_test
+
+
+def fix_split_by_dropping_classes(
+        x: np.ndarray,
+        y: np.ndarray,
+        n_splits: int,
+        spliter_kwargs: dict,
+) -> list[list[list[int], list[int]]]:
+    """Fixes stratifed splits for edge case.
+    For each class that has fewer instances than number of splits, we oversample before split to n_splits and then remove all oversamples and
+    original samples from the splits; effectively removing the class from the data without touching the indices.
+    """
+    val, counts = np.unique(y, return_counts=True)
+    too_low = val[counts < n_splits]
+    too_low_counts = counts[counts < n_splits]
+
+    y_dummy = pd.Series(y.copy())
+    X_dummy = pd.DataFrame(x.copy())
+    org_index_max = len(X_dummy)
+    invalid_index = []
+
+    for c_val, c_count in zip(too_low, too_low_counts, strict=True):
+        fill_missing = n_splits - c_count
+        invalid_index.extend(np.where(y == c_val)[0])
+        y_dummy = pd.concat(
+            [y_dummy, pd.Series([c_val] * fill_missing)],
+            ignore_index=True,
+        )
+        X_dummy = pd.concat(
+            [X_dummy, pd.DataFrame(x).head(fill_missing)],
+            ignore_index=True,
+        )
+
+    invalid_index.extend(list(range(org_index_max, len(y_dummy))))
+    splits = _save_stratified_splits(
+        _splitter=StratifiedKFold(**spliter_kwargs),
+        x=X_dummy,
+        y=y_dummy,
+        n_splits=n_splits,
+    )
+    len_out = len(splits)
+    for i in range(len_out):
+        train_index, test_index = splits[i]
+        splits[i][0] = [index for index in train_index if index not in invalid_index]
+        splits[i][1] = [index for index in test_index if index not in invalid_index]
+
+    return splits
+
 
 def log_memory_usage():
     """Logs memory usage of the current process."""
@@ -190,7 +245,8 @@ def main(args):
         f.write(str(X_train))
     with open("results_" + str(dataset_id) + ".txt", "a") as f:
         f.write("Use OpenFE\n")
-    X_train_openfe, y_train_openfe, X_test_openfe, y_test_openfe = get_openfe_data(X_train, y_train, X_test, y_test, str(dataset_id))
+    X_train_openfe, y_train_openfe, X_test_openfe, y_test_openfe = get_openfe_data(X_train, y_train, X_test, y_test,
+                                                                                   str(dataset_id))
     with open("results_" + str(dataset_id) + ".txt", "a") as f:
         pd.set_option('display.max_columns', None)
         f.write(str(X_train))
@@ -209,7 +265,8 @@ def main(args):
     with open("results_" + str(dataset_id) + ".txt", "a") as f:
         f.write("Autogluon LGBM Results: " + str(autogluon_lgbm_results) + "\n")
     log_memory_usage()
-    autogluon_lgbm_openfe_results = run_autogluon_lgbm(X_train_openfe, y_train_openfe, X_test_openfe, y_test_openfe, zeroshot=False)
+    autogluon_lgbm_openfe_results = run_autogluon_lgbm(X_train_openfe, y_train_openfe, X_test_openfe, y_test_openfe,
+                                                       zeroshot=False)
     with open("results_" + str(dataset_id) + ".txt", "a") as f:
         f.write("Autogluon LGBM OpenFE Results: " + str(autogluon_lgbm_openfe_results) + "\n")
     log_memory_usage()
@@ -217,7 +274,8 @@ def main(args):
     with open("results_" + str(dataset_id) + ".txt", "a") as f:
         f.write("Tuned Autogluon LGBM Results: " + str(tuned_autogluon_lgbm_results) + "\n")
     log_memory_usage()
-    tuned_autogluon_lgbm_openfe_results = run_autogluon_lgbm(X_train_openfe, y_train_openfe, X_test_openfe, y_test_openfe, zeroshot=True)
+    tuned_autogluon_lgbm_openfe_results = run_autogluon_lgbm(X_train_openfe, y_train_openfe, X_test_openfe,
+                                                             y_test_openfe, zeroshot=True)
     with open("results_" + str(dataset_id) + ".txt", "a") as f:
         f.write("Tuned Autogluon LGBM OpenFE Results: " + str(tuned_autogluon_lgbm_openfe_results) + "\n")
 
