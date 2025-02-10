@@ -166,7 +166,7 @@ def factorize_data(X_train, y_train, X_test, y_test):
 
     # Factorize target labels for consistency
     y_train, label_mapping = pd.factorize(y_train, use_na_sentinel=False)
-    y_test = pd.Series(y_test).map(dict(enumerate(label_mapping))).interpolate(method="pad").astype(int)  # Ensure mapping consistency
+    y_test = pd.Series(y_test).map(dict(enumerate(label_mapping))).fillna(0).astype(int)  # .interpolate(method="pad").astype(int)  # Ensure mapping consistency
 
     return X_train, y_train, X_test, y_test
 
