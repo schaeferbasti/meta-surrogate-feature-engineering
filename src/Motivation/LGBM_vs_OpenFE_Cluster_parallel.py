@@ -31,6 +31,7 @@ def run_lgbm(X_train, y_train, X_test, y_test):
         "bagging_fraction": 0.8,
         "bagging_freq": 5,
         "verbose": -1,
+        "seed": 42,
     }
     gbm = lgb.train(
         params, lgb_train, num_boost_round=20, valid_sets=[lgb_eval], callbacks=[lgb.early_stopping(stopping_rounds=5)]
@@ -98,6 +99,7 @@ def run_autogluon_lgbm(X_train, y_train, X_test, y_test, zeroshot=False):
         num_bag_folds=8,
         num_bag_sets=1,
         num_stack_levels=0,
+        seed=42
     )
     predictor.fit_summary(verbosity=-1)
     lb = predictor.leaderboard(X_test)
