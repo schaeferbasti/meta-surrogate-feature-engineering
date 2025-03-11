@@ -18,9 +18,10 @@ import lightgbm as lgb
 
 
 def run_lgbm(X_train, y_train, X_test, y_test):
-    lgb_train = lgb.Dataset(X_train, y_train, params={'verbose': -1})
-    lgb_eval = lgb.Dataset(X_test, y_test, params={'verbose': -1}, reference=lgb_train)
-
+    """
+    # lgb_train = lgb.Dataset(X_train, y_train, params={'verbose': -1})
+    # lgb_eval = lgb.Dataset(X_test, y_test, params={'verbose': -1}, reference=lgb_train)
+    
     params = {
         "boosting_type": "gbdt",
         "objective": "regression",
@@ -33,11 +34,23 @@ def run_lgbm(X_train, y_train, X_test, y_test):
         "verbose": -1,
         "seed": 42,
     }
-    gbm = lgb.train(
-        params, lgb_train, num_boost_round=20, valid_sets=[lgb_eval], callbacks=[lgb.early_stopping(stopping_rounds=5)]
-    )
-    y_pred = gbm.predict(X_test, num_iteration=gbm.best_iteration, verbose_eval=False)
-    log_loss_test = log_loss(y_test, y_pred) ** 0.5
+
+    # gbm = lgb.train(params, lgb_train, num_boost_round=20, valid_sets=[lgb_eval], callbacks=[lgb.early_stopping(stopping_rounds=5))
+    # y_pred = gbm.predict(X_test, num_iteration=gbm.best_iteration, verbose_eval=False)
+    # log_loss_test = log_loss(y_test, y_pred) ** 0.5
+    """
+
+    clf = lgb.LGBMClassifier(random_state=42)
+    clf.fit(X_train, y_train)
+    y_pred = clf.predict(X_test)
+    print(y_test)
+    print(y_pred)
+    df_train = pd.concat([X_train, pd.Series(y_train)], axis=1)
+    df_test = pd.concat([X_test, pd.Series(y_test)], axis=1)
+    df_original = pd.concat([df_train, df_test], axis=0)
+    labels = df_original.iloc[:,-1].unique()
+    log_loss_test = log_loss(y_test, y_pred, labels=labels) ** 0.5
+    print(log_loss_test)
     return log_loss_test
 
 
@@ -83,7 +96,7 @@ def run_autogluon_lgbm(X_train, y_train, X_test, y_test, zeroshot=False):
         label=label,
         eval_metric="log_loss",  # roc_auc (binary), log_loss (multiclass)
         problem_type="multiclass",  # binary, multiclass
-        verbosity=4,
+        verbosity=0,
     )
 
     predictor.fit(
@@ -99,11 +112,11 @@ def run_autogluon_lgbm(X_train, y_train, X_test, y_test, zeroshot=False):
         num_bag_folds=8,
         num_bag_sets=1,
         num_stack_levels=0,
-        seed=42
+        #seed=42
     )
     predictor.fit_summary(verbosity=-1)
     lb = predictor.leaderboard(X_test)
-    log_loss_test = lb.score_test
+    log_loss_test = lb.score_test[0]
     ray.shutdown()
 
     return log_loss_test
@@ -136,7 +149,7 @@ def get_openml_dataset(openml_task_id: int) -> tuple[
     return train_x, train_y, test_x, test_y
 
 
-"""
+
 def factorize_data_old(X_train, y_train, X_test, y_test):
     lbl = preprocessing.LabelEncoder()
     for column in X_train.columns: #select_dtypes(include=['object', 'category'])
@@ -149,9 +162,9 @@ def factorize_data_old(X_train, y_train, X_test, y_test):
     y_test_array, _ = pd.Series.factorize(y_test, use_na_sentinel=False)
     y_test = y_test.replace(y_test_array)
     return X_train, y_train, X_test, y_test
+
+
 """
-
-
 def factorize_data(X_train, y_train, X_test, y_test):
     # Identify categorical columns
     categorical_columns = X_train.select_dtypes(include=['object', 'category']).columns
@@ -167,7 +180,7 @@ def factorize_data(X_train, y_train, X_test, y_test):
     y_test = pd.Series(y_test).map(dict(enumerate(label_mapping))).fillna(0).astype(int)  # .interpolate(method="pad").astype(int)  # Ensure mapping consistency
 
     return X_train, y_train, X_test, y_test
-
+"""
 
 def log_memory_usage():
     process = psutil.Process(os.getpid())
@@ -179,58 +192,58 @@ def main(args):
     log_memory_usage()
     dataset_id = args.dataset
     df = pd.DataFrame(columns=['Dataset', 'LGBM', 'OpenFE + LGBM', 'Autogluon LGBM', 'OpenFE + Autogluon LGBM', 'Tuned Autogluon LGBM', 'OpenFE + Tuned Autogluon LGBM'])
-    #with open("results_" + str(dataset_id) + ".txt", "a") as f:
-    #f.write("Dataset: " + str(dataset_id) + "\n")
-    #log_memory_usage()
-    #with open("results_" + str(dataset_id) + ".txt", "a") as f:
-    #f.write("Get OpenML Data\n")
+    with open("results_" + str(dataset_id) + ".txt", "a") as f:
+        f.write("Dataset: " + str(dataset_id) + "\n")
+    log_memory_usage()
+    with open("results_" + str(dataset_id) + ".txt", "a") as f:
+        f.write("Get OpenML Data\n")
     X_train, y_train, X_test, y_test = get_openml_dataset(dataset_id)
-    #with open("results_" + str(dataset_id) + ".txt", "a") as f:
-    #pd.set_option('display.max_columns', None)
-    #f.write(str(X_train))
-    #with open("results_" + str(dataset_id) + ".txt", "a") as f:
-    #f.write("Factorize Data\n")
-    X_train, y_train, X_test, y_test = factorize_data(X_train, y_train, X_test, y_test)
-    #with open("results_" + str(dataset_id) + ".txt", "a") as f:
-    #pd.set_option('display.max_columns', None)
-    #f.write(str(X_train))
-    #with open("results_" + str(dataset_id) + ".txt", "a") as f:
-    #f.write("Use OpenFE\n")
+    with open("results_" + str(dataset_id) + ".txt", "a") as f:
+        #pd.set_option('display.max_columns', None)
+        f.write(str(X_train))
+    with open("results_" + str(dataset_id) + ".txt", "a") as f:
+        f.write("Factorize Data\n")
+    X_train, y_train, X_test, y_test = factorize_data_old(X_train, y_train, X_test, y_test)
+    with open("results_" + str(dataset_id) + ".txt", "a") as f:
+        #pd.set_option('display.max_columns', None)
+        f.write(str(X_train))
+    with open("results_" + str(dataset_id) + ".txt", "a") as f:
+        f.write("Use OpenFE\n")
     X_train_openfe, y_train_openfe, X_test_openfe, y_test_openfe = get_openfe_data(X_train, y_train, X_test, y_test,                                                                               str(dataset_id))
-    #with open("results_" + str(dataset_id) + ".txt", "a") as f:
-    #pd.set_option('display.max_columns', None)
-    #f.write(str(X_train))
-    #with open("results_" + str(dataset_id) + ".txt", "a") as f:
-    #f.write("Start Experiments\n")
-    #log_memory_usage()
+    with open("results_" + str(dataset_id) + ".txt", "a") as f:
+        #pd.set_option('display.max_columns', None)
+        f.write(str(X_train))
+    with open("results_" + str(dataset_id) + ".txt", "a") as f:
+        f.write("Start Experiments\n")
+    log_memory_usage()
     lgbm_results = run_lgbm(X_train, y_train, X_test, y_test)
-    #with open("results_" + str(dataset_id) + ".txt", "a") as f:
-    #f.write("LGBM Results: " + str(lgbm_results) + "\n")
-    #log_memory_usage()
+    with open("results_" + str(dataset_id) + ".txt", "a") as f:
+        f.write("LGBM Results: " + str(lgbm_results) + "\n")
+    log_memory_usage()
     lgbm_openfe_results = run_lgbm(X_train_openfe, y_train_openfe, X_test_openfe, y_test_openfe)
-    #with open("results_" + str(dataset_id) + ".txt", "a") as f:
-    #f.write("LGBM OpenFE Results: " + str(lgbm_openfe_results) + "\n")
-    #log_memory_usage()
+    with open("results_" + str(dataset_id) + ".txt", "a") as f:
+        f.write("LGBM OpenFE Results: " + str(lgbm_openfe_results) + "\n")
+    log_memory_usage()
     autogluon_lgbm_results = run_autogluon_lgbm(X_train, y_train, X_test, y_test, zeroshot=False)
-    #with open("results_" + str(dataset_id) + ".txt", "a") as f:
-    #f.write("Autogluon LGBM Results: " + str(autogluon_lgbm_results) + "\n")
-    #log_memory_usage()
+    with open("results_" + str(dataset_id) + ".txt", "a") as f:
+        f.write("Autogluon LGBM Results: " + str(autogluon_lgbm_results) + "\n")
+    log_memory_usage()
     autogluon_lgbm_openfe_results = run_autogluon_lgbm(X_train_openfe, y_train_openfe, X_test_openfe, y_test_openfe,
                                                        zeroshot=False)
-    #with open("results_" + str(dataset_id) + ".txt", "a") as f:
-    #f.write("Autogluon LGBM OpenFE Results: " + str(autogluon_lgbm_openfe_results) + "\n")
-    #log_memory_usage()
+    with open("results_" + str(dataset_id) + ".txt", "a") as f:
+        f.write("Autogluon LGBM OpenFE Results: " + str(autogluon_lgbm_openfe_results) + "\n")
+    log_memory_usage()
     tuned_autogluon_lgbm_results = run_autogluon_lgbm(X_train, y_train, X_test, y_test, zeroshot=True)
-    #with open("results_" + str(dataset_id) + ".txt", "a") as f:
-    #f.write("Tuned Autogluon LGBM Results: " + str(tuned_autogluon_lgbm_results) + "\n")
-    #log_memory_usage()
+    with open("results_" + str(dataset_id) + ".txt", "a") as f:
+        f.write("Tuned Autogluon LGBM Results: " + str(tuned_autogluon_lgbm_results) + "\n")
+    log_memory_usage()
     tuned_autogluon_lgbm_openfe_results = run_autogluon_lgbm(X_train_openfe, y_train_openfe, X_test_openfe,
                                                              y_test_openfe, zeroshot=True)
-    #with open("results_" + str(dataset_id) + ".txt", "a") as f:
-    #f.write("Tuned Autogluon LGBM OpenFE Results: " + str(tuned_autogluon_lgbm_openfe_results) + "\n")
-    results_of_dataset = pd.Series({'Dataset': dataset, 'LGBM': lgbm_results, 'OpenFE + LGBM': lgbm_openfe_results, 'Autogluon LGBM': autogluon_lgbm_results, 'OpenFE + Autogluon LGBM': autogluon_lgbm_openfe_results, 'Tuned Autogluon LGBM': tuned_autogluon_lgbm_results, 'OpenFE + Tuned Autogluon LGBM': tuned_autogluon_lgbm_openfe_results})
-    df._append(results_of_dataset)
-    parquet_path = "results_" + dataset_id + ".parquet"
+    with open("results_" + str(dataset_id) + ".txt", "a") as f:
+        f.write("Tuned Autogluon LGBM OpenFE Results: " + str(tuned_autogluon_lgbm_openfe_results) + "\n")
+    results_of_dataset = pd.Series({'Dataset': dataset_id, 'LGBM': lgbm_results, 'OpenFE + LGBM': lgbm_openfe_results, 'Autogluon LGBM': autogluon_lgbm_results, 'OpenFE + Autogluon LGBM': autogluon_lgbm_openfe_results, 'Tuned Autogluon LGBM': tuned_autogluon_lgbm_results, 'OpenFE + Tuned Autogluon LGBM': tuned_autogluon_lgbm_openfe_results})
+    df.loc[len(df)] = results_of_dataset
+    parquet_path = "results_" + str(dataset_id) + ".parquet"
     df.to_parquet(path=parquet_path)
 
 
