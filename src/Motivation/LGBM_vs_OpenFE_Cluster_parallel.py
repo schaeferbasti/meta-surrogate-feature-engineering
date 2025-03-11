@@ -11,6 +11,8 @@ import pandas as pd
 
 from autogluon.tabular import TabularPredictor
 
+import tempfile
+
 from tabrepo_2024_custom import zeroshot2024
 import openml
 from OpenFE.openfe_parallel import OpenFE
@@ -49,7 +51,7 @@ def run_lgbm(X_train, y_train, X_test, y_test):
     df_test = pd.concat([X_test, pd.Series(y_test)], axis=1)
     df_original = pd.concat([df_train, df_test], axis=0)
     labels = df_original.iloc[:,-1].unique()
-    log_loss_test = log_loss(y_test, y_pred, labels=labels) ** 0.5
+    log_loss_test = log_loss(y_test, y_pred, labels=labels)
     print(log_loss_test)
     return log_loss_test
 
@@ -97,6 +99,7 @@ def run_autogluon_lgbm(X_train, y_train, X_test, y_test, zeroshot=False):
         eval_metric="log_loss",  # roc_auc (binary), log_loss (multiclass)
         problem_type="multiclass",  # binary, multiclass
         verbosity=0,
+        path=tempfile.mkdtemp() + os.sep,
     )
 
     predictor.fit(
@@ -115,7 +118,7 @@ def run_autogluon_lgbm(X_train, y_train, X_test, y_test, zeroshot=False):
         #seed=42
     )
     predictor.fit_summary(verbosity=-1)
-    lb = predictor.leaderboard(X_test)
+    lb = predictor.leaderboard(X_test, display=True)
     log_loss_test = lb.score_test[0]
     ray.shutdown()
 
@@ -147,7 +150,6 @@ def get_openml_dataset(openml_task_id: int) -> tuple[
     train_x, train_y = X.iloc[train_idx], y.iloc[train_idx]
     test_x, test_y = X.iloc[test_idx], y.iloc[test_idx]
     return train_x, train_y, test_x, test_y
-
 
 
 def factorize_data_old(X_train, y_train, X_test, y_test):
