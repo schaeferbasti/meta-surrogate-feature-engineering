@@ -43,17 +43,7 @@ def get_openml_dataset(openml_task_id: int) -> tuple[
         download_qualities=True,
         download_features_meta_data=True,
     )
-
-    print(f"Task ID: {task.task_id}")
-    print(f"Task Type: {task.task_type}")
-    print(f"Dataset ID: {task.dataset_id}")
-    print(f"Target Feature: {task.target_name}")
-    print(f"Estimation Procedure: {task.estimation_procedure['type']}")
-    print(f"Evaluation Measure: {task.evaluation_measure}")
-    print(f"Number of Classes: {len(task.class_labels) if task.class_labels else 'N/A'}")
-
     dataset_metadata = {"task_id": task.task_id, "task_type": task.task_type, "number_of_classes": len(task.class_labels) if task.class_labels else 'N/A'}
-
     train_idx, test_idx = task.get_train_test_split_indices()
     X, y = task.get_X_and_y(dataset_format="dataframe")  # type: ignore
     train_x, train_y = X.iloc[train_idx], y.iloc[train_idx]
@@ -129,46 +119,69 @@ def create_binary_feature_and_featurename(feature1, feature2, operator):
         feature = [f1 / f2 if f2 != 0 else f1 for f1, f2 in zip(feature1_int_list, feature2_int_list)]
         featurename = "divide(" + str(feature1.name) + ", " + str(feature2.name) + ")"
     elif operator == "GroupByThenMin":
-        feature = feature1.groupby(feature2).min()
+        temp = feature1.groupby(feature2).min()
+        temp.loc[np.nan] = np.nan
+        feature = feature2.apply(lambda x: temp.loc[x])
         featurename = "GroupByThenMin(" + str(feature1.name) + ", " + str(feature2.name) + ")"
     elif operator == "GroupByThenMax":
-        feature = feature1.groupby(feature2).max()
+        temp = feature1.groupby(feature2).max()
+        temp.loc[np.nan] = np.nan
+        feature = feature2.apply(lambda x: temp.loc[x])
         featurename = "GroupByThenMax(" + str(feature1.name) + ", " + str(feature2.name) + ")"
     elif operator == "GroupByThenMean":
-        feature = feature1.groupby(feature2).mean()
+        feature1 = pd.to_numeric(feature1, errors='coerce')
+        temp = feature1.groupby(feature2)
+        temp = temp.mean()
+        temp.loc[np.nan] = np.nan
+        feature = feature2.apply(lambda x: temp.loc[x])
         featurename = "GroupByThenMean(" + str(feature1.name) + ", " + str(feature2.name) + ")"
     elif operator == "GroupByThenMedian":
-        feature = feature1.groupby(feature2).median()
+        feature1 = pd.to_numeric(feature1, errors='coerce')
+        temp = feature1.groupby(feature2).median()
+        temp.loc[np.nan] = np.nan
+        feature = feature2.apply(lambda x: temp.loc[x])
         featurename = "GroupByThenMedian(" + str(feature1.name) + ", " + str(feature2.name) + ")"
     elif operator == "GroupByThenStd":
-        feature = feature1.groupby(feature2).std()
+        feature1 = pd.to_numeric(feature1, errors='coerce')
+        temp = feature1.groupby(feature2).std()
+        temp.loc[np.nan] = np.nan
+        feature = feature2.apply(lambda x: temp.loc[x])
         featurename = "GroupByThenStd(" + str(feature1.name) + ", " + str(feature2.name) + ")"
     elif operator == 'GroupByThenRank':
-        feature = feature1.groupby(feature2).rank()
+        feature1 = pd.to_numeric(feature1, errors='coerce')
+        feature = feature1.groupby(feature2).rank(ascending=True, pct=True)
         featurename = "GroupByThenRank(" + str(feature1.name) + ", " + str(feature2.name) + ")"
     elif operator == "GroupByThenFreq":
         def _f(x):
             value_counts = x.value_counts()
             value_counts.loc[np.nan] = np.nan
             return x.apply(lambda x: value_counts.loc[x])
-
         feature = feature1.groupby(feature2).apply(_f)
         featurename = "GroupByThenFreq(" + str(feature1.name) + ", " + str(feature2.name) + ")"
     elif operator == "GroupByThenNUnique":
-        feature = feature1.groupby(feature2).nunique()
+        nunique = feature1.groupby(feature2).nunique()
+        nunique.loc[np.nan] = np.nan
+        feature = feature2.apply(lambda x: nunique.loc[x])
         featurename = "GroupByThenNUnique(" + str(feature1.name) + ", " + str(feature2.name) + ")"
     elif operator == "Combine":
-        feature = [f1.astype(str) + '_' + f2.astype(str) if not f1.isna() & f2.isna() else np.nan for f1, f2 in zip(feature1_int_list, feature2_int_list)]
+        temp = feature1.astype(str) + '_' + feature2.astype(str)
+        temp[feature1.isna() | feature2.isna()] = np.nan
+        temp, _ = temp.factorize()
+        feature = pd.Series(temp, index=feature1.index).astype("float64")
         featurename = "Combine(" + str(feature1.name) + ", " + str(feature2.name) + ")"
     elif operator == "CombineThenFreq":
-        feature = [((f1.astype(str) + '_' + f2.astype(str)).value_counts()) if not f1.isna() & f2.isna() else np.nan for f1, f2 in zip(feature1_int_list, feature2_int_list)]
+        temp = feature1.astype(str) + '_' + feature2.astype(str)
+        temp[feature1.isna() | feature2.isna()] = np.nan
+        value_counts = temp.value_counts()
+        value_counts.loc[np.nan] = np.nan
+        feature = temp.apply(lambda x: value_counts.loc[x])
         featurename = "CombineThenFreq(" + str(feature1.name) + ", " + str(feature2.name) + ")"
     else:
         raise NotImplementedError(f"Unrecognized operator {operator}.")
     return feature, featurename
 
 
-def run_autogluon_lgbm(X_train, y_train, X_test, y_test, zeroshot=False):
+def run_autogluon_lgbm(X_train, y_train, zeroshot=False):
     label = "target"
     X_train["target"] = y_train
 
@@ -211,23 +224,23 @@ def run_autogluon_lgbm(X_train, y_train, X_test, y_test, zeroshot=False):
     return lb
 
 
-def get_result(X_train, y_train, X_test, y_test, dataset_metadata, feature, featurename):
+def get_result(X_train, y_train, dataset_metadata, feature, featurename):
     feature_pandas_description = pd.DataFrame(feature, columns=[featurename]).describe()
     feature_metadata = {"feature - name": featurename,
-                        "feature - count": feature_pandas_description.loc["count"],
-                        "feature - mean": feature_pandas_description.loc["mean"],
-                        "feature - std": feature_pandas_description.loc["std"]}
+                        "feature - count": feature_pandas_description.iloc[0],
+                        "feature - mean/unique": feature_pandas_description.iloc[1],
+                        "feature - std/top": feature_pandas_description.iloc[2]}
     print("Create new Feature: " + str(feature_metadata["feature - name"]))
     X_train_new = X_train.copy()
     X_train_new[feature_metadata["feature - name"]] = feature
     print("Run Autogluon with new Feature")
-    lb = run_autogluon_lgbm(X_train_new, y_train, X_test, y_test)
+    lb = run_autogluon_lgbm(X_train_new, y_train)
     models = lb["model"]
     columns = get_matrix_columns()
     new_results = pd.DataFrame(columns=columns)
     for model in models:
         score_val = lb.loc[lb['model'] == model, 'score_val'].values[0]
-        new_results.loc[len(new_results)] = [dataset_metadata["task_id"], dataset_metadata["task_type"], dataset_metadata["number_of_classes"], feature_metadata["feature - name"], feature_metadata["feature - count"], feature_metadata["feature - mean"], feature_metadata["feature - std"], model, score_val]
+        new_results.loc[len(new_results)] = [dataset_metadata["task_id"], dataset_metadata["task_type"], dataset_metadata["number_of_classes"], feature_metadata["feature - name"], feature_metadata["feature - count"], feature_metadata["feature - mean/unique"], feature_metadata["feature - std/top"], model, score_val]
     print("Result for " + featurename + ": " + str(new_results))
     return new_results
 
@@ -236,9 +249,9 @@ def main():
     columns = get_matrix_columns()
     result_matrix = pd.DataFrame(columns=columns)
     print("Result Matrix created")
-    datasets = [146818]  # get_all_amlb_dataset_ids()
+    datasets = [146818, 146820, 168911, 190411]  # get_all_amlb_dataset_ids()
     unary_operators = ["min", "max", "freq", "abs", "log", "sqrt", "square", "sigmoid", "round", "residual"]  # Unary OpenFE Operators
-    binary_operators = ["+", "-", "*", "/"]  # , "GroupByThenMin", "GroupByThenMax", "GroupByThenMean", "GroupByThenMedian", "GroupByThenStd", "GroupByThenRank", "Combine", "CombineThenFreq", "GroupByThenNUnique"]  # Binary OpenFE Operators
+    binary_operators = ["+", "-", "*", "/", "GroupByThenMin", "GroupByThenMax", "GroupByThenMean", "GroupByThenMedian", "GroupByThenStd", "GroupByThenRank", "Combine", "CombineThenFreq", "GroupByThenNUnique"]  # Binary OpenFE Operators
     print("Iterate over Datasets")
     for dataset in datasets:
         X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset(dataset)
@@ -249,14 +262,15 @@ def main():
             for feature2 in X_train.columns:
                 for operator in binary_operators:
                     feature, featurename = create_feature_and_featurename(feature1=X_train[feature1], feature2=X_train[feature2], operator=operator)
-                    new_rows = get_result(X_train, y_train, X_test, y_test, dataset_metadata, feature, featurename)
+                    new_rows = get_result(X_train, y_train, dataset_metadata, feature, featurename)
                     result_matrix = pd.concat([result_matrix, pd.DataFrame(new_rows)], ignore_index=True)
         for feature1 in X_train.columns:
             for operator in unary_operators:
                 feature, featurename = create_feature_and_featurename(feature1=X_train[feature1], feature2=None, operator=operator)
-                new_rows = get_result(X_train, y_train, X_test, y_test, dataset_metadata, feature, featurename)
+                new_rows = get_result(X_train, y_train, dataset_metadata, feature, featurename)
                 result_matrix = pd.concat([result_matrix, pd.DataFrame(new_rows)], ignore_index=True)
-    result_matrix.to_parquet("Operator_Model_Feature_Matrix_1.parquet")
+        result_matrix.to_parquet("Operator_Model_Feature_Matrix_2.parquet")
+    result_matrix.to_parquet("Operator_Model_Feature_Matrix_2.parquet")
     print("Final Result: \n" + str(result_matrix))
 
 
