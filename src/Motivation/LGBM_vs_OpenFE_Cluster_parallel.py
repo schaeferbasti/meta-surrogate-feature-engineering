@@ -8,6 +8,7 @@ import ray
 from sklearn.metrics import log_loss
 from sklearn import preprocessing
 import pandas as pd
+import numpy as np
 
 from autogluon.tabular import TabularPredictor
 
@@ -39,7 +40,7 @@ def run_lgbm(X_train, y_train, X_test, y_test):
 
     # gbm = lgb.train(params, lgb_train, num_boost_round=20, valid_sets=[lgb_eval], callbacks=[lgb.early_stopping(stopping_rounds=5))
     # y_pred = gbm.predict(X_test, num_iteration=gbm.best_iteration, verbose_eval=False)
-    # log_loss_test = log_loss(y_test, y_pred) ** 0.5
+    # log_loss_test = log_loss(y_test, y_pred)
     """
 
     clf = lgb.LGBMClassifier(random_state=42)
@@ -56,7 +57,7 @@ def run_lgbm(X_train, y_train, X_test, y_test):
     return log_loss_test
 
 
-def run_autogluon_lgbm(X_train, y_train, X_test, y_test, zeroshot=False):
+def run_autogluon_lgbm(X_train, y_train, X_test, y_test, dataset_id, zeroshot=False):
     log = logging.getLogger(__name__)
     ray_mem_in_gb = 48
     log.info(f"Running on SLURM, initializing Ray with unique temp dir with {ray_mem_in_gb}GB.")
@@ -92,6 +93,8 @@ def run_autogluon_lgbm(X_train, y_train, X_test, y_test, zeroshot=False):
         else:
             if not zeroshot:
                 zeroshot2024[k] = zeroshot2024[k][:1]
+            else:
+                zeroshot2024[k] = zeroshot2024[k][1:]
 
     # -- Run AutoGluon
     predictor = TabularPredictor(
@@ -111,15 +114,14 @@ def run_autogluon_lgbm(X_train, y_train, X_test, y_test, zeroshot=False):
         presets="best_quality",
         dynamic_stacking=False,
         hyperparameters=zeroshot2024,
-        # Validation Protocol
         num_bag_folds=8,
         num_bag_sets=1,
         num_stack_levels=0,
-        #seed=42
+        fit_weighted_ensemble=False
     )
     predictor.fit_summary(verbosity=-1)
     lb = predictor.leaderboard(X_test, display=True)
-    log_loss_test = lb.score_test[0]
+    log_loss_test = np.abs(lb.score_test[0])
     ray.shutdown()
 
     return log_loss_test
@@ -226,21 +228,21 @@ def main(args):
     with open("results_" + str(dataset_id) + ".txt", "a") as f:
         f.write("LGBM OpenFE Results: " + str(lgbm_openfe_results) + "\n")
     log_memory_usage()
-    autogluon_lgbm_results = run_autogluon_lgbm(X_train, y_train, X_test, y_test, zeroshot=False)
+    autogluon_lgbm_results = run_autogluon_lgbm(X_train, y_train, X_test, y_test, dataset_id, zeroshot=False)
     with open("results_" + str(dataset_id) + ".txt", "a") as f:
         f.write("Autogluon LGBM Results: " + str(autogluon_lgbm_results) + "\n")
     log_memory_usage()
-    autogluon_lgbm_openfe_results = run_autogluon_lgbm(X_train_openfe, y_train_openfe, X_test_openfe, y_test_openfe,
+    autogluon_lgbm_openfe_results = run_autogluon_lgbm(X_train_openfe, y_train_openfe, X_test_openfe, y_test_openfe, dataset_id, 
                                                        zeroshot=False)
     with open("results_" + str(dataset_id) + ".txt", "a") as f:
         f.write("Autogluon LGBM OpenFE Results: " + str(autogluon_lgbm_openfe_results) + "\n")
     log_memory_usage()
-    tuned_autogluon_lgbm_results = run_autogluon_lgbm(X_train, y_train, X_test, y_test, zeroshot=True)
+    tuned_autogluon_lgbm_results = run_autogluon_lgbm(X_train, y_train, X_test, y_test, dataset_id, zeroshot=True)
     with open("results_" + str(dataset_id) + ".txt", "a") as f:
         f.write("Tuned Autogluon LGBM Results: " + str(tuned_autogluon_lgbm_results) + "\n")
     log_memory_usage()
     tuned_autogluon_lgbm_openfe_results = run_autogluon_lgbm(X_train_openfe, y_train_openfe, X_test_openfe,
-                                                             y_test_openfe, zeroshot=True)
+                                                             y_test_openfe, dataset_id, zeroshot=True)
     with open("results_" + str(dataset_id) + ".txt", "a") as f:
         f.write("Tuned Autogluon LGBM OpenFE Results: " + str(tuned_autogluon_lgbm_openfe_results) + "\n")
     results_of_dataset = pd.Series({'Dataset': dataset_id, 'LGBM': lgbm_results, 'OpenFE + LGBM': lgbm_openfe_results, 'Autogluon LGBM': autogluon_lgbm_results, 'OpenFE + Autogluon LGBM': autogluon_lgbm_openfe_results, 'Tuned Autogluon LGBM': tuned_autogluon_lgbm_results, 'OpenFE + Tuned Autogluon LGBM': tuned_autogluon_lgbm_openfe_results})
