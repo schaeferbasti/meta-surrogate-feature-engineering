@@ -8,9 +8,8 @@ from pymfe.mfe import MFE
 from autogluon.tabular import TabularPredictor
 from tabrepo_2024_custom import zeroshot2024
 
-
 def get_matrix_columns():
-    return ['dataset - id', 'dataset - task type', 'dataset - number of classes', 'feature - name', 'feature - count', 'feature - mean', 'feature - std', 'model', 'score']
+    return ['dataset - id', 'dataset - task type', 'dataset - number of classes', 'feature - name', 'feature - type', 'feature - count', 'feature - mean', 'feature - std', 'feature - min', 'feature - max', 'feature - lower percentile', 'feature - 50 percentile', 'feature - upper percentile', 'feature - unique', 'feature - top', 'feature - freq', 'model', 'score']
 
 
 def get_all_amlb_dataset_ids():
@@ -81,7 +80,7 @@ def create_unary_feature_and_featurename(feature1, operator):
         feature = feature1.apply(lambda x: abs(float(x)))
         featurename = "abs(" + str(feature1.name) + ")"
     elif operator == "log":
-        feature = feature1.apply(lambda x: np.log(np.abs(float(x).replace(0, np.nan))))
+        feature = feature1.apply(lambda x: np.log(np.abs(float(x))))
         featurename = "log(" + str(feature1.name) + ")"
     elif operator == "sqrt":
         feature = feature1.apply(lambda x: np.sqrt(np.abs(float(x))))
@@ -225,22 +224,47 @@ def run_autogluon_lgbm(X_train, y_train, zeroshot=False):
 
 
 def get_result(X_train, y_train, dataset_metadata, feature, featurename):
-    feature_pandas_description = pd.DataFrame(feature, columns=[featurename]).describe()
-    feature_metadata = {"feature - name": featurename,
-                        "feature - count": feature_pandas_description.iloc[0],
-                        "feature - mean/unique": feature_pandas_description.iloc[1],
-                        "feature - std/top": feature_pandas_description.iloc[2]}
-    print("Create new Feature: " + str(feature_metadata["feature - name"]))
-    X_train_new = X_train.copy()
-    X_train_new[feature_metadata["feature - name"]] = feature
-    print("Run Autogluon with new Feature")
-    lb = run_autogluon_lgbm(X_train_new, y_train)
-    models = lb["model"]
-    columns = get_matrix_columns()
-    new_results = pd.DataFrame(columns=columns)
-    for model in models:
-        score_val = lb.loc[lb['model'] == model, 'score_val'].values[0]
-        new_results.loc[len(new_results)] = [dataset_metadata["task_id"], dataset_metadata["task_type"], dataset_metadata["number_of_classes"], feature_metadata["feature - name"], feature_metadata["feature - count"], feature_metadata["feature - mean/unique"], feature_metadata["feature - std/top"], model, score_val]
+    feature_df = pd.DataFrame(feature, columns=[featurename])
+    feature_datatype = feature_df[featurename].dtype
+    if feature_datatype == np.number:
+        feature_pandas_description = feature_df.describe(include=np.number)
+        feature_metadata_numeric = {"feature - name": featurename,
+                            "feature - count": feature_pandas_description.iloc[0].values[0],
+                            "feature - mean": feature_pandas_description.iloc[1].values[0],
+                            "feature - std": feature_pandas_description.iloc[2].values[0],
+                            "feature - min": feature_pandas_description.iloc[3].values[0],
+                            "feature - max": feature_pandas_description.iloc[4].values[0],
+                            "feature - lower percentile": feature_pandas_description.iloc[5].values[0],
+                            "feature - 50 percentile": feature_pandas_description.iloc[6].values[0],
+                            "feature - upper percentile": feature_pandas_description.iloc[7].values[0]}
+        X_train_new = X_train.copy()
+        X_train_new[feature_metadata_numeric["feature - name"]] = feature
+        print("Run Autogluon with new Feature")
+        lb = run_autogluon_lgbm(X_train_new, y_train)
+        models = lb["model"]
+        columns = get_matrix_columns()
+        new_results = pd.DataFrame(columns=columns)
+        for model in models:
+            score_val = lb.loc[lb['model'] == model, 'score_val'].values[0]
+            new_results.loc[len(new_results)] = [dataset_metadata["task_id"], dataset_metadata["task_type"], dataset_metadata["number_of_classes"], feature_metadata_numeric["feature - name"], str(feature_datatype), ["feature - count"], feature_metadata_numeric["feature - mean"], feature_metadata_numeric["feature - std"], feature_metadata_numeric["feature - min"], feature_metadata_numeric["feature - max"], feature_metadata_numeric["feature - lower percentile"], feature_metadata_numeric["feature - 50 percentile"], feature_metadata_numeric["feature - upper percentile"], None, None, None, model, score_val]
+
+    else:
+        feature_pandas_description = feature_df.describe()
+        feature_metadata_categorical = {"feature - name": featurename,
+                            "feature - count": feature_pandas_description.iloc[0].values[0],
+                            "feature - unique": feature_pandas_description.iloc[1].values[0],
+                            "feature - top": feature_pandas_description.iloc[2].values[0],
+                            "feature - freq": feature_pandas_description.iloc[3].values[0]}
+        X_train_new = X_train.copy()
+        X_train_new[feature_metadata_categorical["feature - name"]] = feature
+        print("Run Autogluon with new Feature")
+        lb = run_autogluon_lgbm(X_train_new, y_train)
+        models = lb["model"]
+        columns = get_matrix_columns()
+        new_results = pd.DataFrame(columns=columns)
+        for model in models:
+            score_val = lb.loc[lb['model'] == model, 'score_val'].values[0]
+            new_results.loc[len(new_results)] = [dataset_metadata["task_id"], dataset_metadata["task_type"], dataset_metadata["number_of_classes"], feature_metadata_categorical["feature - name"], str(feature_datatype), feature_metadata_categorical["feature - count"], None, None, None, None, None, None, None, feature_metadata_categorical["feature - unique"], feature_metadata_categorical["feature - top"], feature_metadata_categorical["feature - freq"], model, score_val]
     print("Result for " + featurename + ": " + str(new_results))
     return new_results
 
@@ -255,8 +279,8 @@ def main():
     print("Iterate over Datasets")
     for dataset in datasets:
         X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset(dataset)
-        # X_train = X_train.drop(["A5", "A6", "A7", "A8", "A9", "A10", "A11", "A12", "A13", "A14"], axis=1)
-        # X_test = X_test.drop(["A5", "A6", "A7", "A8", "A9", "A10", "A11", "A12", "A13", "A14"], axis=1)
+        # X_train = X_train.drop(["A3", "A4", "A5", "A6", "A7", "A8", "A9", "A10", "A11", "A12", "A13", "A14"], axis=1)
+        # X_test = X_test.drop(["A3", "A4", "A5", "A6", "A7", "A8", "A9", "A10", "A11", "A12", "A13", "A14"], axis=1)
 
         for feature1 in X_train.columns:
             for feature2 in X_train.columns:
