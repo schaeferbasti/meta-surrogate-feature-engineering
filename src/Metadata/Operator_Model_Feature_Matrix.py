@@ -9,7 +9,7 @@ from autogluon.tabular import TabularPredictor
 from tabrepo_2024_custom import zeroshot2024
 
 def get_matrix_columns():
-    return ['dataset - id', 'dataset - task type', 'dataset - number of classes', 'feature - name', 'feature - type', 'feature - count', 'feature - mean', 'feature - std', 'feature - min', 'feature - max', 'feature - lower percentile', 'feature - 50 percentile', 'feature - upper percentile', 'feature - unique', 'feature - top', 'feature - freq', 'model', 'score']
+    return ['dataset - id', 'dataset - task type', 'dataset - number of classes', 'feature - name', 'feature - type', 'feature - count', 'feature - mean', 'feature - std', 'feature - min', 'feature - max', 'feature - lower percentile', 'feature - 50 percentile', 'feature - upper percentile', 'feature - unique', 'feature - top', 'feature - freq', 'model', 'improvement']
 
 
 def get_all_amlb_dataset_ids():
@@ -223,7 +223,7 @@ def run_autogluon_lgbm(X_train, y_train, zeroshot=False):
     return lb
 
 
-def get_result(X_train, y_train, dataset_metadata, feature, featurename):
+def get_result(X_train, y_train, dataset_metadata, feature, featurename, original_results):
     feature_df = pd.DataFrame(feature, columns=[featurename])
     feature_datatype = feature_df[featurename].dtype
     if feature_datatype == np.number:
@@ -245,8 +245,11 @@ def get_result(X_train, y_train, dataset_metadata, feature, featurename):
         columns = get_matrix_columns()
         new_results = pd.DataFrame(columns=columns)
         for model in models:
-            score_val = lb.loc[lb['model'] == model, 'score_val'].values[0]
-            new_results.loc[len(new_results)] = [dataset_metadata["task_id"], dataset_metadata["task_type"], dataset_metadata["number_of_classes"], feature_metadata_numeric["feature - name"], str(feature_datatype), ["feature - count"], feature_metadata_numeric["feature - mean"], feature_metadata_numeric["feature - std"], feature_metadata_numeric["feature - min"], feature_metadata_numeric["feature - max"], feature_metadata_numeric["feature - lower percentile"], feature_metadata_numeric["feature - 50 percentile"], feature_metadata_numeric["feature - upper percentile"], None, None, None, model, score_val]
+            dataset = dataset_metadata["task_id"]
+            original_score = np.abs(original_results.query("dataset == @dataset and model == @model", )['score'].values[0])
+            score_val = np.abs(lb.loc[lb['model'] == model, 'score_val'].values[0])
+            improvement = score_val - original_score
+            new_results.loc[len(new_results)] = [dataset_metadata["task_id"], dataset_metadata["task_type"], dataset_metadata["number_of_classes"], feature_metadata_numeric["feature - name"], str(feature_datatype), int(feature_metadata_numeric["feature - count"]), feature_metadata_numeric["feature - mean"], feature_metadata_numeric["feature - std"], feature_metadata_numeric["feature - min"], feature_metadata_numeric["feature - max"], feature_metadata_numeric["feature - lower percentile"], feature_metadata_numeric["feature - 50 percentile"], feature_metadata_numeric["feature - upper percentile"], None, None, None, model, improvement]
 
     else:
         feature_pandas_description = feature_df.describe()
@@ -263,37 +266,56 @@ def get_result(X_train, y_train, dataset_metadata, feature, featurename):
         columns = get_matrix_columns()
         new_results = pd.DataFrame(columns=columns)
         for model in models:
-            score_val = lb.loc[lb['model'] == model, 'score_val'].values[0]
-            new_results.loc[len(new_results)] = [dataset_metadata["task_id"], dataset_metadata["task_type"], dataset_metadata["number_of_classes"], feature_metadata_categorical["feature - name"], str(feature_datatype), feature_metadata_categorical["feature - count"], None, None, None, None, None, None, None, feature_metadata_categorical["feature - unique"], feature_metadata_categorical["feature - top"], feature_metadata_categorical["feature - freq"], model, score_val]
+            dataset = dataset_metadata["task_id"]
+            original_score = np.abs(original_results.query("dataset == @dataset and model == @model", )['score'].values[0])
+            score_val = np.abs(lb.loc[lb['model'] == model, 'score_val'].values[0])
+            improvement = score_val - original_score
+            new_results.loc[len(new_results)] = [dataset_metadata["task_id"], dataset_metadata["task_type"], dataset_metadata["number_of_classes"], feature_metadata_categorical["feature - name"], str(feature_datatype), int(feature_metadata_categorical["feature - count"]), None, None, None, None, None, None, None, feature_metadata_categorical["feature - unique"], feature_metadata_categorical["feature - top"], feature_metadata_categorical["feature - freq"], model, improvement]
     print("Result for " + featurename + ": " + str(new_results))
     return new_results
 
 
+def get_original_result(X_train, y_train, dataset_id):
+    print("Run Autogluon with new Feature")
+    lb = run_autogluon_lgbm(X_train, y_train)
+    models = lb["model"]
+    columns = get_matrix_columns()
+    new_results = pd.DataFrame(columns=['dataset', 'model', 'score'])
+    for model in models:
+        score_val = lb.loc[lb['model'] == model, 'score_val'].values[0]
+        new_results.loc[len(new_results)] = [dataset_id, model, score_val]   # None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+    print("Result for original dataset: " + str(new_results))
+    return new_results
+
+
+
 def main():
+    pd.set_option('display.max_columns', None)
+    pd.set_option('display.max_rows', None)
     columns = get_matrix_columns()
     result_matrix = pd.DataFrame(columns=columns)
     print("Result Matrix created")
-    datasets = [146818, 146820, 168911, 190411]  # get_all_amlb_dataset_ids()
+    datasets = [146818, 146820, 168350, 168911, 190137, 190411, 359955, 359956, 359979]  # get_all_amlb_dataset_ids()
     unary_operators = ["min", "max", "freq", "abs", "log", "sqrt", "square", "sigmoid", "round", "residual"]  # Unary OpenFE Operators
     binary_operators = ["+", "-", "*", "/", "GroupByThenMin", "GroupByThenMax", "GroupByThenMean", "GroupByThenMedian", "GroupByThenStd", "GroupByThenRank", "Combine", "CombineThenFreq", "GroupByThenNUnique"]  # Binary OpenFE Operators
     print("Iterate over Datasets")
     for dataset in datasets:
         X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset(dataset)
-        # X_train = X_train.drop(["A3", "A4", "A5", "A6", "A7", "A8", "A9", "A10", "A11", "A12", "A13", "A14"], axis=1)
-        # X_test = X_test.drop(["A3", "A4", "A5", "A6", "A7", "A8", "A9", "A10", "A11", "A12", "A13", "A14"], axis=1)
-
+        original_results = get_original_result(X_train, y_train, dataset)
         for feature1 in X_train.columns:
             for feature2 in X_train.columns:
                 for operator in binary_operators:
                     feature, featurename = create_feature_and_featurename(feature1=X_train[feature1], feature2=X_train[feature2], operator=operator)
-                    new_rows = get_result(X_train, y_train, dataset_metadata, feature, featurename)
+                    new_rows = get_result(X_train, y_train, dataset_metadata, feature, featurename, original_results)
                     result_matrix = pd.concat([result_matrix, pd.DataFrame(new_rows)], ignore_index=True)
+                    result_matrix.to_parquet("Operator_Model_Feature_Matrix_2_" + str(dataset) + ".parquet")
         for feature1 in X_train.columns:
             for operator in unary_operators:
                 feature, featurename = create_feature_and_featurename(feature1=X_train[feature1], feature2=None, operator=operator)
-                new_rows = get_result(X_train, y_train, dataset_metadata, feature, featurename)
+                new_rows = get_result(X_train, y_train, dataset_metadata, feature, featurename, original_results)
                 result_matrix = pd.concat([result_matrix, pd.DataFrame(new_rows)], ignore_index=True)
-        result_matrix.to_parquet("Operator_Model_Feature_Matrix_2.parquet")
+                result_matrix.to_parquet("Operator_Model_Feature_Matrix_2_" + str(dataset) + ".parquet")
+        result_matrix.to_parquet("Operator_Model_Feature_Matrix_2_" + str(dataset) + ".parquet")
     result_matrix.to_parquet("Operator_Model_Feature_Matrix_2.parquet")
     print("Final Result: \n" + str(result_matrix))
 

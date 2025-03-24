@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define the partition on which the job shall run.
-#SBATCH --partition mlhiwidlc_gpu-rtx2080
+#SBATCH --partition bosch_cpu-cascadelake
 
 # Define a name for your job
 #SBATCH --job-name Metadata
@@ -16,7 +16,7 @@
 #SBATCH --gres=localtmp:100
 
 #Time Format = days-hours:minutes:seconds
-#SBATCH --time=2-00:00:00
+#SBATCH --time=4-00:00:00
 
 #SBATCH --propagate=NONE
 
