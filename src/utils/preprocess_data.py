@@ -5,7 +5,6 @@ import pandas as pd
 def factorize_dataset(X_train, y_train, X_test, y_test):
     lbl = preprocessing.LabelEncoder()
     for column in X_train.columns:  # select_dtypes(include=['object', 'category'])
-        # X_train[column], _ = pd.factorize(X_train[column])
         X_train[column] = lbl.fit_transform(X_train[column].astype(int))
     for column in X_test.columns:
         X_test[column] = lbl.fit_transform(X_test[column].astype(int))
@@ -29,8 +28,9 @@ def factorize_data(X_train, y_train, X_test, y_test):
     categorical_columns = X_train.select_dtypes(include=['object', 'category']).columns
 
     # Apply LabelEncoder only to categorical columns
+    lbl = preprocessing.LabelEncoder()
     for column in categorical_columns:
-        lbl = preprocessing.LabelEncoder()
+        # X_train[column], _ = pd.factorize(X_train[column])
         X_train[column] = lbl.fit_transform(X_train[column].astype(str))  # Convert to string before encoding
         X_test[column] = lbl.transform(X_test[column].astype(str))  # Apply the same mapping to test data
 
