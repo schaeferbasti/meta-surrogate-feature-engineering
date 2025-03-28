@@ -1,0 +1,2 @@
+def get_matrix_columns():
+    return ['dataset - id', 'dataset - task type', 'dataset - number of classes', 'feature - name', 'operator', 'feature - type', 'feature - count', 'feature - mean', 'feature - std', 'feature - min', 'feature - max', 'feature - lower percentile', 'feature - 50 percentile', 'feature - upper percentile', 'feature - unique', 'feature - top', 'feature - freq', 'model', 'improvement']
