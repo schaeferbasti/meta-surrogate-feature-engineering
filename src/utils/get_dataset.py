@@ -39,9 +39,29 @@ def get_openml_dataset_split_and_metadata(openml_task_id: int) -> tuple[
                         "number_of_classes": len(task.class_labels) if task.class_labels else 'N/A'}
     train_idx, test_idx = task.get_train_test_split_indices()
     X, y = task.get_X_and_y(dataset_format="dataframe")  # type: ignore
-    train_x, train_y = X.iloc[train_idx], y.iloc[train_idx]
-    test_x, test_y = X.iloc[test_idx], y.iloc[test_idx]
-    return train_x, train_y, test_x, test_y, dataset_metadata
+    X_train, y_train = X.iloc[train_idx], y.iloc[train_idx]
+    X_test, y_test = X.iloc[test_idx], y.iloc[test_idx]
+    return X_train, y_train, X_test, y_test, dataset_metadata
+
+
+def get_openml_dataset_split(openml_task_id: int) -> tuple[
+    pd.DataFrame,
+    pd.DataFrame,
+    pd.DataFrame,
+    pd.DataFrame
+]:
+    task = openml.tasks.get_task(
+        openml_task_id,
+        download_splits=True,
+        download_data=True,
+        download_qualities=True,
+        download_features_meta_data=True,
+    )
+    train_idx, test_idx = task.get_train_test_split_indices()
+    X, y = task.get_X_and_y(dataset_format="dataframe")  # type: ignore
+    X_train, y_train = X.iloc[train_idx], y.iloc[train_idx]
+    X_test, y_test = X.iloc[test_idx], y.iloc[test_idx]
+    return X_train, y_train, X_test, y_test
 
 
 def get_openml_dataset_and_metadata(openml_task_id: int) -> tuple[
