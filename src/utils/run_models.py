@@ -10,7 +10,7 @@ from autogluon.tabular import TabularPredictor
 import lightgbm as lgb
 
 from src.utils.Autogluon_MultilabelPredictor import MultilabelPredictor
-from src.SurrogateModel.SurrogateModel import add_new_featurenames
+from src.utils.get_matrix import add_new_featurenames
 from src.utils.tabrepo_2024_custom import zeroshot2024
 
 

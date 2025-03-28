@@ -7,7 +7,7 @@ import pandas as pd
 
 from OpenFE.openfe_parallel import OpenFE
 from src.utils.get_dataset import get_openml_dataset_split
-from src.utils.run_autogluon import run_lgbm, run_autogluon_lgbm_cluster
+from src.utils.run_models import run_lgbm, run_autogluon_lgbm_cluster
 
 
 def get_openfe_data(X_train, y_train, X_test, y_test, name):
