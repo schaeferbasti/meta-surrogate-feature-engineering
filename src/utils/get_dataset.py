@@ -97,8 +97,22 @@ def get_openml_dataset(openml_task_id: int) -> tuple[
     return X, y
 
 
-def split_data(data, target_label):
-    y = data.pop(target_label)
-    X = data
-    X_train, X_test, y_train, y_test = train_test_split(X.index, y, test_size=0.2)
+def split_data(data, target_label) -> tuple[
+    pd.DataFrame,
+    pd.DataFrame,
+    pd.DataFrame,
+    pd.DataFrame
+]:
+    y = data[target_label]
+    X = data.drop(target_label, axis=1)
+    train_idx, test_idx, y_train, y_test = train_test_split(X.index, y, test_size=0.2)
+    X_train, y_train = X.iloc[train_idx], y.iloc[train_idx]
+    X_test, y_test = X.iloc[test_idx], y.iloc[test_idx]
     return X_train, y_train, X_test, y_test
+
+
+def concat_data(X_train, y_train, X_test, y_test):
+    train_data = pd.concat([X_train, y_train], axis=1)
+    test_data = pd.concat([X_test, y_test], axis=1)
+    data = pd.concat([train_data, test_data], axis=0)
+    return data
