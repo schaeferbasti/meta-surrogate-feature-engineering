@@ -1,14 +1,11 @@
 import pandas as pd
 import numpy as np
 
-from sklearn.metrics import root_mean_squared_error
-from autogluon.tabular import TabularPredictor
-
-from src.SurrogateModel.Autogluon_MultilabelPredictor import MultilabelPredictor
 from src.utils.create_feature_and_featurename import create_featurenames
 from src.utils.get_dataset import get_openml_dataset_and_metadata
 from src.utils.get_matrix import get_matrix_columns
 from src.utils.preprocess_data import factorize_data
+from src.utils.run_autogluon import multi_predict_operators_for_models, predict_operators_for_models
 
 
 def add_metadata(X_predict, dataset_metadata, models):
@@ -67,58 +64,6 @@ def add_new_featurenames(X_test):
         matrix_columns[17]: np.repeat((data := X_test[matrix_columns[17]].to_numpy()), len(featurenames)).reshape(-1, len(featurenames)).flatten(),
     })
     return X_test_new
-
-
-def predict_operators_for_models(train_data, X_test, models):
-    # Prepare Data
-    X_test = add_new_featurenames(X_test)
-    label = 'improvement'  # train_data["improvement"].name
-
-    # Predictor
-    predictor = TabularPredictor(
-        label=label,
-        eval_metric="root_mean_squared_error",  # roc_auc (binary), log_loss (multiclass)
-        problem_type="regression",  # binary, multiclass
-        verbosity=-1,
-    )
-    predictor.fit(
-        time_limit=int(30),
-        memory_limit=8 * 1024 * 1024,
-        num_cpus=8,
-        num_gpus=0,
-        train_data=train_data,
-        #presets="best_quality",
-        dynamic_stacking=False,
-        hyperparameters=models,
-        # Validation Protocol
-        num_bag_folds=8,
-        num_bag_sets=1,
-        num_stack_levels=0,
-    )
-    # Evaluation
-    # evaluation = pd.DataFrame(predictor.evaluate(X_test, ))
-    # Prediction
-    prediction = predictor.predict(X_test)
-    prediction.rename("predicted_improvement", inplace=True)
-    prediction_result = pd.concat([X_test[["dataset - id", "feature - name", "model"]], prediction], axis=1)
-    return prediction_result  # evaluation,
-
-
-def multi_predict_operators_for_models(train_data, X_test):
-    labels = ['feature - name', 'improvement']  # which columns to predict based on the others
-    problem_types = ['multiclass', 'regression']  # type of each prediction problem
-    save_path = 'agModels'  # specifies folder to store trained models
-    time_limit = 5  # how many seconds to train the TabularPredictor for each label, set much larger in your applications!
-    # Multi Predictor
-    multi_predictor = MultilabelPredictor(labels=labels, problem_types=problem_types, path=save_path)
-    multi_predictor.fit(train_data, labels, time_limit=time_limit)
-    # Evaluation
-    #  multi_evaluation = pd.DataFrame(multi_predictor.evaluate(X_test))
-    # Prediction
-    multi_prediction = pd.DataFrame(multi_predictor.predict(X_test))
-    multi_prediction.rename(columns={"feature - name": "new - feature - name", "improvement": "predicted_improvement"}, inplace=True)
-    multi_prediction_result = pd.concat([X_test[["dataset - id", "feature - name", "model"]], multi_prediction], axis=1)
-    return multi_prediction_result  # multi_evaluation,
 
 
 def main(dataset_id, models):
