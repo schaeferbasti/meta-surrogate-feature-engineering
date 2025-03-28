@@ -2,6 +2,7 @@ import pandas as pd
 import openml
 import requests
 import yaml
+from sklearn.model_selection import train_test_split
 
 
 def get_all_amlb_dataset_ids():
@@ -94,3 +95,10 @@ def get_openml_dataset(openml_task_id: int) -> tuple[
     )
     X, y = task.get_X_and_y(dataset_format="dataframe")  # type: ignore
     return X, y
+
+
+def split_data(data, target_label):
+    y = data.pop(target_label)
+    X = data
+    X_train, X_test, y_train, y_test = train_test_split(X.index, y, test_size=0.2)
+    return X_train, y_train, X_test, y_test
