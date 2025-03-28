@@ -1,57 +1,11 @@
 import numpy as np
 import pandas as pd
 
-from autogluon.tabular import TabularPredictor
-
 from src.utils.create_feature_and_featurename import create_feature_and_featurename
 from src.utils.get_dataset import get_openml_dataset_split_and_metadata, get_all_amlb_dataset_ids
 from src.utils.get_matrix import get_matrix_columns
 from src.utils.get_metafeatures import get_numeric_pandas_metafeatures, get_categorical_pandas_metafeatures
 from src.utils.get_operators import get_operators
-from tabrepo_2024_custom import zeroshot2024
-
-
-def run_autogluon_lgbm(X_train, y_train, zeroshot=False):
-    label = "target"
-    X_train["target"] = y_train
-
-    allowed_models = [
-        "GBM",
-    ]
-
-    for k in list(zeroshot2024.keys()):
-        if k not in allowed_models:
-            del zeroshot2024[k]
-        else:
-            if not zeroshot:
-                zeroshot2024[k] = zeroshot2024[k][:1]
-
-    # -- Run AutoGluon
-    predictor = TabularPredictor(
-        label=label,
-        eval_metric="log_loss",  # roc_auc (binary), log_loss (multiclass)
-        problem_type="multiclass",  # binary, multiclass
-        verbosity=-1,
-    )
-
-    predictor.fit(
-        time_limit=int(60 * 60 * 4),
-        memory_limit=48 * 1024 * 1024,
-        num_cpus=8,
-        num_gpus=0,
-        train_data=X_train,
-        presets="best_quality",
-        dynamic_stacking=False,
-        hyperparameters=zeroshot2024,
-        # Validation Protocol
-        num_bag_folds=8,
-        num_bag_sets=1,
-        num_stack_levels=0,
-    )
-    predictor.fit_summary(verbosity=-1)
-    data = pd.concat([X_train, y_train], axis=1)
-    lb = predictor.leaderboard(data)
-    return lb
 
 
 def get_result(X_train, y_train, dataset_metadata, feature, featurename, original_results):
