@@ -1,6 +1,13 @@
 import pandas as pd
+import numpy as np
+import logging
+import os
+import ray
+import tempfile
 
+from sklearn.metrics import log_loss
 from autogluon.tabular import TabularPredictor
+import lightgbm as lgb
 
 from Autogluon_MultilabelPredictor import MultilabelPredictor
 from src.SurrogateModel.SurrogateModel import add_new_featurenames
@@ -48,6 +55,112 @@ def run_autogluon_lgbm(X_train, y_train, zeroshot=False):
     data = pd.concat([X_train, y_train], axis=1)
     lb = predictor.leaderboard(data)
     return lb
+
+
+def run_lgbm(X_train, y_train, X_test, y_test):
+    """
+    # lgb_train = lgb.Dataset(X_train, y_train, params={'verbose': -1})
+    # lgb_eval = lgb.Dataset(X_test, y_test, params={'verbose': -1}, reference=lgb_train)
+
+    params = {
+        "boosting_type": "gbdt",
+        "objective": "regression",
+        "metric": {"l2", "l1"},
+        "num_leaves": 31,
+        "learning_rate": 0.05,
+        "feature_fraction": 0.9,
+        "bagging_fraction": 0.8,
+        "bagging_freq": 5,
+        "verbose": -1,
+        "seed": 42,
+    }
+
+    # gbm = lgb.train(params, lgb_train, num_boost_round=20, valid_sets=[lgb_eval], callbacks=[lgb.early_stopping(stopping_rounds=5))
+    # y_pred = gbm.predict(X_test, num_iteration=gbm.best_iteration, verbose_eval=False)
+    # log_loss_test = log_loss(y_test, y_pred)
+    """
+
+    clf = lgb.LGBMClassifier(random_state=42)
+    clf.fit(X_train, y_train)
+    y_pred = clf.predict(X_test)
+    print(y_test)
+    print(y_pred)
+    df_train = pd.concat([X_train, pd.Series(y_train)], axis=1)
+    df_test = pd.concat([X_test, pd.Series(y_test)], axis=1)
+    df_original = pd.concat([df_train, df_test], axis=0)
+    labels = df_original.iloc[:, -1].unique()
+    log_loss_test = log_loss(y_test, y_pred, labels=labels)
+    print(log_loss_test)
+    return log_loss_test
+
+def run_autogluon_lgbm_cluster(X_train, y_train, X_test, y_test, zeroshot=False):
+    log = logging.getLogger(__name__)
+    ray_mem_in_gb = 48
+    log.info(f"Running on SLURM, initializing Ray with unique temp dir with {ray_mem_in_gb}GB.")
+    ray_mem_in_b = int(ray_mem_in_gb * (1024.0 ** 3))
+    tmp_dir_base_path = "/tmp"
+    ray_dir = f"{tmp_dir_base_path}"
+    print(f"Start local ray instances. Using {os.environ.get('RAY_MEM_IN_GB')} GB for Ray.")
+    ray.shutdown()
+    ray.init(
+        address="local",
+        _memory=ray_mem_in_b,
+        object_store_memory=int(ray_mem_in_b * 0.3),
+        _temp_dir=ray_dir,
+        include_dashboard=False,
+        logging_level=logging.INFO,
+        log_to_driver=True,
+        num_gpus=0,
+        num_cpus=8,
+        ignore_reinit_error=True
+    )
+
+    label = "target"
+    X_train["target"] = y_train
+    X_test["target"] = y_test
+
+    allowed_models = [
+        "GBM",
+    ]
+
+    for k in list(zeroshot2024.keys()):
+        if k not in allowed_models:
+            del zeroshot2024[k]
+        else:
+            if not zeroshot:
+                zeroshot2024[k] = zeroshot2024[k][:1]
+            else:
+                zeroshot2024[k] = zeroshot2024[k][1:]
+
+    # -- Run AutoGluon
+    predictor = TabularPredictor(
+        label=label,
+        eval_metric="log_loss",  # roc_auc (binary), log_loss (multiclass)
+        problem_type="multiclass",  # binary, multiclass
+        verbosity=0,
+        path=tempfile.mkdtemp() + os.sep,
+    )
+
+    predictor.fit(
+        time_limit=int(60 * 60 * 4),
+        memory_limit=48,
+        num_cpus=8,
+        num_gpus=0,
+        train_data=X_train,
+        presets="best_quality",
+        dynamic_stacking=False,
+        hyperparameters=zeroshot2024,
+        num_bag_folds=8,
+        num_bag_sets=1,
+        num_stack_levels=0,
+        fit_weighted_ensemble=False
+    )
+    predictor.fit_summary(verbosity=-1)
+    lb = predictor.leaderboard(X_test, display=True)
+    log_loss_test = np.abs(lb.score_test[0])
+    ray.shutdown()
+
+    return log_loss_test
 
 
 def predict_operators_for_models(train_data, X_test, models):
