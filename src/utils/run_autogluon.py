@@ -9,9 +9,9 @@ from sklearn.metrics import log_loss
 from autogluon.tabular import TabularPredictor
 import lightgbm as lgb
 
-from Autogluon_MultilabelPredictor import MultilabelPredictor
+from src.utils.Autogluon_MultilabelPredictor import MultilabelPredictor
 from src.SurrogateModel.SurrogateModel import add_new_featurenames
-from tabrepo_2024_custom import zeroshot2024
+from src.utils.tabrepo_2024_custom import zeroshot2024
 
 
 def run_autogluon_lgbm(X_train, y_train, zeroshot=False):

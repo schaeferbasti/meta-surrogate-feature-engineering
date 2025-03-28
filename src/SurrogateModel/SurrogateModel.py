@@ -4,6 +4,7 @@ import numpy as np
 from src.utils.create_feature_and_featurename import create_featurenames
 from src.utils.get_dataset import get_openml_dataset_and_metadata
 from src.utils.get_matrix import get_matrix_columns
+from src.utils.get_metafeatures import get_numeric_pandas_metafeatures, get_categorical_pandas_metafeatures
 from src.utils.preprocess_data import factorize_data
 from src.utils.run_autogluon import multi_predict_operators_for_models, predict_operators_for_models
 
@@ -17,24 +18,10 @@ def add_metadata(X_predict, dataset_metadata, models):
             feature_df = pd.DataFrame(X_predict, columns=[featurename])
             feature_datatype = feature_df[featurename].dtype
             if feature_datatype == np.number:
-                feature_pandas_description = feature_df.describe(include=np.number)
-                feature_metadata_numeric = {"feature - name": featurename,
-                                            "feature - count": feature_pandas_description.iloc[0].values[0],
-                                            "feature - mean": feature_pandas_description.iloc[1].values[0],
-                                            "feature - std": feature_pandas_description.iloc[2].values[0],
-                                            "feature - min": feature_pandas_description.iloc[3].values[0],
-                                            "feature - max": feature_pandas_description.iloc[4].values[0],
-                                            "feature - lower percentile": feature_pandas_description.iloc[5].values[0],
-                                            "feature - 50 percentile": feature_pandas_description.iloc[6].values[0],
-                                            "feature - upper percentile": feature_pandas_description.iloc[7].values[0]}
+                feature_metadata_numeric = get_numeric_pandas_metafeatures(feature_df, featurename)
                 X_predict_new.loc[len(X_predict_new)] = [dataset_metadata["task_id"], dataset_metadata["task_type"], dataset_metadata["number_of_classes"], feature_metadata_numeric["feature - name"], str(feature_datatype), int(feature_metadata_numeric["feature - count"]), feature_metadata_numeric["feature - mean"], feature_metadata_numeric["feature - std"], feature_metadata_numeric["feature - min"], feature_metadata_numeric["feature - max"], feature_metadata_numeric["feature - lower percentile"], feature_metadata_numeric["feature - 50 percentile"], feature_metadata_numeric["feature - upper percentile"], None, None, None, model, None]
             else:
-                feature_pandas_description = feature_df.describe()
-                feature_metadata_categorical = {"feature - name": featurename,
-                                                "feature - count": feature_pandas_description.iloc[0].values[0],
-                                                "feature - unique": feature_pandas_description.iloc[1].values[0],
-                                                "feature - top": feature_pandas_description.iloc[2].values[0],
-                                                "feature - freq": feature_pandas_description.iloc[3].values[0]}
+                feature_metadata_categorical = get_categorical_pandas_metafeatures(feature_df, featurename)
                 X_predict_new.loc[len(X_predict_new)] = [dataset_metadata["task_id"], dataset_metadata["task_type"], dataset_metadata["number_of_classes"], feature_metadata_categorical["feature - name"], "operator", str(feature_datatype), int(feature_metadata_categorical["feature - count"]), None, None, None, None, None, None, None, feature_metadata_categorical["feature - unique"], feature_metadata_categorical["feature - top"], feature_metadata_categorical["feature - freq"], model, None]
     return X_predict_new
 
