@@ -218,20 +218,22 @@ def multi_predict_operators_for_models(train_data, X_test):
 def test_fe_for_model(train_data, X_test, target_label, model):
     # Prepare Data
     label = target_label
+    model = {model: {}}
     # Predictor
     predictor = TabularPredictor(
         label=label,
         eval_metric="root_mean_squared_error",  # roc_auc (binary), log_loss (multiclass)
         problem_type="regression",  # binary, multiclass
-        verbosity=-1,
+        verbosity=4,
     )
     predictor.fit(
-        time_limit=int(30),
+        time_limit=int(120),
         memory_limit=8 * 1024 * 1024,
         num_cpus=8,
         num_gpus=0,
         train_data=train_data,
-        #presets="best_quality",
+        # presets="best_quality",
+        presets='medium',
         dynamic_stacking=False,
         hyperparameters=model,
         # Validation Protocol
