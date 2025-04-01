@@ -18,7 +18,6 @@ def get_result(X_train, y_train, dataset_metadata, feature, featurename, origina
         feature_metadata_numeric = get_numeric_pandas_metafeatures(feature_df, featurename)
         X_train_new = X_train.copy()
         X_train_new[feature_metadata_numeric["feature - name"]] = feature
-        print("Run Autogluon with new Feature")
         lb = run_autogluon_lgbm(X_train_new, y_train)
         models = lb["model"]
         columns = get_matrix_columns()
@@ -52,7 +51,6 @@ def get_result(X_train, y_train, dataset_metadata, feature, featurename, origina
         feature_metadata_categorical = get_categorical_pandas_metafeatures(feature_df, featurename)
         X_train_new = X_train.copy()
         X_train_new[feature_metadata_categorical["feature - name"]] = feature
-        print("Run Autogluon with new Feature")
         lb = run_autogluon_lgbm(X_train_new, y_train)
         models = lb["model"]
         columns = get_matrix_columns()
@@ -81,12 +79,10 @@ def get_result(X_train, y_train, dataset_metadata, feature, featurename, origina
                 model,
                 improvement
             ]
-    print("Result for " + featurename + ": " + str(new_results))
     return new_results
 
 
 def get_original_result(X_train, y_train, dataset_id):
-    print("Run Autogluon with new Feature")
     lb = run_autogluon_lgbm(X_train, y_train)
     models = lb["model"]
     new_results = pd.DataFrame(columns=['dataset', 'model', 'score'])
@@ -94,7 +90,6 @@ def get_original_result(X_train, y_train, dataset_id):
         score_val = lb.loc[lb['model'] == model, 'score_val'].values[0]
         new_results.loc[len(new_results)] = [dataset_id, model,
                                              score_val]  # None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
-    print("Result for original dataset: " + str(new_results))
     return new_results
 
 
@@ -103,10 +98,7 @@ def main(dataset):
     pd.set_option('display.max_rows', None)
     columns = get_matrix_columns()
     result_matrix = pd.DataFrame(columns=columns)
-    print("Result Matrix created")
     unary_operators, binary_operators = get_operators()
-    print("Iterate over Datasets")
-
     X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset)
     original_results = get_original_result(X_train, y_train, dataset)
     for feature1 in X_train.columns:
@@ -125,8 +117,6 @@ def main(dataset):
             result_matrix = pd.concat([result_matrix, pd.DataFrame(new_rows)], ignore_index=True)
             result_matrix.to_parquet("Operator_Model_Feature_Matrix_2_" + str(dataset) + ".parquet")
     result_matrix.to_parquet("Operator_Model_Feature_Matrix_2_" + str(dataset) + ".parquet")
-    result_matrix.to_parquet("Operator_Model_Feature_Matrix_2.parquet")
-    print("Final Result: \n" + str(result_matrix))
 
 
 if __name__ == '__main__':
