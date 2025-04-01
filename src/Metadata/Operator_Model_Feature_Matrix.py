@@ -6,6 +6,7 @@ from src.utils.get_dataset import get_openml_dataset_split_and_metadata, get_all
 from src.utils.get_matrix import get_matrix_columns
 from src.utils.get_metafeatures import get_numeric_pandas_metafeatures, get_categorical_pandas_metafeatures
 from src.utils.get_operators import get_operators
+from src.utils.run_models import run_autogluon_lgbm
 
 
 def get_result(X_train, y_train, dataset_metadata, feature, featurename, original_results):
