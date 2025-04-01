@@ -7,8 +7,8 @@
 #SBATCH --job-name Metadata
 
 # Define the files to write the outputs of the job to.
-#SBATCH --output logs/%x-%A.out   # STDOUT  %x and %A will be replaced by the job name and job id, respectively. short: -o logs/%x-%A.out
-#SBATCH --error logs/%x-%A.err    # STDERR  short: -e logs/%x-%A.out
+#SBATCH --output logs/%x-%A_%a.out   # STDOUT  %x and %A will be replaced by the job name and job id, respectively. short: -o logs/%x-%A.out
+#SBATCH --error logs/%x-%A_%a.err    # STDERR  short: -e logs/%x-%A.out
 
 # Define the amount of memory required per node
 #SBATCH --mem=48GB
@@ -20,7 +20,7 @@
 
 #SBATCH --propagate=NONE
 
-#SBATCH --array=0-8
+#SBATCH --array=0-9  # Adjust based on the number of methods
 
 echo "Workingdir: $PWD";
 echo "Started at $(date)";
@@ -45,8 +45,8 @@ echo "Virtual Environment Activated"
 export PYTHONPATH=$PWD/src:$PYTHONPATH
 echo "PYTHONPATH set to $PYTHONPATH"
 
-
-datasets=(146818 146820 168350 168911 190137 190411 359955 359956 359979)
+# datasets=(190411 189354 189356 359979 146818 359955 359960 359968 359959 168757 359954 359969 359970 359984 168911 359981 359962 359965 190392 190137 359958 168350 359956 359975 359963 168784 190146 146820 359974 2073 359944 359950 359942 359951 360945 167210 359930 359948 359931 359932 359933 359934 359939 359945 359935 359940)
+datasets=(146818 146820 168350 168911 190137 190411 359955 359956 3599968 359979)
 dataset=${datasets[$SLURM_ARRAY_TASK_ID]}
 
 # Running the job
