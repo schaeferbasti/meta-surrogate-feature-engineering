@@ -1,3 +1,4 @@
+import numpy as np
 from sklearn import preprocessing
 import pandas as pd
 
@@ -6,6 +7,23 @@ def factorize_dataset(X_train, y_train, X_test, y_test):
     lbl = preprocessing.LabelEncoder()
     for column in X_train.columns:  # select_dtypes(include=['object', 'category'])
         X_train[column] = lbl.fit_transform(X_train[column].astype(int))
+    for column in X_test.columns:
+        X_test[column] = lbl.fit_transform(X_test[column].astype(int))
+    y_train_array, _ = pd.Series.factorize(y_train, use_na_sentinel=False)
+    y_train = y_train.replace(y_train_array)
+    y_test_array, _ = pd.Series.factorize(y_test, use_na_sentinel=False)
+    y_test = y_test.replace(y_test_array)
+    return X_train, y_train, X_test, y_test
+
+
+def factorize_transformed_dataset(X_train, y_train, X_test, y_test):
+    lbl = preprocessing.LabelEncoder()
+    X_train = X_train.replace([np.inf, -np.inf], np.nan)  # Convert inf values to NaN
+    X_train = X_train.dropna(axis=1, how="any")
+    for column in X_train.columns:  # select_dtypes(include=['object', 'category'])
+        X_train[column] = lbl.fit_transform(X_train[column].astype(int))
+    X_test = X_test.replace([np.inf, -np.inf], np.nan)  # Convert inf values to NaN
+    X_test = X_test.dropna(axis=1, how="any")
     for column in X_test.columns:
         X_test[column] = lbl.fit_transform(X_test[column].astype(int))
     y_train_array, _ = pd.Series.factorize(y_train, use_na_sentinel=False)

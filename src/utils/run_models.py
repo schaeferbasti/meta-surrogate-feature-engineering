@@ -227,7 +227,7 @@ def test_fe_for_model(train_data, X_test, target_label, model):
         verbosity=4,
     )
     predictor.fit(
-        time_limit=int(120),
+        time_limit=int(600),
         memory_limit=8 * 1024 * 1024,
         num_cpus=8,
         num_gpus=0,
@@ -240,6 +240,7 @@ def test_fe_for_model(train_data, X_test, target_label, model):
         num_bag_folds=8,
         num_bag_sets=1,
         num_stack_levels=0,
+        raise_on_no_models_fitted=False
     )
     # Evaluation
     # evaluation = pd.DataFrame(predictor.evaluate(X_test, ))
