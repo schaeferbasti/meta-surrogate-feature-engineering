@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 
+from src.Apply_and_Test.Apply_FE import extract_operation_and_original_features
 from src.utils.create_feature_and_featurename import create_feature_and_featurename
 from src.utils.get_dataset import get_openml_dataset_split_and_metadata, get_all_amlb_dataset_ids
 from src.utils.get_matrix import get_matrix_columns
@@ -10,10 +11,24 @@ from src.utils.run_models import run_autogluon_lgbm
 
 
 def get_result(X_train, y_train, dataset_metadata, feature, featurename, original_results):
+    operator, _ = extract_operation_and_original_features(featurename)
+    operator = str(operator)
     feature_df = pd.DataFrame(feature, columns=[featurename])
     feature_datatype = feature_df[featurename].dtype
-    if feature_datatype == np.number:
-        feature_metadata_numeric = get_numeric_pandas_metafeatures(feature_df, featurename)
+    if pd.api.types.is_numeric_dtype(feature_df[featurename]):
+        # feature_metadata_numeric = get_numeric_pandas_metafeatures(feature_df, featurename)
+        feature_pandas_description = feature_df.describe(include=np.number)
+        feature_metadata_numeric = {
+            "feature - name": featurename,
+            "feature - count": feature_pandas_description.iloc[0].values[0],
+            "feature - mean": feature_pandas_description.iloc[1].values[0],
+            "feature - std": feature_pandas_description.iloc[2].values[0],
+            "feature - min": feature_pandas_description.iloc[3].values[0],
+            "feature - max": feature_pandas_description.iloc[4].values[0],
+            "feature - lower percentile": feature_pandas_description.iloc[5].values[0],
+            "feature - 50 percentile": feature_pandas_description.iloc[6].values[0],
+            "feature - upper percentile": feature_pandas_description.iloc[7].values[0]
+        }
         X_train_new = X_train.copy()
         X_train_new[feature_metadata_numeric["feature - name"]] = feature
         print("Run Autogluon with new Feature")
@@ -28,9 +43,11 @@ def get_result(X_train, y_train, dataset_metadata, feature, featurename, origina
             score_val = np.abs(lb.loc[lb['model'] == model, 'score_val'].values[0])
             improvement = score_val - original_score
             new_results.loc[len(new_results)] = [
-                dataset_metadata["task_id"], dataset_metadata["task_type"],
+                dataset_metadata["task_id"],
+                dataset_metadata["task_type"],
                 dataset_metadata["number_of_classes"],
                 feature_metadata_numeric["feature - name"],
+                operator,
                 str(feature_datatype),
                 int(feature_metadata_numeric["feature - count"]),
                 feature_metadata_numeric["feature - mean"],
@@ -47,7 +64,15 @@ def get_result(X_train, y_train, dataset_metadata, feature, featurename, origina
                 improvement
             ]
     else:
-        feature_metadata_categorical = get_categorical_pandas_metafeatures(feature_df, featurename)
+        # feature_metadata_categorical = get_categorical_pandas_metafeatures(feature_df, featurename)
+        feature_pandas_description = feature_df.describe(exclude=np.number)
+        feature_metadata_categorical = {
+            "feature - name": featurename,
+            "feature - count": feature_pandas_description.iloc[0].values[0],
+            "feature - unique": feature_pandas_description.iloc[1].values[0],
+            "feature - top": feature_pandas_description.iloc[2].values[0],
+            "feature - freq": feature_pandas_description.iloc[3].values[0]
+        }
         X_train_new = X_train.copy()
         X_train_new[feature_metadata_categorical["feature - name"]] = feature
         print("Run Autogluon with new Feature")
@@ -62,9 +87,12 @@ def get_result(X_train, y_train, dataset_metadata, feature, featurename, origina
             score_val = np.abs(lb.loc[lb['model'] == model, 'score_val'].values[0])
             improvement = score_val - original_score
             new_results.loc[len(new_results)] = [
-                dataset_metadata["task_id"], dataset_metadata["task_type"],
+                dataset_metadata["task_id"],
+                dataset_metadata["task_type"],
                 dataset_metadata["number_of_classes"],
-                feature_metadata_categorical["feature - name"], str(feature_datatype),
+                feature_metadata_categorical["feature - name"],
+                operator,
+                str(feature_datatype),
                 int(feature_metadata_categorical["feature - count"]),
                 None,
                 None,
