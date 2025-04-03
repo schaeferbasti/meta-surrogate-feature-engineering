@@ -3,8 +3,9 @@ import argparse
 import numpy as np
 import pandas as pd
 
+from src.utils.create_feature_and_featurename import extract_operation_and_original_features
 from src.utils.create_feature_and_featurename import create_feature_and_featurename
-from src.utils.get_dataset import get_openml_dataset_split_and_metadata, get_all_amlb_dataset_ids
+from src.utils.get_data import get_openml_dataset_split_and_metadata, get_all_amlb_dataset_ids
 from src.utils.get_matrix import get_matrix_columns
 from src.utils.get_metafeatures import get_numeric_pandas_metafeatures, get_categorical_pandas_metafeatures
 from src.utils.get_operators import get_operators
@@ -12,9 +13,11 @@ from src.utils.run_models import run_autogluon_lgbm
 
 
 def get_result(X_train, y_train, dataset_metadata, feature, featurename, original_results):
+    operator, _ = extract_operation_and_original_features(featurename)
+    operator = str(operator)
     feature_df = pd.DataFrame(feature, columns=[featurename])
     feature_datatype = feature_df[featurename].dtype
-    if feature_datatype == np.number:
+    if pd.api.types.is_numeric_dtype(feature_df[featurename]):
         feature_metadata_numeric = get_numeric_pandas_metafeatures(feature_df, featurename)
         X_train_new = X_train.copy()
         X_train_new[feature_metadata_numeric["feature - name"]] = feature
@@ -32,6 +35,7 @@ def get_result(X_train, y_train, dataset_metadata, feature, featurename, origina
                 dataset_metadata["task_id"], dataset_metadata["task_type"],
                 dataset_metadata["number_of_classes"],
                 feature_metadata_numeric["feature - name"],
+                operator,
                 str(feature_datatype),
                 int(feature_metadata_numeric["feature - count"]),
                 feature_metadata_numeric["feature - mean"],
@@ -62,9 +66,12 @@ def get_result(X_train, y_train, dataset_metadata, feature, featurename, origina
             score_val = np.abs(lb.loc[lb['model'] == model, 'score_val'].values[0])
             improvement = score_val - original_score
             new_results.loc[len(new_results)] = [
-                dataset_metadata["task_id"], dataset_metadata["task_type"],
+                dataset_metadata["task_id"],
+                dataset_metadata["task_type"],
                 dataset_metadata["number_of_classes"],
-                feature_metadata_categorical["feature - name"], str(feature_datatype),
+                feature_metadata_categorical["feature - name"],
+                operator,
+                str(feature_datatype),
                 int(feature_metadata_categorical["feature - count"]),
                 None,
                 None,
@@ -94,8 +101,6 @@ def get_original_result(X_train, y_train, dataset_id):
 
 
 def main(dataset):
-    pd.set_option('display.max_columns', None)
-    pd.set_option('display.max_rows', None)
     columns = get_matrix_columns()
     result_matrix = pd.DataFrame(columns=columns)
     unary_operators, binary_operators = get_operators()
