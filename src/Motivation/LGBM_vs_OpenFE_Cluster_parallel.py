@@ -5,16 +5,9 @@ import psutil
 
 import pandas as pd
 
-from OpenFE.openfe_parallel import OpenFE
 from src.utils.get_data import get_openml_dataset_split
+from src.utils.preprocess_data import factorize_data_old
 from src.utils.run_models import run_lgbm, run_autogluon_lgbm_cluster
-
-
-def get_openfe_data(X_train, y_train, X_test, y_test, name):
-    openFE = OpenFE()
-    features = openFE.fit(data=X_train, label=y_train, n_jobs=1, name=name)  # generate new features
-    X_train_openfe, X_test_openfe = openFE.transform(X_train, X_test, features, n_jobs=1)
-    return X_train_openfe, y_train, X_test_openfe, y_test
 
 
 def log_memory_usage():
@@ -59,21 +52,19 @@ def main(args):
     with open("results_" + str(dataset_id) + ".txt", "a") as f:
         f.write("LGBM OpenFE Results: " + str(lgbm_openfe_results) + "\n")
     log_memory_usage()
-    autogluon_lgbm_results = run_autogluon_lgbm_cluster(X_train, y_train, X_test, y_test, dataset_id, zeroshot=False)
+    autogluon_lgbm_results = run_autogluon_lgbm_cluster(X_train, y_train, X_test, y_test, zeroshot=False)
     with open("results_" + str(dataset_id) + ".txt", "a") as f:
         f.write("Autogluon LGBM Results: " + str(autogluon_lgbm_results) + "\n")
     log_memory_usage()
-    autogluon_lgbm_openfe_results = run_autogluon_lgbm_cluster(X_train_openfe, y_train_openfe, X_test_openfe, y_test_openfe, dataset_id,
-                                                       zeroshot=False)
+    autogluon_lgbm_openfe_results = run_autogluon_lgbm_cluster(X_train_openfe, y_train_openfe, X_test_openfe, y_test_openfe, zeroshot=False)
     with open("results_" + str(dataset_id) + ".txt", "a") as f:
         f.write("Autogluon LGBM OpenFE Results: " + str(autogluon_lgbm_openfe_results) + "\n")
     log_memory_usage()
-    tuned_autogluon_lgbm_results = run_autogluon_lgbm_cluster(X_train, y_train, X_test, y_test, dataset_id, zeroshot=True)
+    tuned_autogluon_lgbm_results = run_autogluon_lgbm_cluster(X_train, y_train, X_test, y_test, zeroshot=True)
     with open("results_" + str(dataset_id) + ".txt", "a") as f:
         f.write("Tuned Autogluon LGBM Results: " + str(tuned_autogluon_lgbm_results) + "\n")
     log_memory_usage()
-    tuned_autogluon_lgbm_openfe_results = run_autogluon_lgbm_cluster(X_train_openfe, y_train_openfe, X_test_openfe,
-                                                             y_test_openfe, dataset_id, zeroshot=True)
+    tuned_autogluon_lgbm_openfe_results = run_autogluon_lgbm_cluster(X_train_openfe, y_train_openfe, X_test_openfe, y_test_openfe, zeroshot=True)
     with open("results_" + str(dataset_id) + ".txt", "a") as f:
         f.write("Tuned Autogluon LGBM OpenFE Results: " + str(tuned_autogluon_lgbm_openfe_results) + "\n")
     results_of_dataset = pd.Series({'Dataset': dataset_id, 'LGBM': lgbm_results, 'OpenFE + LGBM': lgbm_openfe_results, 'Autogluon LGBM': autogluon_lgbm_results, 'OpenFE + Autogluon LGBM': autogluon_lgbm_openfe_results, 'Tuned Autogluon LGBM': tuned_autogluon_lgbm_results, 'OpenFE + Tuned Autogluon LGBM': tuned_autogluon_lgbm_openfe_results})
