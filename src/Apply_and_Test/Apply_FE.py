@@ -2,12 +2,11 @@ import pandas as pd
 import re
 
 from src.utils.create_feature_and_featurename import create_feature_and_featurename
-from src.utils.get_dataset import get_openml_dataset, split_data, concat_data
+from src.utils.get_data import get_openml_dataset, split_data, concat_data
 from src.utils.preprocess_data import factorize_dataset, factorize_transformed_dataset
 from src.utils.run_models import test_fe_for_model
 
 import warnings
-
 warnings.filterwarnings("ignore")
 
 
@@ -23,6 +22,7 @@ def extract_operation_and_original_features(s):
 def get_additional_features(data, prediction_result):
     additional_feature_list = prediction_result['feature - name']
     for additional_feature in additional_feature_list:
+        print("Add Feature: " + str(additional_feature))
         operation, original_features = extract_operation_and_original_features(additional_feature)
         if len(original_features) == 2:
             feature, _ = create_feature_and_featurename(data[original_features[0]], data[original_features[1]],
