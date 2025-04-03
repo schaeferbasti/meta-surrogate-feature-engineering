@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-
+import re
 from src.utils.get_operators import get_operators
 
 
@@ -139,3 +139,12 @@ def create_featurenames(feature_list):
             for feature2 in feature_list:
                 featurenames.append(operator + "(" + str(feature1) + ", " + str(feature2) + ")")
     return featurenames
+
+
+def extract_operation_and_original_features(s):
+    match = re.match(r"([^\s(]+)\s*\(([^)]+)\)", s)  # Capture operation and features
+    if match:
+        operation = match.group(1)  # The operation (before brackets)
+        features = match.group(2).split(", ")  # The features inside brackets
+        return operation, features
+    return None, []

@@ -5,18 +5,10 @@ from src.utils.create_feature_and_featurename import create_feature_and_featuren
 from src.utils.get_data import get_openml_dataset, split_data, concat_data
 from src.utils.preprocess_data import factorize_dataset, factorize_transformed_dataset
 from src.utils.run_models import test_fe_for_model
+from src.utils.create_feature_and_featurename import extract_operation_and_original_features
 
 import warnings
 warnings.filterwarnings("ignore")
-
-
-def extract_operation_and_original_features(s):
-    match = re.match(r"([^\s(]+)\s*\(([^)]+)\)", s)  # Capture operation and features
-    if match:
-        operation = match.group(1)  # The operation (before brackets)
-        features = match.group(2).split(", ")  # The features inside brackets
-        return operation, features
-    return None, []
 
 
 def get_additional_features(data, prediction_result):
