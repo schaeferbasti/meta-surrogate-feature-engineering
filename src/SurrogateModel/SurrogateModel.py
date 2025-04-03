@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 
 from src.utils.create_feature_and_featurename import create_featurenames
-from src.utils.get_dataset import get_openml_dataset_and_metadata
+from src.utils.get_data import get_openml_dataset_and_metadata
 from src.utils.get_matrix import get_matrix_columns
 from src.utils.get_metafeatures import get_numeric_pandas_metafeatures, get_categorical_pandas_metafeatures
 from src.utils.preprocess_data import factorize_data

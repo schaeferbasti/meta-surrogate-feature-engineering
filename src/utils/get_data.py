@@ -7,17 +7,17 @@ from sklearn.model_selection import train_test_split
 
 def get_all_amlb_dataset_ids():
     # Code from https://github.com/openml/automlbenchmark/blob/2c2a93dc3fc65fc3d6a77fe97ec9df1108551075/scripts/find_matching_datasets.py
-    small_config_url = "https://raw.githubusercontent.com/openml/automlbenchmark/2c2a93dc3fc65fc3d6a77fe97ec9df1108551075/resources/benchmarks/small.yaml"
+    # small_config_url = "https://raw.githubusercontent.com/openml/automlbenchmark/2c2a93dc3fc65fc3d6a77fe97ec9df1108551075/resources/benchmarks/small.yaml"
     #medium_config_url = "https://raw.githubusercontent.com/openml/automlbenchmark/2c2a93dc3fc65fc3d6a77fe97ec9df1108551075/resources/benchmarks/medium.yaml"
     #large_config_url = "https://raw.githubusercontent.com/openml/automlbenchmark/2c2a93dc3fc65fc3d6a77fe97ec9df1108551075/resources/benchmarks/large.yaml"
-    small_configuration = yaml.load(requests.get(small_config_url).text, Loader=yaml.Loader)
+    # small_configuration = yaml.load(requests.get(small_config_url).text, Loader=yaml.Loader)
     #medium_configuration = yaml.load(requests.get(medium_config_url).text, Loader=yaml.Loader)
     #large_configuration = yaml.load(requests.get(large_config_url).text, Loader=yaml.Loader)
-    benchmark_tids = set(
-        [problem.get("openml_task_id") for problem in small_configuration]
+    # benchmark_tids = set(
+        # [problem.get("openml_task_id") for problem in small_configuration]
         # + [problem.get("openml_task_id") for problem in medium_configuration]
         # + [problem.get("openml_task_id") for problem in large_configuration]
-    )
+    # )
     benchmark_tids = [146818, 146820, 168350, 168911, 190137, 190411, 359955, 359956, 359979]
     return benchmark_tids
 
