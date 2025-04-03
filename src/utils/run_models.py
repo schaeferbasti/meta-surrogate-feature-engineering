@@ -17,6 +17,8 @@ from src.utils.tabrepo_2024_custom import zeroshot2024
 def run_autogluon_lgbm(X_train, y_train, zeroshot=False):
     label = "target"
     X_train["target"] = y_train
+    train_data = X_train
+    X_train = X_train.drop(["target"], axis=1)
 
     allowed_models = [
         "GBM",
@@ -42,7 +44,7 @@ def run_autogluon_lgbm(X_train, y_train, zeroshot=False):
         memory_limit=48 * 1024 * 1024,
         num_cpus=8,
         num_gpus=0,
-        train_data=X_train,
+        train_data=train_data,
         presets="best_quality",
         dynamic_stacking=False,
         hyperparameters=zeroshot2024,
@@ -52,8 +54,7 @@ def run_autogluon_lgbm(X_train, y_train, zeroshot=False):
         num_stack_levels=0,
     )
     predictor.fit_summary(verbosity=-1)
-    data = pd.concat([X_train, y_train], axis=1)
-    lb = predictor.leaderboard(data)
+    lb = predictor.leaderboard(train_data)
     return lb
 
 
@@ -92,6 +93,7 @@ def run_lgbm(X_train, y_train, X_test, y_test):
     log_loss_test = log_loss(y_test, y_pred, labels=labels)
     print(log_loss_test)
     return log_loss_test
+
 
 def run_autogluon_lgbm_cluster(X_train, y_train, X_test, y_test, zeroshot=False):
     log = logging.getLogger(__name__)
@@ -210,55 +212,17 @@ def multi_predict_operators_for_models(train_data, X_test):
     #  multi_evaluation = pd.DataFrame(multi_predictor.evaluate(X_test))
     # Prediction
     multi_prediction = pd.DataFrame(multi_predictor.predict(X_test))
-    multi_prediction.rename(columns={"feature - name": "new - feature - name", "improvement": "predicted_improvement"}, inplace=True)
+    multi_prediction.rename(columns={"feature - name": "new - feature - name", "improvement": "predicted_improvement"},
+                            inplace=True)
     multi_prediction_result = pd.concat([X_test[["dataset - id", "feature - name", "model"]], multi_prediction], axis=1)
     return multi_prediction_result  # multi_evaluation,
 
 
-def test_fe_for_model(train_data, X_test, target_label, model):
-    # Prepare Data
-    label = target_label
-    model = {model: {}}
-    # Predictor
-    predictor = TabularPredictor(
-        label=label,
-        eval_metric="root_mean_squared_error",  # roc_auc (binary), log_loss (multiclass)
-        problem_type="regression",  # binary, multiclass
-        verbosity=4,
-    )
-    predictor.fit(
-        time_limit=int(600),
-        memory_limit=8 * 1024 * 1024,
-        num_cpus=8,
-        num_gpus=0,
-        train_data=train_data,
-        # presets="best_quality",
-        presets='medium',
-        dynamic_stacking=False,
-        hyperparameters=model,
-        # Validation Protocol
-        num_bag_folds=8,
-        num_bag_sets=1,
-        num_stack_levels=0,
-        raise_on_no_models_fitted=False
-    )
-    # Evaluation
-    # evaluation = pd.DataFrame(predictor.evaluate(X_test, ))
-    # Prediction
-    prediction = predictor.predict(X_test)
-    prediction.rename("predicted_improvement", inplace=True)
-    prediction_result = pd.concat([X_test[["dataset - id", "feature - name", "model"]], prediction], axis=1)
-    return prediction_result  # evaluation,
-
-
-def get_original_result(X_train, y_train, dataset_id):
-    print("Run Autogluon with new Feature")
+def get_result(X_train, y_train, dataset_id):
     lb = run_autogluon_lgbm(X_train, y_train)
     models = lb["model"]
     new_results = pd.DataFrame(columns=['dataset', 'model', 'score'])
     for model in models:
         score_val = lb.loc[lb['model'] == model, 'score_val'].values[0]
-        new_results.loc[len(new_results)] = [dataset_id, model,
-                                             score_val]  # None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
-    print("Result for original dataset: " + str(new_results))
+        new_results.loc[len(new_results)] = [dataset_id, model, score_val]
     return new_results
