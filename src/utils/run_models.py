@@ -249,3 +249,16 @@ def test_fe_for_model(train_data, X_test, target_label, model):
     prediction.rename("predicted_improvement", inplace=True)
     prediction_result = pd.concat([X_test[["dataset - id", "feature - name", "model"]], prediction], axis=1)
     return prediction_result  # evaluation,
+
+
+def get_original_result(X_train, y_train, dataset_id):
+    print("Run Autogluon with new Feature")
+    lb = run_autogluon_lgbm(X_train, y_train)
+    models = lb["model"]
+    new_results = pd.DataFrame(columns=['dataset', 'model', 'score'])
+    for model in models:
+        score_val = lb.loc[lb['model'] == model, 'score_val'].values[0]
+        new_results.loc[len(new_results)] = [dataset_id, model,
+                                             score_val]  # None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+    print("Result for original dataset: " + str(new_results))
+    return new_results

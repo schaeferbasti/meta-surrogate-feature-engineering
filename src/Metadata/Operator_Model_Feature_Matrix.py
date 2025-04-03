@@ -7,7 +7,7 @@ from src.utils.get_data import get_openml_dataset_split_and_metadata, get_all_am
 from src.utils.get_matrix import get_matrix_columns
 from src.utils.get_metafeatures import get_numeric_pandas_metafeatures, get_categorical_pandas_metafeatures
 from src.utils.get_operators import get_operators
-from src.utils.run_models import run_autogluon_lgbm
+from src.utils.run_models import run_autogluon_lgbm, get_original_result
 
 
 def get_result(X_train, y_train, dataset_metadata, feature, featurename, original_results):
@@ -88,19 +88,6 @@ def get_result(X_train, y_train, dataset_metadata, feature, featurename, origina
                 improvement
             ]
     print("Result for " + featurename + ": " + str(new_results))
-    return new_results
-
-
-def get_original_result(X_train, y_train, dataset_id):
-    print("Run Autogluon with new Feature")
-    lb = run_autogluon_lgbm(X_train, y_train)
-    models = lb["model"]
-    new_results = pd.DataFrame(columns=['dataset', 'model', 'score'])
-    for model in models:
-        score_val = lb.loc[lb['model'] == model, 'score_val'].values[0]
-        new_results.loc[len(new_results)] = [dataset_id, model,
-                                             score_val]  # None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
-    print("Result for original dataset: " + str(new_results))
     return new_results
 
 
