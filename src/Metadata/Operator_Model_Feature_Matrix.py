@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from src.Apply_and_Test.Apply_FE import extract_operation_and_original_features
+from src.utils.create_feature_and_featurename import extract_operation_and_original_features
 from src.utils.create_feature_and_featurename import create_feature_and_featurename
 from src.utils.get_data import get_openml_dataset_split_and_metadata, get_all_amlb_dataset_ids
 from src.utils.get_matrix import get_matrix_columns
