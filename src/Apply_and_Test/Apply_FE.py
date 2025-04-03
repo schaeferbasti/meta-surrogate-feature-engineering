@@ -1,10 +1,8 @@
 import pandas as pd
-import re
 
 from src.utils.create_feature_and_featurename import create_feature_and_featurename
 from src.utils.get_data import get_openml_dataset, split_data, concat_data
 from src.utils.preprocess_data import factorize_dataset, factorize_transformed_dataset
-from src.utils.run_models import test_fe_for_model
 from src.utils.create_feature_and_featurename import extract_operation_and_original_features
 
 import warnings
@@ -42,29 +40,16 @@ def execute_feature_engineering(prediction_result):
         data = pd.read_parquet("FE_Data_" + str(dataset_id) + ".parquet")
     except FileNotFoundError:
         data = get_additional_features(data, prediction_result)
-        data.to_parquet("FE_Data_" + str(dataset_id) + ".parquet")
-    X_train, y_train, X_test, y_test = split_data(data, target_label)
-    X_train, y_train, X_test, y_test = factorize_transformed_dataset(X_train, y_train, X_test, y_test)
-    return X_train, y_train, X_test, y_test, dataset_id, target_label
+    return data, dataset_id
 
-
-def test_feature_engineered_data_performance(X_train, y_train, X_test, y_test, model, target_label):
-    y_train = y_train.to_frame(target_label)
-    train_data = pd.concat([X_train, y_train], axis=1)
-    lb = test_fe_for_model(train_data, X_test, target_label, model)
-    return lb.score()
 
 
 def main():
     print("Read Prediction Results")
     prediction_result = pd.read_parquet("../SurrogateModel/Best_Operations.parquet")
     print("Execute Feature Engineering")
-    X_train, y_train, X_test, y_test, dataset_id, target_label = execute_feature_engineering(prediction_result)
-    model = prediction_result["model"].values[0]
-    print("Test Feature Engineering")
-    results = test_feature_engineered_data_performance(X_train, y_train, X_test, y_test, model, target_label)
-    results.to_csv("Performance_" + str(dataset_id) + ".csv", index=False)
-    print(results)
+    data, dataset_id = execute_feature_engineering(prediction_result)
+    data.to_parquet("FE_Data_" + str(dataset_id) + ".parquet")
 
 
 if __name__ == "__main__":
