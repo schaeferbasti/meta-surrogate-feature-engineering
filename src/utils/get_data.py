@@ -2,7 +2,10 @@ import pandas as pd
 import openml
 import requests
 import yaml
+from openfe import OpenFE
 from sklearn.model_selection import train_test_split
+
+from src.Motivation.OpenFE.utils import transform
 
 
 def get_all_amlb_dataset_ids():
@@ -118,3 +121,10 @@ def concat_data(X_train, y_train, X_test, y_test, target_label):
     test_data = pd.concat([X_test, y_test], axis=1)
     data = pd.concat([train_data, test_data], axis=0)
     return data
+
+
+def get_openfe_data(X_train, y_train, X_test, y_test):
+    openFE = OpenFE()
+    features = openFE.fit(data=X_train, label=y_train, n_jobs=1)  # generate new features
+    X_train_openfe, X_test_openfe = transform(X_train, X_test, features, n_jobs=1)
+    return X_train_openfe, y_train, X_test_openfe, y_test
