@@ -26,6 +26,7 @@ def get_additional_features(data, prediction_result):
 
 def execute_feature_engineering(prediction_result):
     dataset_id = int(prediction_result["dataset - id"].values[0])
+    model = prediction_result["model"].values[0]
     print("Get original Dataset")
     X, y = get_openml_dataset(dataset_id)
     target_label = "target"
@@ -37,10 +38,10 @@ def execute_feature_engineering(prediction_result):
     data = concat_data(X_train, y_train, X_test, y_test, target_label)
     print("Add Features to Data")
     try:
-        data = pd.read_parquet("FE_Data_" + str(dataset_id) + ".parquet")
+        data = pd.read_parquet("FE_Data_" + str(dataset_id) + "_" + str(model) + ".parquet")
     except FileNotFoundError:
         data = get_additional_features(data, prediction_result)
-    return data, dataset_id
+    return data, dataset_id, model
 
 
 
@@ -48,8 +49,8 @@ def main():
     print("Read Prediction Results")
     prediction_result = pd.read_parquet("../SurrogateModel/Best_Operations.parquet")
     print("Execute Feature Engineering")
-    data, dataset_id = execute_feature_engineering(prediction_result)
-    data.to_parquet("FE_Data_" + str(dataset_id) + ".parquet")
+    data, dataset_id, model = execute_feature_engineering(prediction_result)
+    data.to_parquet("FE_Data_" + str(dataset_id) + "_" + str(model) + ".parquet")
 
 
 if __name__ == "__main__":
