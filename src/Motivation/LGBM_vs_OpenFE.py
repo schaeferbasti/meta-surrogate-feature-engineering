@@ -2,7 +2,7 @@ import datetime
 
 from src.utils.get_data import get_openfe_data, get_openml_dataset_split
 from src.utils.preprocess_data import factorize_data_split
-from src.utils.run_models import run_lgbm, run_autogluon_lgbm
+from src.utils.run_models import run_default_lgbm, run_autogluon_lgbm
 
 
 def main():
@@ -50,7 +50,7 @@ def main():
         X_train, y_train, X_test, y_test = factorize_data_split(X_train, y_train, X_test, y_test)
         X_train_openfe, y_train_openfe, X_test_openfe, y_test_openfe = get_openfe_data(X_train, y_train, X_test, y_test)
         try:
-            lgbm_results = run_lgbm(X_train, y_train, X_test, y_test)
+            lgbm_results = run_default_lgbm(X_train, y_train, X_test, y_test)
             f = open("results.txt", "a")
             f.write("LGBM Results " + str(lgbm_results) + "\n")
             f.close()
@@ -59,7 +59,7 @@ def main():
             f.write("LGBM Results " + str(e) + "\n")
             f.close()
         try:
-            lgbm_openfe_results = run_lgbm(X_train_openfe, y_train_openfe, X_test_openfe, y_test_openfe)
+            lgbm_openfe_results = run_default_lgbm(X_train_openfe, y_train_openfe, X_test_openfe, y_test_openfe)
             f = open("results.txt", "a")
             f.write("LGBM OpenFE Results " + str(lgbm_openfe_results) + "\n")
             f.close()
@@ -68,7 +68,7 @@ def main():
             f.write("LGBM OpenFE Results " + str(e) + "\n")
             f.close()
         try:
-            autogluon_lgbm_results = run_autogluon_lgbm(X_train, y_train, zeroshot=False)
+            autogluon_lgbm_results = run_autogluon_lgbm(X_train, y_train, X_test, y_test, zeroshot=False)
             f = open("results.txt", "a")
             f.write("Autogluon LGBM Results " + str(autogluon_lgbm_results) + "\n")
             f.close()
@@ -77,7 +77,7 @@ def main():
             f.write("Autogluon LGBM Results " + str(e) + "\n")
             f.close()
         try:
-            autogluon_lgbm_openfe_results = run_autogluon_lgbm(X_train_openfe, y_train_openfe, zeroshot=False)
+            autogluon_lgbm_openfe_results = run_autogluon_lgbm(X_train_openfe, y_train_openfe, X_test_openfe, y_test_openfe, zeroshot=False)
             f = open("results.txt", "a")
             f.write("Autogluon LGBM OpenFE Results " + str(autogluon_lgbm_openfe_results) + "\n")
             f.close()
@@ -86,7 +86,7 @@ def main():
             f.write("Autogluon LGBM OpenFE Results " + str(e) + "\n")
             f.close()
         try:
-            tuned_autogluon_lgbm_results = run_autogluon_lgbm(X_train, y_train, zeroshot=True)
+            tuned_autogluon_lgbm_results = run_autogluon_lgbm(X_train, y_train, X_test, y_test, zeroshot=True)
             f = open("results.txt", "a")
             f.write("Tuned Autogluon LGBM Results " + str(tuned_autogluon_lgbm_results) + "\n")
             f.close()
@@ -95,7 +95,7 @@ def main():
             f.write("Tuned Autogluon LGBM Results " + str(e) + "\n")
             f.close()
         try:
-            tuned_autogluon_lgbm_openfe_results = run_autogluon_lgbm(X_train_openfe, y_train_openfe, zeroshot=True)
+            tuned_autogluon_lgbm_openfe_results = run_autogluon_lgbm(X_train_openfe, y_train_openfe, X_test_openfe, y_test_openfe, zeroshot=True)
             f = open("results.txt", "a")
             f.write("Tuned Autogluon LGBM OpenFE Results " + str(tuned_autogluon_lgbm_openfe_results) + "\n")
             f.close()
