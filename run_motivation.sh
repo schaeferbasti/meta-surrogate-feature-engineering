@@ -48,7 +48,7 @@ echo "PYTHONPATH set to $PYTHONPATH"
 start=`date +%s`
 
 # shellcheck disable=SC2048
-python3 src/Motivation/LGBM_vs_OpenFE_Cluster.py "$SLURM_ARRAY_TASK_ID" "$*"
+python3 src/Motivation/LGBM_vs_OpenFE.py "$SLURM_ARRAY_TASK_ID" "$*"
 
 # Print the allocated memory per node
 echo "Allocated memory per node: $SLURM_MEM_PER_NODE MB"
