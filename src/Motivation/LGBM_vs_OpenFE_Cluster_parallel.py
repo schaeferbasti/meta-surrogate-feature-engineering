@@ -37,7 +37,7 @@ def main(args):
         f.write(str(X_train))
     with open("results_" + str(dataset_id) + ".txt", "a") as f:
         f.write("Use OpenFE\n")
-    X_train_openfe, y_train_openfe, X_test_openfe, y_test_openfe = get_openfe_data(X_train, y_train, X_test, y_test,                                                                               str(dataset_id))
+    X_train_openfe, y_train_openfe, X_test_openfe, y_test_openfe = get_openfe_data(X_train, y_train, X_test, y_test)                                                                               str(dataset_id))
     with open("results_" + str(dataset_id) + ".txt", "a") as f:
         #pd.set_option('display.max_columns', None)
         f.write(str(X_train))
