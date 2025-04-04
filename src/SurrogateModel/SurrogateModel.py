@@ -4,7 +4,7 @@ from src.utils.get_data import get_openml_dataset_and_metadata
 from src.utils.get_matrix import get_matrix_columns
 from src.utils.get_metafeatures import get_numeric_pandas_metafeatures, get_categorical_pandas_metafeatures
 from src.utils.preprocess_data import factorize_data
-from src.utils.run_models import multi_predict_operators_for_models, predict_operators_for_models
+from src.utils.run_models import multi_predict_autogluon_lgbm, predict_autogluon_lgbm
 
 
 def add_metadata(X_predict, dataset_metadata, models):
@@ -39,7 +39,7 @@ def main(dataset_id, models):
     prediction_data['improvement'] = 0
 
     # Single-predictor (improvement given all possible operations on features)
-    prediction = predict_operators_for_models(result_matrix, prediction_data, models=models)
+    prediction = predict_autogluon_lgbm(result_matrix, prediction_data, models=models)
     prediction.to_parquet("Prediction.parquet")
     #  evaluation, prediction, best_operations = predict_operators_for_models(X, y, X_predict, y_predict, models=models, zeroshot=False)
     #  evaluation.to_parquet('Evaluation.parquet')
@@ -48,7 +48,7 @@ def main(dataset_id, models):
     best_operations.to_parquet("Best_Operations.parquet")
 
     # Multi-predictor (features + operator & improvement)
-    multi_prediction = multi_predict_operators_for_models(result_matrix, prediction_data)
+    multi_prediction = multi_predict_autogluon_lgbm(result_matrix, prediction_data)
     multi_prediction.to_parquet('Multi_Prediction.parquet')
     #  multi_evaluation, multi_prediction = multi_predict_operators_for_models(X, y, X_predict, y_predict, models=models, zeroshot=False)
     #  multi_evaluation.to_parquet('Multi_Evaluation.parquet')
