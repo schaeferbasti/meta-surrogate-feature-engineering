@@ -2,7 +2,7 @@ import pandas as pd
 
 from src.utils.create_feature_and_featurename import create_feature_and_featurename
 from src.utils.get_data import get_openml_dataset, split_data, concat_data
-from src.utils.preprocess_data import factorize_dataset, factorize_transformed_dataset
+from src.utils.preprocess_data import factorize_dataset
 from src.utils.create_feature_and_featurename import extract_operation_and_original_features
 
 import warnings

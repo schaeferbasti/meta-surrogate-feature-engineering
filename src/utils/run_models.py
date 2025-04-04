@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 import logging
 import os
 import ray
@@ -14,73 +13,7 @@ from src.utils.get_matrix import add_new_featurenames
 from src.utils.tabrepo_2024_custom import zeroshot2024
 
 
-def run_autogluon_lgbm(X_train, y_train, zeroshot=False):
-    label = "target"
-    X_train["target"] = y_train
-    train_data = X_train
-    X_train = X_train.drop(["target"], axis=1)
-
-    allowed_models = [
-        "GBM",
-    ]
-
-    for k in list(zeroshot2024.keys()):
-        if k not in allowed_models:
-            del zeroshot2024[k]
-        else:
-            if not zeroshot:
-                zeroshot2024[k] = zeroshot2024[k][:1]
-
-    # -- Run AutoGluon
-    predictor = TabularPredictor(
-        label=label,
-        eval_metric="log_loss",  # roc_auc (binary), log_loss (multiclass)
-        problem_type="multiclass",  # binary, multiclass
-        verbosity=-1,
-    )
-
-    predictor.fit(
-        time_limit=int(60 * 60 * 4),
-        memory_limit=48 * 1024 * 1024,
-        num_cpus=8,
-        num_gpus=0,
-        train_data=train_data,
-        presets="best_quality",
-        dynamic_stacking=False,
-        hyperparameters=zeroshot2024,
-        # Validation Protocol
-        num_bag_folds=8,
-        num_bag_sets=1,
-        num_stack_levels=0,
-    )
-    predictor.fit_summary(verbosity=-1)
-    lb = predictor.leaderboard(train_data)
-    return lb
-
-
-def run_lgbm(X_train, y_train, X_test, y_test):
-    """
-    # lgb_train = lgb.Dataset(X_train, y_train, params={'verbose': -1})
-    # lgb_eval = lgb.Dataset(X_test, y_test, params={'verbose': -1}, reference=lgb_train)
-
-    params = {
-        "boosting_type": "gbdt",
-        "objective": "regression",
-        "metric": {"l2", "l1"},
-        "num_leaves": 31,
-        "learning_rate": 0.05,
-        "feature_fraction": 0.9,
-        "bagging_fraction": 0.8,
-        "bagging_freq": 5,
-        "verbose": -1,
-        "seed": 42,
-    }
-
-    # gbm = lgb.train(params, lgb_train, num_boost_round=20, valid_sets=[lgb_eval], callbacks=[lgb.early_stopping(stopping_rounds=5))
-    # y_pred = gbm.predict(X_test, num_iteration=gbm.best_iteration, verbose_eval=False)
-    # log_loss_test = log_loss(y_test, y_pred)
-    """
-
+def run_default_lgbm(X_train, y_train, X_test, y_test):
     clf = lgb.LGBMClassifier(random_state=42)
     clf.fit(X_train, y_train)
     y_pred = clf.predict(X_test)
@@ -95,7 +28,30 @@ def run_lgbm(X_train, y_train, X_test, y_test):
     return log_loss_test
 
 
-def run_autogluon_lgbm_cluster(X_train, y_train, X_test, y_test, zeroshot=False):
+def run_autogluon_lgbm(X_train, y_train, X_test, y_test, zeroshot=False):
+    label = "target"
+    train_data = X_train
+    train_data[label] = y_train
+    test_data = X_test
+    test_data[label] = y_test
+
+    allowed_models = [
+        "GBM",
+    ]
+
+    zeroshot2024 = get_zeroshot_models(allowed_models, zeroshot)
+    # -- Run AutoGluon
+    predictor = init_and_fit_predictor(label, train_data, zeroshot2024)
+    lb = predictor.leaderboard(test_data)
+    return lb
+
+
+def run_autogluon_lgbm_ray(X_train, y_train, X_test, y_test, zeroshot=False):
+    label = "target"
+    train_data = X_train
+    train_data[label] = y_train
+    test_data = X_test
+    test_data[label] = y_test
     log = logging.getLogger(__name__)
     ray_mem_in_gb = 48
     log.info(f"Running on SLURM, initializing Ray with unique temp dir with {ray_mem_in_gb}GB.")
@@ -117,80 +73,26 @@ def run_autogluon_lgbm_cluster(X_train, y_train, X_test, y_test, zeroshot=False)
         ignore_reinit_error=True
     )
 
-    label = "target"
-    X_train["target"] = y_train
-    X_test["target"] = y_test
-
     allowed_models = [
         "GBM",
     ]
 
-    for k in list(zeroshot2024.keys()):
-        if k not in allowed_models:
-            del zeroshot2024[k]
-        else:
-            if not zeroshot:
-                zeroshot2024[k] = zeroshot2024[k][:1]
-            else:
-                zeroshot2024[k] = zeroshot2024[k][1:]
+    zeroshot2024 = get_zeroshot_models(allowed_models, zeroshot)
 
     # -- Run AutoGluon
-    predictor = TabularPredictor(
-        label=label,
-        eval_metric="log_loss",  # roc_auc (binary), log_loss (multiclass)
-        problem_type="multiclass",  # binary, multiclass
-        verbosity=0,
-        path=tempfile.mkdtemp() + os.sep,
-    )
-
-    predictor.fit(
-        time_limit=int(60 * 60 * 4),
-        memory_limit=48,
-        num_cpus=8,
-        num_gpus=0,
-        train_data=X_train,
-        presets="best_quality",
-        dynamic_stacking=False,
-        hyperparameters=zeroshot2024,
-        num_bag_folds=8,
-        num_bag_sets=1,
-        num_stack_levels=0,
-        fit_weighted_ensemble=False
-    )
-    predictor.fit_summary(verbosity=-1)
-    lb = predictor.leaderboard(X_test, display=True)
-    log_loss_test = np.abs(lb.score_test[0])
+    predictor = init_and_fit_predictor(label, train_data, zeroshot2024)
+    lb = predictor.leaderboard(test_data, display=True)
     ray.shutdown()
+    return lb
 
-    return log_loss_test
 
-
-def predict_operators_for_models(train_data, X_test, models):
+def predict_autogluon_lgbm(train_data, X_test, models):
     # Prepare Data
     X_test = add_new_featurenames(X_test)
     label = 'improvement'  # train_data["improvement"].name
 
     # Predictor
-    predictor = TabularPredictor(
-        label=label,
-        eval_metric="root_mean_squared_error",  # roc_auc (binary), log_loss (multiclass)
-        problem_type="regression",  # binary, multiclass
-        verbosity=-1,
-    )
-    predictor.fit(
-        time_limit=int(30),
-        memory_limit=8 * 1024 * 1024,
-        num_cpus=8,
-        num_gpus=0,
-        train_data=train_data,
-        #presets="best_quality",
-        dynamic_stacking=False,
-        hyperparameters=models,
-        # Validation Protocol
-        num_bag_folds=8,
-        num_bag_sets=1,
-        num_stack_levels=0,
-    )
+    predictor = init_and_fit_predictor(label, train_data, zeroshot2024)
     # Evaluation
     # evaluation = pd.DataFrame(predictor.evaluate(X_test, ))
     # Prediction
@@ -200,7 +102,7 @@ def predict_operators_for_models(train_data, X_test, models):
     return prediction_result  # evaluation,
 
 
-def multi_predict_operators_for_models(train_data, X_test):
+def multi_predict_autogluon_lgbm(train_data, X_test):
     labels = ['feature - name', 'improvement']  # which columns to predict based on the others
     problem_types = ['multiclass', 'regression']  # type of each prediction problem
     save_path = 'agModels'  # specifies folder to store trained models
@@ -218,11 +120,48 @@ def multi_predict_operators_for_models(train_data, X_test):
     return multi_prediction_result  # multi_evaluation,
 
 
-def get_result(X_train, y_train, dataset_id):
-    lb = run_autogluon_lgbm(X_train, y_train)
+def get_model_score(X_train, y_train, X_test, y_test, dataset_id):
+    lb = run_autogluon_lgbm(X_train, y_train, X_test, y_test)
     models = lb["model"]
     new_results = pd.DataFrame(columns=['dataset', 'model', 'score'])
     for model in models:
         score_val = lb.loc[lb['model'] == model, 'score_val'].values[0]
         new_results.loc[len(new_results)] = [dataset_id, model, score_val]
     return new_results
+
+
+def init_and_fit_predictor(label, train_data, zeroshot2024):
+    predictor = TabularPredictor(
+        label=label,
+        eval_metric="log_loss",  # roc_auc (binary), log_loss (multiclass)
+        problem_type="multiclass",  # binary, multiclass
+        verbosity=0,
+        path=tempfile.mkdtemp() + os.sep,
+    )
+    predictor.fit(
+        time_limit=int(60 * 60 * 4),
+        memory_limit=48,
+        num_cpus=8,
+        num_gpus=0,
+        train_data=train_data,
+        presets="best_quality",
+        dynamic_stacking=False,
+        hyperparameters=zeroshot2024,
+        num_bag_folds=8,
+        num_bag_sets=1,
+        num_stack_levels=0,
+        fit_weighted_ensemble=False
+    )
+    return predictor
+
+
+def get_zeroshot_models(allowed_models, zeroshot):
+    for k in list(zeroshot2024.keys()):
+        if k not in allowed_models:
+            del zeroshot2024[k]
+        else:
+            if not zeroshot:
+                zeroshot2024[k] = zeroshot2024[k][:1]
+            else:
+                zeroshot2024[k] = zeroshot2024[k][1:]
+    return zeroshot2024
