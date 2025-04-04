@@ -2,10 +2,7 @@ from glob import glob
 import pandas as pd
 
 files = glob('../Metadata/SubMatrices')
-
-with open('../../results.txt', 'w') as results_file:
-    results_file.write("Collected Results\n")
-    result_matrix = pd.DataFrame()
+result_matrix = pd.DataFrame()
 for file in files:
     file_matrix = pd.read_parquet(file)
     result_matrix = pd.concat([result_matrix, file_matrix], ignore_index=True)
