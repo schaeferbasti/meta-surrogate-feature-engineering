@@ -22,15 +22,18 @@ def main():
             dataset_id = dataset_id_and_model.split('_')[0]
             X_train, y_train, X_test, y_test = get_openml_dataset_split(int(dataset_id))
             original_results = get_model_score(X_train, y_train, X_test, y_test, dataset_id)
+            original_results['score'] = -original_results['score']
             result = pd.concat([result, original_results], ignore_index=True)
             print("Original Results: " + str(original_results))
             X_train, y_train, X_test, y_test = get_openfe_data(X_train, y_train, X_test, y_test)
             openfe_results = get_model_score(X_train, y_train, X_test, y_test, dataset_id)
+            openfe_results['score'] = -openfe_results['score']
             result = pd.concat([result, openfe_results], ignore_index=True)
             print("OpenFE Results: " + str(openfe_results))
             data = pd.read_parquet(test_file)
             X_train, y_train, X_test, y_test = split_data(data, target_label)
             my_fe_results = get_model_score(X_train, y_train, X_test, y_test, dataset_id)
+            my_fe_results['score'] = -my_fe_results['score']
             result = pd.concat([result, my_fe_results], ignore_index=True)
             print("My Results: " + str(my_fe_results))
             result.to_parquet("Result_" + test_file)
