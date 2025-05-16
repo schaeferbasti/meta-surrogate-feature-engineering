@@ -89,10 +89,10 @@ def run_autogluon_lgbm_ray(X_train, y_train, X_test, y_test, zeroshot=False):
 def predict_autogluon_lgbm(train_data, X_test, models):
     # Prepare Data
     X_test = add_new_featurenames(X_test)
-    label = 'improvement'  # train_data["improvement"].name
+    label = 'improvement'
 
     # Predictor
-    predictor = init_and_fit_predictor(label, train_data, zeroshot2024)
+    predictor = init_and_fit_predictor("score", train_data, zeroshot2024)
     # Evaluation
     # evaluation = pd.DataFrame(predictor.evaluate(X_test, ))
     # Prediction
