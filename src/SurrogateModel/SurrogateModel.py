@@ -10,7 +10,7 @@ from src.utils.run_models import multi_predict_autogluon_lgbm, predict_autogluon
 def add_metadata(X_predict, dataset_metadata, models):
     columns = get_matrix_columns()
     X_predict_new = pd.DataFrame(columns=columns)
-    X_predict = factorize_data(X_predict)
+    # X_predict = factorize_data(X_predict)
     for model in models:
         for featurename in X_predict.columns:
             feature_df = pd.DataFrame(X_predict, columns=[featurename])
