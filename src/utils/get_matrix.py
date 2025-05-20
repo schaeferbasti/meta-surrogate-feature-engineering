@@ -8,6 +8,14 @@ def get_matrix_columns():
     return ['dataset - id', 'dataset - task type', 'dataset - number of classes', 'feature - name', 'operator', 'feature - type', 'feature - count', 'feature - mean', 'feature - std', 'feature - min', 'feature - max', 'feature - lower percentile', 'feature - 50 percentile', 'feature - upper percentile', 'feature - unique', 'feature - top', 'feature - freq', 'model', 'improvement']
 
 
+def get_additional_numerical_columns(featurename):
+    return [featurename + ' - name', featurename + ' - type', featurename + ' - count', featurename + ' - mean', featurename + ' - std', featurename + ' - min', featurename + ' - max', featurename + ' - lower percentile', featurename + ' - 50 percentile', featurename + ' - upper percentile']
+
+
+def get_additional_categorical_columns(featurename):
+    return [featurename + ' - name', featurename + ' - type', featurename + ' - count', featurename + ' - unique', featurename + ' - top', featurename + ' - freq']
+
+
 def add_new_featurenames(X_test):
     # Get new dataset with feature names and metafeatures and replicate each feature (=each row) x times, that we can repeat thus row with similar values, but instead of the feature name, we add a new name consisting of all available operators and respective features
     matrix_columns = get_matrix_columns()
