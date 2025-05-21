@@ -8,12 +8,12 @@ def get_matrix_columns():
     return ['dataset - id', 'dataset - task type', 'dataset - number of classes', 'feature - name', 'operator', 'feature - type', 'feature - count', 'feature - mean', 'feature - std', 'feature - min', 'feature - max', 'feature - lower percentile', 'feature - 50 percentile', 'feature - upper percentile', 'feature - unique', 'feature - top', 'feature - freq', 'model', 'improvement']
 
 
-def get_additional_numerical_columns(featurename):
-    return [featurename + ' - name', featurename + ' - type', featurename + ' - count', featurename + ' - mean', featurename + ' - std', featurename + ' - min', featurename + ' - max', featurename + ' - lower percentile', featurename + ' - 50 percentile', featurename + ' - upper percentile']
+def get_additional_numerical_columns(dataset, featurename):
+    return [dataset + " - " + featurename + ' - name', dataset + " - " + featurename + ' - type', dataset + " - " + featurename + ' - count', dataset + " - " + featurename + ' - mean', dataset + " - " + featurename + ' - std', dataset + " - " + featurename + ' - min', dataset + " - " + featurename + ' - max', dataset + " - " + featurename + ' - lower percentile', dataset + " - " + featurename + ' - 50 percentile', dataset + " - " + featurename + ' - upper percentile']
 
 
-def get_additional_categorical_columns(featurename):
-    return [featurename + ' - name', featurename + ' - type', featurename + ' - count', featurename + ' - unique', featurename + ' - top', featurename + ' - freq']
+def get_additional_categorical_columns(dataset, featurename):
+    return [dataset + " - " + featurename + ' - name', dataset + " - " + featurename + ' - type', dataset + " - " + featurename + ' - count', dataset + " - " + featurename + ' - unique', dataset + " - " + featurename + ' - top', dataset + " - " + featurename + ' - freq']
 
 
 def add_new_featurenames(X_test):
