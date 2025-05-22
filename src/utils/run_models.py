@@ -97,11 +97,11 @@ def predict_autogluon_lgbm(train_data, X_test, dataset_metadata):
     # Evaluation
     # evaluation = pd.DataFrame(predictor.evaluate(X_test, ))
     # Prediction
-    prediction = predictor.predict(X_test)
     for featurename in X_test.columns:
         print("Feature: " + str(featurename))
         feature = pd.DataFrame(X_test[featurename])
-        result_matrix = add_columns(dataset_metadata, train_data, feature, featurename, result_matrix)
+        X_test = add_columns(dataset_metadata, train_data, feature, featurename, X_test)
+    prediction = predictor.predict(X_test)
     prediction.rename("predicted_improvement", inplace=True)
     prediction_result = pd.concat([X_test[["dataset - id", "feature - name", "model"]], prediction], axis=1)
     return prediction_result  # evaluation,
