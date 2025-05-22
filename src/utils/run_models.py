@@ -8,6 +8,7 @@ from sklearn.metrics import log_loss
 from autogluon.tabular import TabularPredictor
 import lightgbm as lgb
 
+from src.Metadata.Operator_Model_Feature_Matrix_Add_Features import add_columns
 from src.utils.Autogluon_MultilabelPredictor import MultilabelPredictor
 from src.utils.get_matrix import add_new_featurenames
 from src.utils.tabrepo_2024_custom import zeroshot2024
@@ -86,7 +87,7 @@ def run_autogluon_lgbm_ray(X_train, y_train, X_test, y_test, zeroshot=False):
     return lb
 
 
-def predict_autogluon_lgbm(train_data, X_test, models):
+def predict_autogluon_lgbm(train_data, X_test, dataset_metadata):
     # Prepare Data
     X_test = add_new_featurenames(X_test)
     label = 'improvement'
@@ -97,6 +98,10 @@ def predict_autogluon_lgbm(train_data, X_test, models):
     # evaluation = pd.DataFrame(predictor.evaluate(X_test, ))
     # Prediction
     prediction = predictor.predict(X_test)
+    for featurename in X_test.columns:
+        print("Feature: " + str(featurename))
+        feature = pd.DataFrame(X_test[featurename])
+        result_matrix = add_columns(dataset_metadata, train_data, feature, featurename, result_matrix)
     prediction.rename("predicted_improvement", inplace=True)
     prediction_result = pd.concat([X_test[["dataset - id", "feature - name", "model"]], prediction], axis=1)
     return prediction_result  # evaluation,
