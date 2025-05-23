@@ -144,12 +144,12 @@ def init_and_fit_predictor(label, train_data, zeroshot2024):
         path=tempfile.mkdtemp() + os.sep,
     )
     predictor.fit(
-        time_limit=int(60 * 60 * 4),
-        memory_limit=48,
+        time_limit=int(60 * 60 * 8),
+        memory_limit=96,
         num_cpus=8,
         num_gpus=0,
         train_data=train_data,
-        presets="best_quality",
+        presets="medium_quality",
         dynamic_stacking=False,
         hyperparameters=zeroshot2024,
         num_bag_folds=8,
