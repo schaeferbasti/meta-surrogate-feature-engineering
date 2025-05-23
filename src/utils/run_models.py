@@ -136,28 +136,32 @@ def get_model_score(X_train, y_train, X_test, y_test, dataset_id):
 
 
 def init_and_fit_predictor(label, train_data, zeroshot2024):
-    predictor = TabularPredictor(
-        label=label,
-        eval_metric="log_loss",  # roc_auc (binary), log_loss (multiclass)
-        problem_type="multiclass",  # binary, multiclass
-        verbosity=0,
-        path=tempfile.mkdtemp() + os.sep,
-    )
-    predictor.fit(
-        time_limit=int(60 * 60 * 8),
-        memory_limit=96,
-        num_cpus=8,
-        num_gpus=0,
-        train_data=train_data,
-        presets="medium_quality",
-        dynamic_stacking=False,
-        hyperparameters=zeroshot2024,
-        num_bag_folds=8,
-        num_bag_sets=1,
-        num_stack_levels=0,
-        fit_weighted_ensemble=False
-    )
-    return predictor
+    try:
+        predictor = TabularPredictor.load("/tmp/tmptoqq7td9")
+        return predictor
+    except FileNotFoundError:
+        predictor = TabularPredictor(
+            label=label,
+            eval_metric="log_loss",  # roc_auc (binary), log_loss (multiclass)
+            problem_type="multiclass",  # binary, multiclass
+            verbosity=0,
+            path=tempfile.mkdtemp() + os.sep,
+        )
+        predictor.fit(
+            time_limit=int(60 * 60 * 8),
+            memory_limit=96,
+            num_cpus=8,
+            num_gpus=0,
+            train_data=train_data,
+            presets="medium_quality",
+            dynamic_stacking=False,
+            hyperparameters=zeroshot2024,
+            num_bag_folds=8,
+            num_bag_sets=1,
+            num_stack_levels=0,
+            fit_weighted_ensemble=False
+        )
+        return predictor
 
 
 def get_zeroshot_models(allowed_models, zeroshot):
