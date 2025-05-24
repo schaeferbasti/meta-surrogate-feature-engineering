@@ -89,7 +89,7 @@ def run_autogluon_lgbm_ray(X_train, y_train, X_test, y_test, zeroshot=False):
 
 def predict_autogluon_lgbm(train_data, X_test, dataset_metadata):
     # Prepare Data
-    X_test = add_new_featurenames(X_test)
+    # X_test = add_new_featurenames(X_test)
     label = 'improvement'
 
     # Predictor
@@ -138,6 +138,7 @@ def get_model_score(X_train, y_train, X_test, y_test, dataset_id):
 def init_and_fit_predictor(label, train_data, zeroshot2024):
     try:
         predictor = TabularPredictor.load("/tmp/tmptoqq7td9")
+        print("Predictor read")
         return predictor
     except FileNotFoundError:
         predictor = TabularPredictor(
@@ -147,6 +148,7 @@ def init_and_fit_predictor(label, train_data, zeroshot2024):
             verbosity=0,
             path=tempfile.mkdtemp() + os.sep,
         )
+        print("Predictor not found, train predictor now")
         predictor.fit(
             time_limit=int(60 * 60 * 8),
             memory_limit=96,
