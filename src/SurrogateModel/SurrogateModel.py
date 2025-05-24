@@ -32,14 +32,16 @@ def main(dataset_id, models):
         models = {"GBM": {}}
     # Read and Prepare Training Data
     result_matrix = pd.read_parquet("../Metadata/Operator_Model_Feature_Matrix_2.parquet")
-
+    print("Result Matrix read")
     # Read and Prepare Test Data
     X_predict, y_predict, dataset_metadata = get_openml_dataset_and_metadata(dataset_id)
-    prediction_data = add_metadata(X_predict, dataset_metadata, models)
-    prediction_data['improvement'] = 0
+    #prediction_data = add_metadata(X_predict, dataset_metadata, models)
+    print("Metadata added")
+    X_predict['improvement'] = 0
 
     # Single-predictor (improvement given all possible operations on features)
-    prediction = predict_autogluon_lgbm(result_matrix, prediction_data, dataset_metadata)
+    prediction = predict_autogluon_lgbm(result_matrix, X_predict, dataset_metadata)
+    print("Predictions generated")
     prediction.to_parquet("Prediction.parquet")
     #  evaluation, prediction, best_operations = predict_operators_for_models(X, y, X_predict, y_predict, models=models, zeroshot=False)
     #  evaluation.to_parquet('Evaluation.parquet')
