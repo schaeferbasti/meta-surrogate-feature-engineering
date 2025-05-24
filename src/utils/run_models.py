@@ -10,7 +10,9 @@ import lightgbm as lgb
 
 from src.Metadata.Operator_Model_Feature_Matrix_Add_Features import add_columns
 from src.utils.Autogluon_MultilabelPredictor import MultilabelPredictor
-from src.utils.get_matrix import add_new_featurenames
+from src.utils.get_matrix import add_new_featurenames, get_additional_categorical_columns, \
+    get_additional_numerical_columns
+from src.utils.get_metafeatures import get_categorical_pandas_metafeatures, get_numeric_pandas_metafeatures
 from src.utils.tabrepo_2024_custom import zeroshot2024
 
 
@@ -100,7 +102,7 @@ def predict_autogluon_lgbm(train_data, X_test, dataset_metadata):
     for featurename in X_test.columns:
         print("Feature: " + str(featurename))
         feature = pd.DataFrame(X_test[featurename])
-        X_test = add_columns(dataset_metadata, train_data, feature, featurename, X_test)
+        X_test = add_columns_test(dataset_metadata, train_data, feature, featurename, X_test)
     prediction = predictor.predict(X_test)
     prediction.rename("predicted_improvement", inplace=True)
     prediction_result = pd.concat([X_test[["dataset - id", "feature - name", "model"]], prediction], axis=1)
@@ -176,3 +178,63 @@ def get_zeroshot_models(allowed_models, zeroshot):
             else:
                 zeroshot2024[k] = zeroshot2024[k][1:]
     return zeroshot2024
+
+
+def add_columns_test(dataset_metadata, train_feature, feature, featurename, result_matrix):
+    train_feature_df = pd.DataFrame(train_feature, columns=[featurename])
+    feature_datatype = train_feature_df[featurename].dtype
+    dataset_id = dataset_metadata["task_id"]
+    if pd.api.types.is_numeric_dtype(train_feature_df[featurename]):
+        feature_metadata_numeric = get_numeric_pandas_metafeatures(feature, featurename)
+        columns = get_additional_numerical_columns(str(dataset_id), featurename)
+        new_row = pd.DataFrame(columns=columns)
+        new_row.loc[len(result_matrix)] = [
+            feature_metadata_numeric["feature - name"],
+            str(feature_datatype),
+            int(feature_metadata_numeric["feature - count"]),
+            feature_metadata_numeric["feature - mean"],
+            feature_metadata_numeric["feature - std"],
+            feature_metadata_numeric["feature - min"],
+            feature_metadata_numeric["feature - max"],
+            feature_metadata_numeric["feature - lower percentile"],
+            feature_metadata_numeric["feature - 50 percentile"],
+            feature_metadata_numeric["feature - upper percentile"],
+        ]
+        # new_columns = pd.DataFrame(columns=columns)
+        # for row in result_matrix.iterrows():
+            # if row[1].values[0] == int(dataset_id):
+            #     new_columns = pd.concat([new_columns, pd.DataFrame(new_row)], ignore_index=True)
+            # else:
+            #     new_columns._append(pd.Series(), ignore_index=True)
+        # Create an empty DataFrame with the same index as result_matrix and the new columns
+        new_columns = pd.DataFrame(index=result_matrix.index, columns=columns)
+        # Find the correct rows to fill
+        for idx in result_matrix.index:
+            new_columns.loc[idx] = new_row.iloc[0]
+    else:
+        feature_metadata_categorical = get_categorical_pandas_metafeatures(feature, featurename)
+        columns = get_additional_categorical_columns(str(dataset_id), featurename)
+        new_row = pd.DataFrame(columns=columns)
+        new_row.loc[len(result_matrix)] = [
+            feature_metadata_categorical["feature - name"],
+            str(feature_datatype),
+            int(feature_metadata_categorical["feature - count"]),
+            feature_metadata_categorical["feature - unique"],
+            feature_metadata_categorical["feature - top"],
+            feature_metadata_categorical["feature - freq"],
+        ]
+        # new_columns = pd.DataFrame(columns=columns)
+        # for row in result_matrix.iterrows():
+            # if row[1].values[0] == int(dataset_id):
+            #     new_columns = pd.concat([new_columns, pd.DataFrame(new_row)], ignore_index=True)
+            # else:
+            #     new_columns._append(pd.Series(), ignore_index=True)
+        new_columns = pd.DataFrame(index=result_matrix.index, columns=columns)
+        # Find the correct rows to fill
+        # matching_indices = result_matrix[result_matrix["dataset - id"] == int(dataset_id)].index
+        # Fill only the matching row(s)
+        for idx in result_matrix.index:
+            new_columns.loc[idx] = new_row.iloc[0]
+    insert_position = result_matrix.shape[1] - 2
+    result_matrix = pd.concat([result_matrix.iloc[:, :insert_position], new_columns, result_matrix.iloc[:, insert_position:]], axis=1)
+    return result_matrix
