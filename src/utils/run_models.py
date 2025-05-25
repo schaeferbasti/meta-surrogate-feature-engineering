@@ -152,7 +152,7 @@ def init_and_fit_predictor(label, train_data, zeroshot2024):
         )
         print("Predictor not found, train predictor now")
         predictor.fit(
-            time_limit=int(60 * 60 * 8),
+            time_limit=int(60 * 1 * 8),
             memory_limit=96,
             num_cpus=8,
             num_gpus=0,
@@ -165,6 +165,7 @@ def init_and_fit_predictor(label, train_data, zeroshot2024):
             num_stack_levels=0,
             fit_weighted_ensemble=False
         )
+        predictor.save("/tmp/my_predictor")
         return predictor
 
 
