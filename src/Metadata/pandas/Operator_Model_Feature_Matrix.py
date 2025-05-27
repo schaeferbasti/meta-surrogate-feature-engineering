@@ -30,8 +30,8 @@ def get_result(X_train, y_train, X_test, y_test, dataset_metadata, train_feature
             dataset = dataset_metadata["task_id"]
             original_score = np.abs(
                 original_results.query("dataset == @dataset and model == @model", )['score'].values[0])
-            score_val = np.abs(lb.loc[lb['model'] == model, 'score_val'].values[0])
-            improvement = score_val - original_score
+            modified_score = np.abs(lb.loc[lb['model'] == model, 'score_val'].values[0])
+            relative_improvement = calc_relative_improvement(original_score, modified_score)
             new_results.loc[len(new_results)] = [
                 dataset_metadata["task_id"],
                 dataset_metadata["task_type"],
@@ -51,7 +51,7 @@ def get_result(X_train, y_train, X_test, y_test, dataset_metadata, train_feature
                 None,
                 None,
                 model,
-                improvement
+                relative_improvement
             ]
     else:
         feature_metadata_categorical = get_categorical_pandas_metafeatures(train_feature_df, featurename)
@@ -68,8 +68,8 @@ def get_result(X_train, y_train, X_test, y_test, dataset_metadata, train_feature
             dataset = dataset_metadata["task_id"]
             original_score = np.abs(
                 original_results.query("dataset == @dataset and model == @model", )['score'].values[0])
-            score_val = np.abs(lb.loc[lb['model'] == model, 'score_val'].values[0])
-            improvement = score_val - original_score
+            modified_score = np.abs(lb.loc[lb['model'] == model, 'score_val'].values[0])
+            relative_improvement = calc_relative_improvement(original_score, modified_score)
             new_results.loc[len(new_results)] = [
                 dataset_metadata["task_id"],
                 dataset_metadata["task_type"],
@@ -89,10 +89,18 @@ def get_result(X_train, y_train, X_test, y_test, dataset_metadata, train_feature
                 feature_metadata_categorical["feature - top"],
                 feature_metadata_categorical["feature - freq"],
                 model,
-                improvement
+                relative_improvement
             ]
     print("Result for " + featurename + ": " + str(new_results))
     return new_results
+
+def calc_relative_improvement(original_score, modified_score):
+    if np.isclose(original_score, modified_score):
+        return 0.0
+    elif original_score > modified_score:
+        return (original_score - modified_score) / original_score
+    else:
+        return (original_score - modified_score) / modified_score
 
 
 def main():

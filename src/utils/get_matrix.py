@@ -7,6 +7,8 @@ from src.utils.create_feature_and_featurename import create_featurenames
 def get_matrix_columns():
     return ['dataset - id', 'dataset - task type', 'dataset - number of classes', 'feature - name', 'operator', 'feature - type', 'feature - count', 'feature - mean', 'feature - std', 'feature - min', 'feature - max', 'feature - lower percentile', 'feature - 50 percentile', 'feature - upper percentile', 'feature - unique', 'feature - top', 'feature - freq', 'model', 'improvement']
 
+def get_matrix_core_columns():
+    return ['dataset - id', 'feature - name', 'operator', 'model', 'improvement']
 
 def get_additional_numerical_columns(dataset, featurename):
     return [dataset + " - " + featurename + ' - name', dataset + " - " + featurename + ' - type', dataset + " - " + featurename + ' - count', dataset + " - " + featurename + ' - mean', dataset + " - " + featurename + ' - std', dataset + " - " + featurename + ' - min', dataset + " - " + featurename + ' - max', dataset + " - " + featurename + ' - lower percentile', dataset + " - " + featurename + ' - 50 percentile', dataset + " - " + featurename + ' - upper percentile']
