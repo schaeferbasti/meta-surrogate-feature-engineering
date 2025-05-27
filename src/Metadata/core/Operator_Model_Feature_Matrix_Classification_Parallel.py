@@ -17,7 +17,6 @@ def get_core_result_feature_generation_classification(X_train, y_train, X_test, 
     X_train_new[featurename] = train_feature
     X_test_new = X_test.copy()
     X_test_new[featurename] = test_feature
-    print("Run Autogluon with new Feature")
     lb = run_autogluon_lgbm_classification(X_train_new, y_train, X_test_new, y_test)
     models = lb["model"]
     columns = get_matrix_core_columns()
@@ -41,7 +40,6 @@ def get_core_result_feature_generation_classification(X_train, y_train, X_test, 
 
 def get_core_result_feature_selection_classification(X_train, y_train, X_test, y_test, dataset_metadata, featurename, original_results):
     operator = "delete"
-    print("Run Autogluon with new Feature")
     lb = run_autogluon_lgbm_classification(X_train, y_train, X_test, y_test)
     models = lb["model"]
     columns = get_matrix_core_columns()
@@ -72,6 +70,7 @@ def calc_relative_improvement(original_score, modified_score):
 
 
 def main(dataset):
+    print("Classification Dataset: " + dataset)
     columns = get_matrix_core_columns()
     result_matrix = pd.DataFrame(columns=columns)
     unary_operators, binary_operators = get_operators()
@@ -79,16 +78,13 @@ def main(dataset):
     X_train_copy = X_train.copy()
     X_test_copy = X_test.copy()
     original_results = get_model_score(X_train, y_train, X_test, y_test, dataset)
-    print("Normal Features")
     for feature1 in X_train_copy.columns:
-        print("Feature: " + str(feature1))
         X_train_reduced = X_train_copy.drop(feature1, axis=1)
         X_test_reduced = X_test_copy.drop(feature1, axis=1)
         featurename = "without - " + str(feature1)
         new_rows = get_core_result_feature_selection_classification(X_train_reduced, y_train, X_test_reduced, y_test, dataset_metadata, featurename, original_results)
         result_matrix = pd.concat([result_matrix, pd.DataFrame(new_rows)], ignore_index=True)
         result_matrix.to_parquet("Operator_Model_Feature_Matrix_Core" + str(dataset) + ".parquet")
-    print("Binary Features")
     for feature1 in X_train_copy.columns:
         for feature2 in X_train_copy.columns:
             for operator in binary_operators:
@@ -97,7 +93,6 @@ def main(dataset):
                 new_rows = get_core_result_feature_generation_classification(X_train, y_train, X_test, y_test, dataset_metadata, train_feature, test_feature, featurename, original_results)
                 result_matrix = pd.concat([result_matrix, pd.DataFrame(new_rows)], ignore_index=True)
                 result_matrix.to_parquet("Operator_Model_Feature_Matrix_Core" + str(dataset) + ".parquet")
-    print("Unary Features")
     for feature1 in X_train_copy.columns:
         for operator in unary_operators:
             train_feature, featurename = create_feature_and_featurename(feature1=X_train[feature1], feature2=None,
