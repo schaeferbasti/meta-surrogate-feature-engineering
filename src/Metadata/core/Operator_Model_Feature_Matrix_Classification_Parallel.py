@@ -70,7 +70,7 @@ def calc_relative_improvement(original_score, modified_score):
 
 
 def main(dataset):
-    print("Classification Dataset: " + dataset)
+    print("Classification Dataset: " + str(dataset))
     columns = get_matrix_core_columns()
     result_matrix = pd.DataFrame(columns=columns)
     unary_operators, binary_operators = get_operators()
