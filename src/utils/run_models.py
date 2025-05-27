@@ -8,11 +8,7 @@ from sklearn.metrics import log_loss
 from autogluon.tabular import TabularPredictor
 import lightgbm as lgb
 
-from src.Metadata.Operator_Model_Feature_Matrix_Add_Features import add_columns
 from src.utils.Autogluon_MultilabelPredictor import MultilabelPredictor
-from src.utils.get_matrix import add_new_featurenames, get_additional_categorical_columns, \
-    get_additional_numerical_columns
-from src.utils.get_metafeatures import get_categorical_pandas_metafeatures, get_numeric_pandas_metafeatures
 from src.utils.tabrepo_2024_custom import zeroshot2024
 
 
@@ -38,13 +34,11 @@ def run_autogluon_lgbm(X_train, y_train, X_test, y_test, zeroshot=False):
     test_data = X_test
     test_data[label] = y_test
 
-    allowed_models = [
-        "GBM",
-    ]
+    allowed_models = ["GBM"]  # , "RF", "KNN", "XT", "CAT", "XGB", "LR", "FASTAI", "AG_AUTOMM", "NN_TORCH"]
 
     zeroshot2024 = get_zeroshot_models(allowed_models, zeroshot)
     # -- Run AutoGluon
-    predictor = init_and_fit_predictor(label, train_data, zeroshot2024)
+    predictor = init_and_fit_improvement_predictor(label, train_data, zeroshot2024)
     lb = predictor.leaderboard(test_data)
     return lb
 
@@ -163,6 +157,32 @@ def init_and_fit_predictor(label, train_data, zeroshot2024):
         )
         predictor.save("/tmp/my_predictor")
         return predictor
+
+
+def init_and_fit_improvement_predictor(label, train_data, zeroshot2024):
+    predictor = TabularPredictor(
+        label=label,
+        eval_metric="log_loss",  # roc_auc (binary), log_loss (multiclass)
+        problem_type="multiclass",  # binary, multiclass
+        verbosity=0,
+        path=tempfile.mkdtemp() + os.sep,
+    )
+    predictor.fit(
+        time_limit=int(60 * 1 * 5),
+        memory_limit=32,
+        num_cpus=8,
+        num_gpus=0,
+        train_data=train_data,
+        presets="medium_quality",
+        dynamic_stacking=False,
+        hyperparameters=zeroshot2024,
+        num_bag_folds=8,
+        num_bag_sets=1,
+        num_stack_levels=0,
+        fit_weighted_ensemble=False
+    )
+    predictor.save("/tmp/improvement_predictor")
+    return predictor
 
 
 def get_zeroshot_models(allowed_models, zeroshot):
