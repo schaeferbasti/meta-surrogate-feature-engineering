@@ -8,7 +8,6 @@
 
 # Define the files to write the outputs of the job to.
 #SBATCH --output logs/%x-%A_%a.out   # STDOUT  %x and %A will be replaced by the job name and job id, respectively. short: -o logs/%x-%A.out
-#SBATCH --error logs/%x-%A_%a.err    # STDERR  short: -e logs/%x-%A.out
 
 # Define the amount of memory required per node
 #SBATCH --mem=48GB
@@ -57,8 +56,8 @@ dataset_classification=${datasets_classification[$SLURM_ARRAY_TASK_ID]}
 start=`date +%s`
 
 # shellcheck disable=SC2048
-python3 src/Metadata/Operator_Model_Feature_Matrix_Regression_Parallel.py --dataset "$dataset_regression"
-python3 src/Metadata/Operator_Model_Feature_Matrix_Classification_Parallel.py --dataset "$dataset_classification"
+python3 src/Metadata/core/Operator_Model_Feature_Matrix_Regression_Parallel.py --dataset "$dataset_regression"
+python3 src/Metadata/core/Operator_Model_Feature_Matrix_Classification_Parallel.py --dataset "$dataset_classification"
 
 
 # Print the allocated memory per node
