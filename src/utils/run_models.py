@@ -38,7 +38,38 @@ def run_autogluon_lgbm(X_train, y_train, X_test, y_test, zeroshot=False):
 
     zeroshot2024 = get_zeroshot_models(allowed_models, zeroshot)
     # -- Run AutoGluon
-    predictor = init_and_fit_improvement_predictor(label, train_data, zeroshot2024)
+    predictor = init_and_fit_predictor(label, train_data, zeroshot2024)
+    lb = predictor.leaderboard(test_data)
+    return lb
+
+def run_autogluon_lgbm_classification(X_train, y_train, X_test, y_test, zeroshot=False):
+    label = "target"
+    train_data = X_train
+    train_data[label] = y_train
+    test_data = X_test
+    test_data[label] = y_test
+
+    allowed_models = ["GBM"]  # , "RF", "KNN", "XT", "CAT", "XGB", "LR", "FASTAI", "AG_AUTOMM", "NN_TORCH"]
+
+    zeroshot2024 = get_zeroshot_models(allowed_models, zeroshot)
+    # -- Run AutoGluon
+    predictor = init_and_fit_improvement_predictor_classification(label, train_data, zeroshot2024)
+    lb = predictor.leaderboard(test_data)
+    return lb
+
+
+def run_autogluon_lgbm_regression(X_train, y_train, X_test, y_test, zeroshot=False):
+    label = "target"
+    train_data = X_train
+    train_data[label] = y_train
+    test_data = X_test
+    test_data[label] = y_test
+
+    allowed_models = ["GBM"]  # , "RF", "KNN", "XT", "CAT", "XGB", "LR", "FASTAI", "AG_AUTOMM", "NN_TORCH"]
+
+    zeroshot2024 = get_zeroshot_models(allowed_models, zeroshot)
+    # -- Run AutoGluon
+    predictor = init_and_fit_improvement_predictor_regression(label, train_data, zeroshot2024)
     lb = predictor.leaderboard(test_data)
     return lb
 
@@ -159,7 +190,7 @@ def init_and_fit_predictor(label, train_data, zeroshot2024):
         return predictor
 
 
-def init_and_fit_improvement_predictor(label, train_data, zeroshot2024):
+def init_and_fit_improvement_predictor_classification(label, train_data, zeroshot2024):
     predictor = TabularPredictor(
         label=label,
         eval_metric="log_loss",  # roc_auc (binary), log_loss (multiclass)
@@ -181,7 +212,33 @@ def init_and_fit_improvement_predictor(label, train_data, zeroshot2024):
         num_stack_levels=0,
         fit_weighted_ensemble=False
     )
-    predictor.save("/tmp/improvement_predictor")
+    predictor.save("/tmp/improvement_classification_predictor")
+    return predictor
+
+
+def init_and_fit_improvement_predictor_regression(label, train_data, zeroshot2024):
+    predictor = TabularPredictor(
+        label=label,
+        eval_metric="root_mean_squared_error",  # roc_auc (binary), log_loss (multiclass)
+        problem_type="regression",  # binary, multiclass
+        verbosity=0,
+        path=tempfile.mkdtemp() + os.sep,
+    )
+    predictor.fit(
+        time_limit=int(60 * 60 * 4),
+        memory_limit=32,
+        num_cpus=8,
+        num_gpus=0,
+        train_data=train_data,
+        presets="best_quality",
+        dynamic_stacking=False,
+        hyperparameters=zeroshot2024,
+        num_bag_folds=8,
+        num_bag_sets=1,
+        num_stack_levels=0,
+        fit_weighted_ensemble=False
+    )
+    predictor.save("/tmp/improvement_regression_predictor")
     return predictor
 
 
