@@ -13,7 +13,11 @@ def create_feature_and_featurename(feature1, feature2, operator):
 
 
 def create_unary_feature_and_featurename(feature1, operator):
-    feature1_int_list = [int(x) for x in feature1]
+    try:
+        feature1_int_list = [int(x) for x in feature1]
+    except ValueError:
+        feature1_factorized = feature1.factorize()[0]
+        feature1_int_list = [int(x) for x in feature1_factorized]
     if operator == "min":
         feature = feature1.apply(lambda x: min(feature1_int_list))
         featurename = "min(" + str(feature1.name) + ")"
@@ -50,8 +54,14 @@ def create_unary_feature_and_featurename(feature1, operator):
 
 
 def create_binary_feature_and_featurename(feature1, feature2, operator):
-    feature1_int_list = [int(x) for x in feature1]
-    feature2_int_list = [int(x) for x in feature2]
+    try:
+        feature1_int_list = [int(x) for x in feature1]
+        feature2_int_list = [int(x) for x in feature2]
+    except ValueError:
+        feature1_factorized = feature1.factorize()[0]
+        feature2_factorized = feature2.factorize()[0]
+        feature1_int_list = [int(x) for x in feature1_factorized]
+        feature2_int_list = [int(x) for x in feature2_factorized]
     if operator == "+":
         feature = [f1 + f2 for f1, f2 in zip(feature1_int_list, feature2_int_list)]
         featurename = "add(" + str(feature1.name) + ", " + str(feature2.name) + ")"
