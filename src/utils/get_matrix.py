@@ -10,12 +10,9 @@ def get_matrix_columns():
 def get_matrix_core_columns():
     return ['dataset - id', 'feature - name', 'operator', 'model', 'improvement']
 
-def get_additional_numerical_columns(dataset, featurename):
-    return [dataset + " - " + featurename + ' - name', dataset + " - " + featurename + ' - type', dataset + " - " + featurename + ' - count', dataset + " - " + featurename + ' - mean', dataset + " - " + featurename + ' - std', dataset + " - " + featurename + ' - min', dataset + " - " + featurename + ' - max', dataset + " - " + featurename + ' - lower percentile', dataset + " - " + featurename + ' - 50 percentile', dataset + " - " + featurename + ' - upper percentile']
 
-
-def get_additional_categorical_columns(dataset, featurename):
-    return [dataset + " - " + featurename + ' - name', dataset + " - " + featurename + ' - type', dataset + " - " + featurename + ' - count', dataset + " - " + featurename + ' - unique', dataset + " - " + featurename + ' - top', dataset + " - " + featurename + ' - freq']
+def get_additional_pandas_column(dataset, featurename):
+    return ['dataset - metafeature', 'feature - metafeature']
 
 
 def add_new_featurenames(X_test):
