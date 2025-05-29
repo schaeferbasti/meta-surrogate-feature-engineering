@@ -11,6 +11,15 @@ def create_feature_and_featurename(feature1, feature2, operator):
         feature, featurename = create_binary_feature_and_featurename(feature1, feature2, operator)
     return feature, featurename
 
+def create_feature(feature1, feature2, featurename):
+    if feature2 is None:
+        operator = featurename.split("(")[0]
+        feature, _ = create_unary_feature_and_featurename(feature1, operator)
+    else:
+        operator = featurename.split("(")[0]
+        feature, _ = create_binary_feature_and_featurename(feature1, feature2, operator)
+    return feature
+
 
 def create_unary_feature_and_featurename(feature1, operator):
     try:
@@ -62,16 +71,16 @@ def create_binary_feature_and_featurename(feature1, feature2, operator):
         feature2_factorized = feature2.factorize()[0]
         feature1_int_list = [int(x) for x in feature1_factorized]
         feature2_int_list = [int(x) for x in feature2_factorized]
-    if operator == "+":
+    if operator == "+" or operator == "add":
         feature = [f1 + f2 for f1, f2 in zip(feature1_int_list, feature2_int_list)]
         featurename = "add(" + str(feature1.name) + ", " + str(feature2.name) + ")"
-    elif operator == "-":
+    elif operator == "-" or operator == "subtract":
         feature = [f1 - f2 for f1, f2 in zip(feature1_int_list, feature2_int_list)]
         featurename = "subtract(" + str(feature1.name) + ", " + str(feature2.name) + ")"
-    elif operator == "*":
+    elif operator == "*" or operator == "multiply":
         feature = [f1 * f2 for f1, f2 in zip(feature1_int_list, feature2_int_list)]
         featurename = "multiply(" + str(feature1.name) + ", " + str(feature2.name) + ")"
-    elif operator == "/":
+    elif operator == "/" or operator == "divide":
         feature = [f1 / f2 if f2 != 0 else f1 for f1, f2 in zip(feature1_int_list, feature2_int_list)]
         featurename = "divide(" + str(feature1.name) + ", " + str(feature2.name) + ")"
     elif operator == "GroupByThenMin":
