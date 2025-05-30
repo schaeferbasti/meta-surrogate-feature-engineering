@@ -62,3 +62,11 @@ def get_categorical_pandas_metafeatures(feature_df, featurename):
     return feature_metadata_categorical
 
 
+def get_mfe_metadata(feature):
+    mfe = MFE()
+    mfe.fit(np.array(feature))
+    metafeatures = mfe.extract()
+    return metafeatures
+
+
+
