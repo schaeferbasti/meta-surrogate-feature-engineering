@@ -11,9 +11,12 @@ def get_matrix_core_columns():
     return ['dataset - id', 'feature - name', 'operator', 'model', 'improvement']
 
 
-def get_additional_pandas_column(dataset, featurename):
+def get_additional_pandas_columns(dataset, featurename):
     return ['dataset - metafeature', 'feature - metafeature']
 
+
+def get_additional_mfe_columns(dataset, featurename):
+    return ['attr_to_inst', 'nr_inst', 'sparsity.mean']
 
 def add_new_featurenames(X_test):
     # Get new dataset with feature names and metafeatures and replicate each feature (=each row) x times, that we can repeat thus row with similar values, but instead of the feature name, we add a new name consisting of all available operators and respective features

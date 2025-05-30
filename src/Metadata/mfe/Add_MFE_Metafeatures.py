@@ -2,12 +2,11 @@ import pandas as pd
 
 from src.utils.create_feature_and_featurename import create_feature
 from src.utils.get_data import get_openml_dataset_split_and_metadata
-from src.utils.get_matrix import get_additional_pandas_columns
-from src.utils.get_metafeatures import get_numeric_pandas_metafeatures, get_categorical_pandas_metafeatures
+from src.utils.get_matrix import get_additional_mfe_columns
+from src.utils.get_metafeatures import get_mfe_metadata
 
-
-def add_pandas_metadata_columns(dataset_metadata, X_train, result_matrix):
-    columns = get_additional_pandas_columns(str(result_matrix.columns[0]), result_matrix.columns[1])
+def add_mfe_metadata_columns(dataset_metadata, X_train, result_matrix):
+    columns = get_additional_mfe_columns(str(result_matrix.columns[0]), result_matrix.columns[1])
     new_columns = pd.DataFrame(index=result_matrix.index, columns=columns)
     for row in result_matrix.iterrows():
         dataset = row[1][0]
@@ -30,36 +29,13 @@ def add_pandas_metadata_columns(dataset_metadata, X_train, result_matrix):
             new_feature = create_feature(feature1, feature2, featurename)
             new_feature_df = pd.DataFrame(new_feature, columns=[featurename])
             X_train_copy = pd.concat([X_train_copy, new_feature_df])
-        try:
             feature = pd.DataFrame(X_train_copy[featurename])
-            if pd.api.types.is_numeric_dtype(X_train_copy[featurename]):
-                feature_metadata_numeric = get_numeric_pandas_metafeatures(feature, featurename)
-                new_row = pd.DataFrame(columns=columns)
-                new_row.loc[len(result_matrix)] = [
-                    dataset_metadata["task_type"],
-                    feature_metadata_numeric["feature - mean"],
-                ]
-                matching_indices = result_matrix[result_matrix["feature - name"] == str(featurename)].index
-                for idx in matching_indices:
-                    new_columns.loc[idx] = new_row.iloc[0]
-            else:
-                feature_metadata_categorical = get_categorical_pandas_metafeatures(feature, featurename)
-                new_row = pd.DataFrame(columns=columns)
-                new_row.loc[len(result_matrix)] = [
-                    dataset_metadata["task_type"],
-                    int(feature_metadata_categorical["feature - count"]),
-                ]
-                matching_indices = result_matrix[result_matrix["feature - name"] == str(featurename)].index
-                for idx in matching_indices:
-                    new_columns.loc[idx] = new_row.iloc[0]
-        except KeyError:
-            feature = pd.DataFrame(X_train[feature_to_delete])
-            feature_metadata_categorical = get_categorical_pandas_metafeatures(feature, feature_to_delete)
-
+            feature_metadata_mfe = get_mfe_metadata(feature)
             new_row = pd.DataFrame(columns=columns)
             new_row.loc[len(result_matrix)] = [
-                dataset_metadata["task_type"],
-                int(feature_metadata_categorical["feature - count"])
+                feature_metadata_mfe[1][4],  # "attr_to_inst"
+                feature_metadata_mfe[1][35],  # "nr_inst"
+                feature_metadata_mfe[1][46],  # "sparsity.mean"
             ]
             matching_indices = result_matrix[result_matrix["feature - name"] == str(featurename)].index
             for idx in matching_indices:
@@ -74,9 +50,9 @@ def main():
     for dataset, _ in result_matrix.groupby('dataset - id'):
         print("Dataset: " + str(dataset))
         X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset)
-        result_matrix = add_pandas_metadata_columns(dataset_metadata, X_train, result_matrix)
-        result_matrix.to_parquet("Pandas_Matrix_4_" + str(dataset) + ".parquet")
-    result_matrix.to_parquet("Pandas_Matrix_4.parquet")
+        result_matrix = add_mfe_metadata_columns(dataset_metadata, X_train, result_matrix)
+        result_matrix.to_parquet("MFE_Matrix_1_" + str(dataset) + ".parquet")
+    result_matrix.to_parquet("MFE_Matrix_1.parquet")
 
 
 if __name__ == '__main__':
