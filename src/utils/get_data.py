@@ -1,3 +1,6 @@
+import os
+
+import numpy as np
 import pandas as pd
 import openml
 import requests
@@ -128,3 +131,40 @@ def get_openfe_data(X_train, y_train, X_test, y_test):
     features = openFE.fit(data=X_train, label=y_train, n_jobs=1)  # generate new features
     X_train_openfe, X_test_openfe = transform(X_train, X_test, features, n_jobs=1)
     return X_train_openfe, y_train, X_test_openfe, y_test
+
+
+def get_name_and_split_and_save_dataset(openml_task_id):
+    name = str(openml_task_id)
+    task = openml.tasks.get_task(
+        openml_task_id,
+        download_splits=True,
+        download_data=True,
+        download_qualities=True,
+        download_features_meta_data=True,
+    )
+    train_idx, test_idx = task.get_train_test_split_indices()
+    X, y = task.get_X_and_y(dataset_format="dataframe")
+    root_dir = "dataset2vec/datasets/" + name + "/"
+    try:
+        os.makedirs(root_dir)
+    except FileExistsError:
+        pass
+    len = X.shape[0]
+    folds, validation_folds = get_folds_and_validation_folds(len)
+    X.to_csv(root_dir + name + '_py.dat', header=False, index=False)
+    folds.to_csv(root_dir + "/" + 'folds_py.dat',  header=False, index=False)
+    y.to_csv(root_dir + "/" + 'labels_py.dat', header=False, index=False)
+    validation_folds.to_csv(root_dir + "/" + 'validation_folds_py.dat',  header=False, index=False)
+    return name, 0
+
+
+def get_folds_and_validation_folds(len):
+    folds = pd.DataFrame()
+    for i in range(len):
+        row = pd.DataFrame([np.random.choice([1, 0], size=4)])
+        folds = pd.concat([folds, row], ignore_index=True)
+    validation_folds = pd.DataFrame()
+    for i in range(len):
+        row = pd.DataFrame([np.random.choice([1, 0], size=4)])
+        validation_folds = pd.concat([validation_folds, row], ignore_index=True)
+    return folds, validation_folds
