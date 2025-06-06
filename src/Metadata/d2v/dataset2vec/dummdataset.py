@@ -97,7 +97,7 @@ class Dataset(object):
 
         '''
         # Create the one-hot encoder
-        ohc           = OneHotEncoder(categories = [range(len(np.unique(labels)))],sparse=False)
+        ohc           = OneHotEncoder(categories = [range(len(np.unique(labels)))],sparse_output=False)
         d = {ni: indi for indi, ni in enumerate(np.unique(labels))}
         # process the labels
         labels        = np.asarray([d[ni] for ni in labels.reshape(-1)]).reshape(-1)

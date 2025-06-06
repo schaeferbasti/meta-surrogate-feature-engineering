@@ -8,7 +8,7 @@ Created on Mon May 25 18:19:28 2020
 
 import pandas as pd
 import numpy as np
-from metadataset import Metadataset
+from src.Metadata.d2v.dataset2vec.metadataset import Metadataset
 from sklearn.preprocessing import OneHotEncoder
 import os
 from sklearn.preprocessing import MinMaxScaler
