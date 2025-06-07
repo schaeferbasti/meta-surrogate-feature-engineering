@@ -1,11 +1,14 @@
 import os
 
+import numpy as np
 import pandas as pd
+import scipy
 from tabpfn import TabPFNClassifier
 
 from src.utils.create_feature_and_featurename import create_feature
 from src.utils.get_data import get_openml_dataset_split_and_metadata
 from src.utils.get_matrix import get_additional_tabpfn_columns
+
 
 def get_tabpfn_embedding(X, y):
     os.environ["TABPFN_ALLOW_CPU_LARGE_DATASET"] = "1"
@@ -13,6 +16,7 @@ def get_tabpfn_embedding(X, y):
     clf.fit(X, y)
     embeddings = clf.get_embeddings(X)
     return embeddings
+
 
 def add_tabpfn_metadata_columns(X_train, y_train, result_matrix):
     columns = get_additional_tabpfn_columns(str(result_matrix.columns[0]), result_matrix.columns[1])
@@ -38,11 +42,14 @@ def add_tabpfn_metadata_columns(X_train, y_train, result_matrix):
             new_feature_df = pd.DataFrame(new_feature, columns=[featurename])
             X_train_copy = pd.concat([X_train_copy, new_feature_df])
         embedding = get_tabpfn_embedding(X_train_copy, y_train)
+        embedding_representation = scipy.linalg.norm(embedding)  # , 'fro')
         matching_indices = result_matrix[result_matrix["feature - name"] == str(featurename)].index
         for idx in matching_indices:
-            new_columns.loc[idx] = embedding
+            new_columns.loc[idx] = embedding_representation
+        print(new_columns)
     insert_position = result_matrix.shape[1] - 2
-    result_matrix = pd.concat([result_matrix.iloc[:, :insert_position], new_columns, result_matrix.iloc[:, insert_position:]], axis=1)
+    result_matrix = pd.concat(
+        [result_matrix.iloc[:, :insert_position], new_columns, result_matrix.iloc[:, insert_position:]], axis=1)
     return result_matrix
 
 
