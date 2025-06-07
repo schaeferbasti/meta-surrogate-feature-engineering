@@ -22,6 +22,11 @@ def get_additional_mfe_columns(dataset, featurename):
 def get_additional_d2v_columns(dataset, featurename):
     return [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31]
 
+
+def get_additional_tabpfn_columns(dataset, featurename):
+    return ['embedding']
+
+
 def add_new_featurenames(X_test):
     # Get new dataset with feature names and metafeatures and replicate each feature (=each row) x times, that we can repeat thus row with similar values, but instead of the feature name, we add a new name consisting of all available operators and respective features
     matrix_columns = get_matrix_columns()
