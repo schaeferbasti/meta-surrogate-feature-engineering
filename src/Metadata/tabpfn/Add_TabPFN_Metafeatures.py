@@ -1,3 +1,5 @@
+import os
+
 import pandas as pd
 from tabpfn import TabPFNClassifier
 
@@ -6,6 +8,7 @@ from src.utils.get_data import get_openml_dataset_split_and_metadata
 from src.utils.get_matrix import get_additional_tabpfn_columns
 
 def get_tabpfn_embedding(X, y):
+    os.environ["TABPFN_ALLOW_CPU_LARGE_DATASET"] = "1"
     clf = TabPFNClassifier()
     clf.fit(X, y)
     embeddings = clf.get_embeddings(X)
