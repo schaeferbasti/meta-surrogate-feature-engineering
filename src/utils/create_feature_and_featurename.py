@@ -23,18 +23,18 @@ def create_feature(feature1, feature2, featurename):
 
 def create_unary_feature_and_featurename(feature1, operator):
     try:
-        feature1_int_list = [int(x) for x in feature1]
+        feature1_float_list = [float(x) for x in feature1]
     except ValueError:
         feature1_factorized = feature1.factorize()[0]
-        feature1_int_list = [int(x) for x in feature1_factorized]
+        feature1_float_list = [float(x) for x in feature1_factorized]
     if operator == "min":
-        feature = feature1.apply(lambda x: min(feature1_int_list))
+        feature = feature1.apply(lambda x: min(feature1_float_list))
         featurename = "min(" + str(feature1.name) + ")"
     elif operator == "max":
-        feature = feature1.apply(lambda x: max(feature1_int_list))
+        feature = feature1.apply(lambda x: max(feature1_float_list))
         featurename = "max(" + str(feature1.name) + ")"
     elif operator == "freq":
-        feature = feature1.apply(lambda x: feature1_int_list.count(int(x)))
+        feature = feature1.apply(lambda x: feature1_float_list.count(float(x)))
         featurename = "freq(" + str(feature1.name) + ")"
     elif operator == "abs":
         feature = feature1.apply(lambda x: abs(float(x)))
@@ -64,24 +64,24 @@ def create_unary_feature_and_featurename(feature1, operator):
 
 def create_binary_feature_and_featurename(feature1, feature2, operator):
     try:
-        feature1_int_list = [int(x) for x in feature1]
-        feature2_int_list = [int(x) for x in feature2]
+        feature1_float_list = [float(x) for x in feature1]
+        feature2_float_list = [float(x) for x in feature2]
     except ValueError:
         feature1_factorized = feature1.factorize()[0]
         feature2_factorized = feature2.factorize()[0]
-        feature1_int_list = [int(x) for x in feature1_factorized]
-        feature2_int_list = [int(x) for x in feature2_factorized]
+        feature1_float_list = [float(x) for x in feature1_factorized]
+        feature2_float_list = [float(x) for x in feature2_factorized]
     if operator == "+" or operator == "add":
-        feature = [f1 + f2 for f1, f2 in zip(feature1_int_list, feature2_int_list)]
+        feature = [f1 + f2 for f1, f2 in zip(feature1_float_list, feature2_float_list)]
         featurename = "add(" + str(feature1.name) + ", " + str(feature2.name) + ")"
     elif operator == "-" or operator == "subtract":
-        feature = [f1 - f2 for f1, f2 in zip(feature1_int_list, feature2_int_list)]
+        feature = [f1 - f2 for f1, f2 in zip(feature1_float_list, feature2_float_list)]
         featurename = "subtract(" + str(feature1.name) + ", " + str(feature2.name) + ")"
     elif operator == "*" or operator == "multiply":
-        feature = [f1 * f2 for f1, f2 in zip(feature1_int_list, feature2_int_list)]
+        feature = [f1 * f2 for f1, f2 in zip(feature1_float_list, feature2_float_list)]
         featurename = "multiply(" + str(feature1.name) + ", " + str(feature2.name) + ")"
     elif operator == "/" or operator == "divide":
-        feature = [f1 / f2 if f2 != 0 else f1 for f1, f2 in zip(feature1_int_list, feature2_int_list)]
+        feature = [f1 / f2 if f2 != 0 else f1 for f1, f2 in zip(feature1_float_list, feature2_float_list)]
         featurename = "divide(" + str(feature1.name) + ", " + str(feature2.name) + ")"
     elif operator == "GroupByThenMin":
         temp = feature1.groupby(feature2).min()
