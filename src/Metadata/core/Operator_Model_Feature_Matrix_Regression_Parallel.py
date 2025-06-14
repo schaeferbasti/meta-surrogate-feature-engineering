@@ -7,7 +7,7 @@ from src.utils.create_feature_and_featurename import create_feature_and_featuren
 from src.utils.get_data import get_openml_dataset_split_and_metadata
 from src.utils.get_matrix import get_matrix_core_columns
 from src.utils.get_operators import get_operators
-from src.utils.run_models import get_model_score, run_autogluon_lgbm_regression
+from src.utils.run_models import get_model_score_regression, run_autogluon_lgbm_regression
 
 
 def get_core_result_feature_generation_regression(X_train, y_train, X_test, y_test, dataset_metadata, train_feature, test_feature, featurename, original_results):
