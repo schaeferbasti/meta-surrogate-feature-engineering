@@ -1,6 +1,5 @@
 import os
 
-import numpy as np
 import pandas as pd
 import scipy
 from tabpfn import TabPFNClassifier
@@ -40,13 +39,13 @@ def add_tabpfn_metadata_columns(X_train, y_train, result_matrix):
                 feature2 = None
             new_feature = create_feature(feature1, feature2, featurename)
             new_feature_df = pd.DataFrame(new_feature, columns=[featurename])
-            X_train_copy = pd.concat([X_train_copy, new_feature_df])
+            new_feature_df.index = X_train_copy.index
+            X_train_copy = pd.concat([X_train_copy, new_feature_df], axis=1)
         embedding = get_tabpfn_embedding(X_train_copy, y_train)
-        embedding_representation = scipy.linalg.norm(embedding)  # , 'fro')
+        embedding_representation = scipy.linalg.norm(embedding)
         matching_indices = result_matrix[result_matrix["feature - name"] == str(featurename)].index
         for idx in matching_indices:
             new_columns.loc[idx] = embedding_representation
-        print(new_columns)
     insert_position = result_matrix.shape[1] - 2
     result_matrix = pd.concat(
         [result_matrix.iloc[:, :insert_position], new_columns, result_matrix.iloc[:, insert_position:]], axis=1)
