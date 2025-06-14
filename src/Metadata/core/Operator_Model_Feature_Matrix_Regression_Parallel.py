@@ -81,7 +81,7 @@ def main(dataset):
         X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset)
         X_train_copy = X_train.copy()
         X_test_copy = X_test.copy()
-        original_results = get_model_score(X_train, y_train, X_test, y_test, dataset)
+        original_results = get_model_score_regression(X_train, y_train, X_test, y_test, dataset)
         for feature1 in X_train_copy.columns:
             X_train_reduced = X_train_copy.drop(feature1, axis=1)
             X_test_reduced = X_test_copy.drop(feature1, axis=1)

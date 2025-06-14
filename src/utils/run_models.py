@@ -158,6 +158,16 @@ def get_model_score(X_train, y_train, X_test, y_test, dataset_id):
     return new_results
 
 
+def get_model_score_regression(X_train, y_train, X_test, y_test, dataset_id):
+    lb = run_autogluon_lgbm_regression(X_train, y_train, X_test, y_test)
+    models = lb["model"]
+    new_results = pd.DataFrame(columns=['dataset', 'model', 'score'])
+    for model in models:
+        score_val = lb.loc[lb['model'] == model, 'score_val'].values[0]
+        new_results.loc[len(new_results)] = [dataset_id, model, score_val]
+    return new_results
+
+
 def init_and_fit_predictor(label, train_data, zeroshot2024):
     try:
         predictor = TabularPredictor.load("/tmp/tmptoqq7td9")
