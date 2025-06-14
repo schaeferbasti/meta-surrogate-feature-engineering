@@ -86,35 +86,35 @@ def create_binary_feature_and_featurename(feature1, feature2, operator):
     elif operator == "GroupByThenMin":
         temp = feature1.groupby(feature2).min()
         temp.loc[np.nan] = np.nan
-        feature = feature2.apply(lambda x: temp.loc[x])
+        feature = feature2.apply(lambda x: temp.loc[x]).to_list()
         featurename = "GroupByThenMin(" + str(feature1.name) + ", " + str(feature2.name) + ")"
     elif operator == "GroupByThenMax":
         temp = feature1.groupby(feature2).max()
         temp.loc[np.nan] = np.nan
-        feature = feature2.apply(lambda x: temp.loc[x])
+        feature = feature2.apply(lambda x: temp.loc[x]).to_list()
         featurename = "GroupByThenMax(" + str(feature1.name) + ", " + str(feature2.name) + ")"
     elif operator == "GroupByThenMean":
         feature1 = pd.to_numeric(feature1, errors='coerce')
         temp = feature1.groupby(feature2)
         temp = temp.mean()
         temp.loc[np.nan] = np.nan
-        feature = feature2.apply(lambda x: temp.loc[x])
+        feature = feature2.apply(lambda x: temp.loc[x]).to_list()
         featurename = "GroupByThenMean(" + str(feature1.name) + ", " + str(feature2.name) + ")"
     elif operator == "GroupByThenMedian":
         feature1 = pd.to_numeric(feature1, errors='coerce')
         temp = feature1.groupby(feature2).median()
         temp.loc[np.nan] = np.nan
-        feature = feature2.apply(lambda x: temp.loc[x])
+        feature = feature2.apply(lambda x: temp.loc[x]).to_list()
         featurename = "GroupByThenMedian(" + str(feature1.name) + ", " + str(feature2.name) + ")"
     elif operator == "GroupByThenStd":
         feature1 = pd.to_numeric(feature1, errors='coerce')
         temp = feature1.groupby(feature2).std()
         temp.loc[np.nan] = np.nan
-        feature = feature2.apply(lambda x: temp.loc[x])
+        feature = feature2.apply(lambda x: temp.loc[x]).to_list()
         featurename = "GroupByThenStd(" + str(feature1.name) + ", " + str(feature2.name) + ")"
     elif operator == 'GroupByThenRank':
         feature1 = pd.to_numeric(feature1, errors='coerce')
-        feature = feature1.groupby(feature2).rank(ascending=True, pct=True)
+        feature = feature1.groupby(feature2).rank(ascending=True, pct=True).to_list()
         featurename = "GroupByThenRank(" + str(feature1.name) + ", " + str(feature2.name) + ")"
     elif operator == "GroupByThenFreq":
         def _f(x):
@@ -122,25 +122,25 @@ def create_binary_feature_and_featurename(feature1, feature2, operator):
             value_counts.loc[np.nan] = np.nan
             return x.apply(lambda x: value_counts.loc[x])
 
-        feature = feature1.groupby(feature2).apply(_f)
+        feature = feature1.groupby(feature2).apply(_f).to_list()
         featurename = "GroupByThenFreq(" + str(feature1.name) + ", " + str(feature2.name) + ")"
     elif operator == "GroupByThenNUnique":
         nunique = feature1.groupby(feature2).nunique()
         nunique.loc[np.nan] = np.nan
-        feature = feature2.apply(lambda x: nunique.loc[x])
+        feature = feature2.apply(lambda x: nunique.loc[x]).to_list()
         featurename = "GroupByThenNUnique(" + str(feature1.name) + ", " + str(feature2.name) + ")"
     elif operator == "Combine":
         temp = feature1.astype(str) + '_' + feature2.astype(str)
         temp[feature1.isna() | feature2.isna()] = np.nan
         temp, _ = temp.factorize()
-        feature = pd.Series(temp, index=feature1.index).astype("float64")
+        feature = pd.Series(temp, index=feature1.index).astype("float64").to_list()
         featurename = "Combine(" + str(feature1.name) + ", " + str(feature2.name) + ")"
     elif operator == "CombineThenFreq":
         temp = feature1.astype(str) + '_' + feature2.astype(str)
         temp[feature1.isna() | feature2.isna()] = np.nan
         value_counts = temp.value_counts()
         value_counts.loc[np.nan] = np.nan
-        feature = temp.apply(lambda x: value_counts.loc[x])
+        feature = temp.apply(lambda x: value_counts.loc[x]).to_list()
         featurename = "CombineThenFreq(" + str(feature1.name) + ", " + str(feature2.name) + ")"
     else:
         raise NotImplementedError(f"Unrecognized operator {operator}.")
