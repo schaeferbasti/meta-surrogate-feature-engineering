@@ -3,7 +3,7 @@ import pandas as pd
 from src.utils.create_feature_and_featurename import create_feature
 from src.utils.get_data import get_openml_dataset_split_and_metadata
 from src.utils.get_matrix import get_additional_mfe_columns
-from src.utils.get_metafeatures import get_mfe_metadata
+from src.utils.get_metafeatures import get_mfe_feature_metadata, get_mfe_dataset_metadata
 
 def add_mfe_metadata_columns(X_train, y_train, X_test, y_test, result_matrix):
     columns = get_additional_mfe_columns(str(result_matrix.columns[0]), result_matrix.columns[1])
@@ -11,9 +11,12 @@ def add_mfe_metadata_columns(X_train, y_train, X_test, y_test, result_matrix):
     for row in result_matrix.iterrows():
         featurename = row[1][1]
         X_train_copy = X_train.copy()
+        X_test_copy = X_test.copy()
         if featurename.startswith("without"):
             feature_to_delete = featurename.split(" - ")[1]
+            feature = X_train_copy[feature_to_delete]
             X_train_copy = X_train_copy.drop(feature_to_delete, axis=1)
+            X_test_copy = X_train_copy.drop(feature_to_delete, axis=1)
         else:
             features = featurename.split("(")[1].replace(")", "").replace(" ", "")
             if "," in features:
@@ -28,12 +31,17 @@ def add_mfe_metadata_columns(X_train, y_train, X_test, y_test, result_matrix):
             new_feature = create_feature(feature1, feature2, featurename)
             new_feature_df = pd.DataFrame(new_feature, columns=[featurename])
             X_train_copy = pd.concat([X_train_copy, new_feature_df])
-        feature = pd.DataFrame(X_train_copy[featurename])
-        X = pd.concat([X_train, X_test])
+            X_test_copy = pd.concat([X_test_copy, new_feature_df])
+            feature = pd.DataFrame(X_train_copy[featurename])
+        X = pd.concat([X_train_copy, X_test_copy])
         y = pd.concat([y_train, y_test])
-        feature_metadata_mfe = get_mfe_metadata(X, y, feature)
+        feature_metadata_mfe = get_mfe_feature_metadata(feature)
+        dataset_metadata_mfe = get_mfe_dataset_metadata(X, y)
         new_row = pd.DataFrame(columns=columns)
         new_row.loc[len(result_matrix)] = [
+            dataset_metadata_mfe[1][4],  # "attr_to_inst"
+            dataset_metadata_mfe[1][35],  # "nr_inst"
+            dataset_metadata_mfe[1][46],  # "sparsity.mean"
             feature_metadata_mfe[1][4],  # "attr_to_inst"
             feature_metadata_mfe[1][35],  # "nr_inst"
             feature_metadata_mfe[1][46],  # "sparsity.mean"
