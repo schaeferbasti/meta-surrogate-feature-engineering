@@ -10,10 +10,8 @@ import argparse
 from src.Metadata.d2v.dataset2vec.dummdataset import Dataset
 from src.Metadata.d2v.dataset2vec.modules import FunctionF, PoolF, FunctionG, PoolG, FunctionH
 from src.Metadata.d2v.dataset2vec.sampling import Batch, TestSampling
-from src.utils.create_feature_and_featurename import create_feature
 from src.utils.get_data import get_openml_dataset_split_and_metadata, get_name_and_split_and_save_dataset
 from src.utils.get_matrix import get_additional_d2v_columns
-from src.utils.get_metafeatures import get_mfe_metadata
 
 def get_d2v_metafeatures(dataset_id):
     tf.random.set_seed(0)
