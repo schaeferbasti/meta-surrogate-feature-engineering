@@ -12,11 +12,11 @@ def get_matrix_core_columns():
 
 
 def get_additional_pandas_columns(dataset, featurename):
-    return ['dataset - metafeature', 'feature - metafeature']
+    return ['task_type', 'feature - count', 'feature - unique', 'feature - top', 'feature - freq', 'feature - mean', 'feature - std', 'feature - min', 'feature - 25%', 'feature - 50%', 'feature - 75%', 'feature - max']
 
 
 def get_additional_mfe_columns(dataset, featurename):
-    return ['attr_to_inst', 'nr_inst', 'sparsity.mean']
+    return [f"col_{i}" for i in range(242)]  # ['attr_to_inst', 'nr_inst', 'sparsity.mean']
 
 
 def get_additional_d2v_columns(dataset, featurename):
