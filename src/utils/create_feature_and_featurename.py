@@ -28,34 +28,34 @@ def create_unary_feature_and_featurename(feature1, operator):
         feature1_factorized = feature1.factorize()[0]
         feature1_float_list = [float(x) for x in feature1_factorized]
     if operator == "min":
-        feature = feature1.apply(lambda x: min(feature1_float_list))
+        feature = feature1.apply(lambda x: min(feature1_float_list)).to_list()
         featurename = "min(" + str(feature1.name) + ")"
     elif operator == "max":
-        feature = feature1.apply(lambda x: max(feature1_float_list))
+        feature = feature1.apply(lambda x: max(feature1_float_list)).to_list()
         featurename = "max(" + str(feature1.name) + ")"
     elif operator == "freq":
-        feature = feature1.apply(lambda x: feature1_float_list.count(float(x)))
+        feature = feature1.apply(lambda x: feature1_float_list.count(float(x))).to_list()
         featurename = "freq(" + str(feature1.name) + ")"
     elif operator == "abs":
-        feature = feature1.apply(lambda x: abs(float(x)))
+        feature = feature1.apply(lambda x: abs(float(x))).to_list()
         featurename = "abs(" + str(feature1.name) + ")"
     elif operator == "log":
-        feature = feature1.apply(lambda x: np.log(np.abs(float(x))))
+        feature = feature1.apply(lambda x: np.log(np.abs(float(x)))).to_list()
         featurename = "log(" + str(feature1.name) + ")"
     elif operator == "sqrt":
-        feature = feature1.apply(lambda x: np.sqrt(np.abs(float(x))))
+        feature = feature1.apply(lambda x: np.sqrt(np.abs(float(x)))).to_list()
         featurename = "sqrt(" + str(feature1.name) + ")"
     elif operator == "square":
-        feature = feature1.apply(lambda x: np.square(float(x)))
+        feature = feature1.apply(lambda x: np.square(float(x))).to_list()
         featurename = "square(" + str(feature1.name) + ")"
     elif operator == "sigmoid":
-        feature = feature1.apply(lambda x: 1 / (1 + np.exp(-float(x))))
+        feature = feature1.apply(lambda x: 1 / (1 + np.exp(-float(x)))).to_list()
         featurename = "sigmoid(" + str(feature1.name) + ")"
     elif operator == "round":
-        feature = feature1.apply(lambda x: np.floor(float(x)))
+        feature = feature1.apply(lambda x: np.floor(float(x))).to_list()
         featurename = "round(" + str(feature1.name) + ")"
     elif operator == "residual":
-        feature = feature1.apply(lambda x: float(x) - np.floor(float(x)))
+        feature = feature1.apply(lambda x: float(x) - np.floor(float(x))).to_list()
         featurename = "residual(" + str(feature1.name) + ")"
     else:
         raise NotImplementedError(f"Unrecognized operator {operator}.")
