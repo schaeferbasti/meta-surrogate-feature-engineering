@@ -10,56 +10,49 @@ def get_pymfe_metafeatures(feature):
     return metafeatures
 
 
-def get_numeric_pandas_metafeatures(feature_df, featurename):
-    if feature_df.empty or not pd.api.types.is_numeric_dtype(feature_df[featurename]):
-        return {
-            "feature - name": featurename,
-            "feature - count": 0,
-            "feature - mean": np.nan,
-            "feature - std": np.nan,
-            "feature - min": np.nan,
-            "feature - max": np.nan,
-            "feature - lower percentile": np.nan,
-            "feature - 50 percentile": np.nan,
-            "feature - upper percentile": np.nan,
-        }
-    feature_pandas_description = feature_df.describe(include=np.number)
-    feature_metadata_numeric = {
-        "feature - name": featurename,
-        "feature - count": feature_pandas_description.iloc[0].values[0],
-        "feature - mean": feature_pandas_description.iloc[1].values[0],
-        "feature - std": feature_pandas_description.iloc[2].values[0],
-        "feature - min": feature_pandas_description.iloc[3].values[0],
-        "feature - max": feature_pandas_description.iloc[4].values[0],
-        "feature - lower percentile": feature_pandas_description.iloc[5].values[0],
-        "feature - 50 percentile": feature_pandas_description.iloc[6].values[0],
-        "feature - upper percentile": feature_pandas_description.iloc[7].values[0]
+def get_pandas_metafeatures(feature_df, featurename):
+    feature_pandas_description = feature_df.describe(include="all")
+    feature_pandas_description = check_and_complete_pandas_description(feature_pandas_description)
+    feature_metadata = {
+        "feature - count": feature_pandas_description.loc["count"].values[0],
+        "feature - unique": feature_pandas_description.loc["unique"].values[0],
+        "feature - top": feature_pandas_description.loc["top"].values[0],
+        "feature - freq": feature_pandas_description.loc["freq"].values[0],
+        "feature - mean": feature_pandas_description.loc["mean"].values[0],
+        "feature - std": feature_pandas_description.loc["std"].values[0],
+        "feature - min": feature_pandas_description.loc["min"].values[0],
+        "feature - 25": feature_pandas_description.loc["25%"].values[0],
+        "feature - 50": feature_pandas_description.loc["50%"].values[0],
+        "feature - 75": feature_pandas_description.loc["75%"].values[0],
+        "feature - max": feature_pandas_description.loc["max"].values[0],
     }
-    return feature_metadata_numeric
+    return feature_metadata
 
 
-def get_categorical_pandas_metafeatures(feature_df, featurename):
-    if feature_df.empty or not pd.api.types.is_categorical_dtype(feature_df[featurename]):
-        return {
-            "feature - name": featurename,
-            "feature - count": 0,
-            "feature - mean": np.nan,
-            "feature - std": np.nan,
-            "feature - min": np.nan,
-            "feature - max": np.nan,
-            "feature - lower percentile": np.nan,
-            "feature - 50 percentile": np.nan,
-            "feature - upper percentile": np.nan,
-        }
-    feature_pandas_description = feature_df.describe(exclude=np.number)
-    feature_metadata_categorical = {
-        "feature - name": featurename,
-        "feature - count": feature_pandas_description.iloc[0].values[0],
-        "feature - unique": feature_pandas_description.iloc[1].values[0],
-        "feature - top": feature_pandas_description.iloc[2].values[0],
-        "feature - freq": feature_pandas_description.iloc[3].values[0]
-    }
-    return feature_metadata_categorical
+def check_and_complete_pandas_description(feature_pandas_description):
+    if "count" not in feature_pandas_description.index:
+        feature_pandas_description.loc["count"] = np.NaN
+    if "unique" not in feature_pandas_description.index:
+        feature_pandas_description.loc["unique"] = np.NaN
+    if "top" not in feature_pandas_description.index:
+        feature_pandas_description.loc["top"] = np.NaN
+    if "freq" not in feature_pandas_description.index:
+        feature_pandas_description.loc["freq"] = np.NaN
+    if "mean" not in feature_pandas_description.index:
+        feature_pandas_description.loc["mean"] = np.NaN
+    if "std" not in feature_pandas_description.index:
+        feature_pandas_description.loc["std"] = np.NaN
+    if "min" not in feature_pandas_description.index:
+        feature_pandas_description.loc["min"] = np.NaN
+    if "25%" not in feature_pandas_description.index:
+        feature_pandas_description.loc["25%"] = np.NaN
+    if "50%" not in feature_pandas_description.index:
+        feature_pandas_description.loc["50%"] = np.NaN
+    if "75%" not in feature_pandas_description.index:
+        feature_pandas_description.loc["75%"] = np.NaN
+    if "max" not in feature_pandas_description.index:
+        feature_pandas_description.loc["max"] = np.NaN
+    return feature_pandas_description
 
 
 def get_mfe_feature_metadata(feature):
