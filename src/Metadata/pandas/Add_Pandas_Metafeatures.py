@@ -3,7 +3,7 @@ import pandas as pd
 from src.utils.create_feature_and_featurename import create_feature
 from src.utils.get_data import get_openml_dataset_split_and_metadata
 from src.utils.get_matrix import get_additional_pandas_columns
-from src.utils.get_metafeatures import get_numeric_pandas_metafeatures, get_categorical_pandas_metafeatures
+from src.utils.get_metafeatures import get_pandas_metafeatures
 
 
 def add_pandas_metadata_columns(dataset_metadata, X_train, result_matrix):
@@ -32,34 +32,42 @@ def add_pandas_metadata_columns(dataset_metadata, X_train, result_matrix):
             X_train_copy = pd.concat([X_train_copy, new_feature_df])
         try:
             feature = pd.DataFrame(X_train_copy[featurename])
-            if pd.api.types.is_numeric_dtype(X_train_copy[featurename]):
-                feature_metadata_numeric = get_numeric_pandas_metafeatures(feature, featurename)
-                new_row = pd.DataFrame(columns=columns)
-                new_row.loc[len(result_matrix)] = [
-                    dataset_metadata["task_type"],
-                    feature_metadata_numeric["feature - mean"],
-                ]
-                matching_indices = result_matrix[result_matrix["feature - name"] == str(featurename)].index
-                for idx in matching_indices:
-                    new_columns.loc[idx] = new_row.iloc[0]
-            else:
-                feature_metadata_categorical = get_categorical_pandas_metafeatures(feature, featurename)
-                new_row = pd.DataFrame(columns=columns)
-                new_row.loc[len(result_matrix)] = [
-                    dataset_metadata["task_type"],
-                    int(feature_metadata_categorical["feature - count"]),
-                ]
-                matching_indices = result_matrix[result_matrix["feature - name"] == str(featurename)].index
-                for idx in matching_indices:
-                    new_columns.loc[idx] = new_row.iloc[0]
-        except KeyError:
-            feature = pd.DataFrame(X_train[feature_to_delete])
-            feature_metadata_categorical = get_categorical_pandas_metafeatures(feature, feature_to_delete)
-
+            feature_metadata = get_pandas_metafeatures(feature, featurename)
             new_row = pd.DataFrame(columns=columns)
             new_row.loc[len(result_matrix)] = [
                 dataset_metadata["task_type"],
-                int(feature_metadata_categorical["feature - count"])
+                feature_metadata["feature - count"],
+                feature_metadata["feature - unique"],
+                feature_metadata["feature - top"],
+                feature_metadata["feature - freq"],
+                feature_metadata["feature - mean"],
+                feature_metadata["feature - std"],
+                feature_metadata["feature - min"],
+                feature_metadata["feature - 25"],
+                feature_metadata["feature - 50"],
+                feature_metadata["feature - 75"],
+                feature_metadata["feature - max"],
+            ]
+            matching_indices = result_matrix[result_matrix["feature - name"] == str(featurename)].index
+            for idx in matching_indices:
+                new_columns.loc[idx] = new_row.iloc[0]
+        except KeyError:
+            feature = pd.DataFrame(X_train[feature_to_delete])
+            feature_metadata = get_pandas_metafeatures(feature, feature_to_delete)
+            new_row = pd.DataFrame(columns=columns)
+            new_row.loc[len(result_matrix)] = [
+                dataset_metadata["task_type"],
+                feature_metadata["feature - count"],
+                feature_metadata["feature - unique"],
+                feature_metadata["feature - top"],
+                feature_metadata["feature - freq"],
+                feature_metadata["feature - mean"],
+                feature_metadata["feature - std"],
+                feature_metadata["feature - min"],
+                feature_metadata["feature - 25"],
+                feature_metadata["feature - 50"],
+                feature_metadata["feature - 75"],
+                feature_metadata["feature - max"],
             ]
             matching_indices = result_matrix[result_matrix["feature - name"] == str(featurename)].index
             for idx in matching_indices:
