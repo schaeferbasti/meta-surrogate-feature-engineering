@@ -1,7 +1,9 @@
 import os
 
+import numpy as np
 import pandas as pd
 import scipy
+from sklearn.decomposition import PCA
 from tabpfn import TabPFNClassifier
 
 from src.utils.create_feature_and_featurename import create_feature
@@ -18,7 +20,7 @@ def get_tabpfn_embedding(X, y):
 
 
 def add_tabpfn_metadata_columns(X_train, y_train, result_matrix):
-    columns = get_additional_tabpfn_columns(str(result_matrix.columns[0]), result_matrix.columns[1])
+    columns = get_additional_tabpfn_columns()
     new_columns = pd.DataFrame(index=result_matrix.index, columns=columns)
     for row in result_matrix.iterrows():
         featurename = row[1][1]
@@ -40,15 +42,24 @@ def add_tabpfn_metadata_columns(X_train, y_train, result_matrix):
             new_feature = create_feature(feature1, feature2, featurename)
             new_feature_df = pd.DataFrame(new_feature, columns=[featurename])
             new_feature_df.index = X_train_copy.index
-            X_train_copy = pd.concat([X_train_copy, new_feature_df], axis=1)
+            X_train_copy = pd.concat([X_train_copy, new_feature_df], axis=1).replace([np.inf, -np.inf], np.nan).fillna(0)
         embedding = get_tabpfn_embedding(X_train_copy, y_train)
-        embedding_representation = scipy.linalg.norm(embedding)
+        # Norm
+        embedding_norm_representation = np.linalg.norm(embedding)
+        # PCA
+        embedding_reshaped = embedding.reshape(-1, 192)
+        pca = PCA(n_components=1)
+        pca_1d = pca.fit_transform(embedding_reshaped)
+        embedding_pca_representation = np.mean(pca_1d)
+        # Mean
+        embedding_mean_representation = np.mean(embedding)
+        embeddings = [embedding_norm_representation, embedding_pca_representation, embedding_mean_representation]
+        new_row = pd.DataFrame([embeddings], columns=columns)
         matching_indices = result_matrix[result_matrix["feature - name"] == str(featurename)].index
         for idx in matching_indices:
-            new_columns.loc[idx] = embedding_representation
+            new_columns.loc[idx] = new_row.iloc[0]
     insert_position = result_matrix.shape[1] - 2
-    result_matrix = pd.concat(
-        [result_matrix.iloc[:, :insert_position], new_columns, result_matrix.iloc[:, insert_position:]], axis=1)
+    result_matrix = pd.concat([result_matrix.iloc[:, :insert_position], new_columns, result_matrix.iloc[:, insert_position:]], axis=1)
     return result_matrix
 
 

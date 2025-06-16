@@ -11,20 +11,20 @@ def get_matrix_core_columns():
     return ['dataset - id', 'feature - name', 'operator', 'model', 'improvement']
 
 
-def get_additional_pandas_columns(dataset, featurename):
+def get_additional_pandas_columns():
     return ['task_type', 'feature - count', 'feature - unique', 'feature - top', 'feature - freq', 'feature - mean', 'feature - std', 'feature - min', 'feature - 25%', 'feature - 50%', 'feature - 75%', 'feature - max']
 
 
-def get_additional_mfe_columns(dataset, featurename):
+def get_additional_mfe_columns():
     return [f"col_{i}" for i in range(242)]  # ['attr_to_inst', 'nr_inst', 'sparsity.mean']
 
 
-def get_additional_d2v_columns(dataset, featurename):
+def get_additional_d2v_columns():
     return [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31]
 
 
-def get_additional_tabpfn_columns(dataset, featurename):
-    return ['embedding']
+def get_additional_tabpfn_columns():
+    return ['embedding_norm_representation', 'embedding_pca_representation', 'embedding_mean_representation']
 
 
 def add_new_featurenames(X_test):

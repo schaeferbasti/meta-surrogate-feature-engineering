@@ -7,7 +7,7 @@ from src.utils.get_metafeatures import get_pandas_metafeatures
 
 
 def add_pandas_metadata_columns(dataset_metadata, X_train, result_matrix):
-    columns = get_additional_pandas_columns(str(result_matrix.columns[0]), result_matrix.columns[1])
+    columns = get_additional_pandas_columns()
     new_columns = pd.DataFrame(index=result_matrix.index, columns=columns)
     for row in result_matrix.iterrows():
         dataset = row[1][0]
