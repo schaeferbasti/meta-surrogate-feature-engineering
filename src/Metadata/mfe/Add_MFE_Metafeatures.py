@@ -7,7 +7,7 @@ from src.utils.get_matrix import get_additional_mfe_columns
 from src.utils.get_metafeatures import get_mfe_feature_metadata, get_mfe_dataset_metadata
 
 def add_mfe_metadata_columns(X_train, y_train, X_test, y_test, result_matrix):
-    columns = get_additional_mfe_columns(str(result_matrix.columns[0]), result_matrix.columns[1])
+    columns = get_additional_mfe_columns()
     new_columns = pd.DataFrame(index=result_matrix.index, columns=columns)
     for row in result_matrix.iterrows():
         featurename = row[1][1]

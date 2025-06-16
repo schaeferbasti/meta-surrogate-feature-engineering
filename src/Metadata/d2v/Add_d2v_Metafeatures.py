@@ -98,7 +98,7 @@ def get_d2v_metafeatures(dataset_id):
     return metafeatures
 
 def add_d2v_metadata_columns(dataset_metadata, X_train, result_matrix):
-    columns = get_additional_d2v_columns(str(result_matrix.columns[0]), result_matrix.columns[1])
+    columns = get_additional_d2v_columns()
     metafeatures = get_d2v_metafeatures(dataset_metadata["task_id"])
     new_columns = pd.DataFrame(index=result_matrix.index, columns=columns)
     for row in result_matrix.iterrows():
