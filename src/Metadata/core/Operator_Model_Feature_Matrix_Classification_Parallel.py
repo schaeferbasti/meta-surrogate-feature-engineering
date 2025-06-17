@@ -99,15 +99,11 @@ def main(dataset):
                     result_matrix.to_parquet("Operator_Model_Feature_Matrix_Core" + str(dataset) + ".parquet")
         for feature1 in X_train_copy.columns:
             for operator in unary_operators:
-                train_feature, featurename = create_feature_and_featurename(feature1=X_train[feature1], feature2=None,
-                                                                      operator=operator)
-                test_feature, featurename = create_feature_and_featurename(feature1=X_test[feature1], feature2=None,
-                                                                           operator=operator)
+                train_feature, featurename = create_feature_and_featurename(feature1=X_train[feature1], feature2=None, operator=operator)
+                test_feature, featurename = create_feature_and_featurename(feature1=X_test[feature1], feature2=None, operator=operator)
                 new_rows = get_core_result_feature_generation_classification(X_train, y_train, X_test, y_test, dataset_metadata, train_feature, test_feature, featurename, original_results)
                 result_matrix = pd.concat([result_matrix, pd.DataFrame(new_rows)], ignore_index=True)
                 result_matrix.to_parquet("Operator_Model_Feature_Matrix_Core" + str(dataset) + ".parquet")
-
-            result_matrix = pd.concat([result_matrix, pd.DataFrame(new_rows)], ignore_index=True)
             result_matrix.to_parquet("Operator_Model_Feature_Matrix_Core" + str(dataset) + ".parquet")
         result_matrix.to_parquet("Operator_Model_Feature_Matrix_Core" + str(dataset) + ".parquet")
 
