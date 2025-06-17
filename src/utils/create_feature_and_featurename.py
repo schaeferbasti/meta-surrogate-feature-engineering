@@ -150,13 +150,13 @@ def create_binary_feature_and_featurename(feature1, feature2, operator):
 def create_featurenames(feature_list):
     unary_operators, binary_operators = get_operators()
     featurenames = []
+    for feature1 in feature_list:
+        for feature2 in feature_list:
+            for operator in binary_operators:
+                featurenames.append(operator + "(" + str(feature1) + ", " + str(feature2) + ")")
     for feature in feature_list:
         for operator in unary_operators:
             featurenames.append(operator + "(" + str(feature) + ")")
-    for feature1 in feature_list:
-        for operator in binary_operators:
-            for feature2 in feature_list:
-                featurenames.append(operator + "(" + str(feature1) + ", " + str(feature2) + ")")
     return featurenames
 
 
@@ -167,3 +167,16 @@ def extract_operation_and_original_features(s):
         features = match.group(2).split(", ")  # The features inside brackets
         return operation, features
     return None, []
+
+def create_featurenames_and_operator(feature_list):
+    unary_operators, binary_operators = get_operators()
+    operators = unary_operators + binary_operators
+    featurenames = []
+    for feature in feature_list:
+        for operator in unary_operators:
+            featurenames.append(operator + "(" + str(feature) + ")")
+    for feature1 in feature_list:
+        for operator in binary_operators:
+            for feature2 in feature_list:
+                featurenames.append(operator + "(" + str(feature1) + ", " + str(feature2) + ")")
+    return featurenames, operators

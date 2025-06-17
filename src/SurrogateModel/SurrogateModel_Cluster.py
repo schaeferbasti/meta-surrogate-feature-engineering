@@ -1,128 +1,147 @@
+import random
+
 import pandas as pd
 
-from src.utils.get_data import get_openml_dataset_and_metadata
-from src.utils.get_matrix import get_matrix_columns, get_additional_numerical_columns, \
-    get_additional_categorical_columns
-from src.utils.get_metafeatures import get_numeric_pandas_metafeatures, get_categorical_pandas_metafeatures
-from src.utils.preprocess_data import factorize_data
+from src.utils.create_feature_and_featurename import create_featurenames, extract_operation_and_original_features
+from src.utils.get_data import get_openml_dataset_and_metadata, get_openml_dataset_split_and_metadata
+from src.utils.get_matrix import get_matrix_core_columns
+from src.utils.get_metafeatures import get_mfe_feature_metadata
 from src.utils.run_models import multi_predict_autogluon_lgbm, predict_autogluon_lgbm
+from src.Metadata.d2v.Add_d2v_Metafeatures import add_d2v_metadata_columns
+from src.Metadata.mfe.Add_MFE_Metafeatures import add_mfe_metadata_columns
+from src.Metadata.pandas.Add_Pandas_Metafeatures import add_pandas_metadata_columns
+from src.Metadata.tabpfn.Add_TabPFN_Metafeatures import add_tabpfn_metadata_columns
+
+import warnings
+warnings.filterwarnings('ignore')
 
 
-def add_metadata(X_predict, dataset_metadata, models):
-    columns = get_matrix_columns()
-    X_predict_new = pd.DataFrame(columns=columns)
-    # X_predict = factorize_data(X_predict)
-    for model in models:
-        for featurename in X_predict.columns:
-            feature_df = pd.DataFrame(X_predict, columns=[featurename])
-            feature_datatype = feature_df[featurename].dtype
-            if pd.api.types.is_numeric_dtype(feature_df[featurename]):
-                feature_metadata_numeric = get_numeric_pandas_metafeatures(feature_df, featurename)
-                X_predict_new.loc[len(X_predict_new)] = [dataset_metadata["task_id"], dataset_metadata["task_type"], dataset_metadata["number_of_classes"], feature_metadata_numeric["feature - name"], "operator", str(feature_datatype), int(feature_metadata_numeric["feature - count"]), feature_metadata_numeric["feature - mean"], feature_metadata_numeric["feature - std"], feature_metadata_numeric["feature - min"], feature_metadata_numeric["feature - max"], feature_metadata_numeric["feature - lower percentile"], feature_metadata_numeric["feature - 50 percentile"], feature_metadata_numeric["feature - upper percentile"], None, None, None, model, None]
-            else:
-                feature_metadata_categorical = get_categorical_pandas_metafeatures(feature_df, featurename)
-                X_predict_new.loc[len(X_predict_new)] = [dataset_metadata["task_id"], dataset_metadata["task_type"], dataset_metadata["number_of_classes"], feature_metadata_categorical["feature - name"], "operator", str(feature_datatype), int(feature_metadata_categorical["feature - count"]), None, None, None, None, None, None, None, feature_metadata_categorical["feature - unique"], feature_metadata_categorical["feature - top"], feature_metadata_categorical["feature - freq"], model, None]
-    return X_predict_new
-
-
-def add_columns_test(dataset_metadata, train_feature, feature, featurename, result_matrix):
-    train_feature_df = pd.DataFrame(train_feature, columns=[featurename])
-    feature_datatype = train_feature_df[featurename].dtype
-    dataset_id = dataset_metadata["task_id"]
-    if pd.api.types.is_numeric_dtype(train_feature_df[featurename]):
-        feature_metadata_numeric = get_numeric_pandas_metafeatures(feature, featurename)
-        columns = get_additional_numerical_columns(str(dataset_id), featurename)
-        new_row = pd.DataFrame(columns=columns)
-        new_row.loc[len(result_matrix)] = [
-            feature_metadata_numeric["feature - name"],
-            str(feature_datatype),
-            int(feature_metadata_numeric["feature - count"]),
-            feature_metadata_numeric["feature - mean"],
-            feature_metadata_numeric["feature - std"],
-            feature_metadata_numeric["feature - min"],
-            feature_metadata_numeric["feature - max"],
-            feature_metadata_numeric["feature - lower percentile"],
-            feature_metadata_numeric["feature - 50 percentile"],
-            feature_metadata_numeric["feature - upper percentile"],
+def create_empty_core_matrix_for_new_dataset(dataset, model) -> pd.DataFrame:
+    columns = get_matrix_core_columns()
+    comparison_result_matrix = pd.DataFrame(columns=columns)
+    X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset)
+    for feature1 in X_train.columns:
+        featurename = "without - " + str(feature1)
+        columns = get_matrix_core_columns()
+        new_rows = pd.DataFrame(columns=columns)
+        operator = "delete"
+        new_rows.loc[len(new_rows)] = [
+            dataset_id,
+            featurename,
+            operator,
+            model,
+            0
         ]
-        # new_columns = pd.DataFrame(columns=columns)
-        # for row in result_matrix.iterrows():
-            # if row[1].values[0] == int(dataset_id):
-            #     new_columns = pd.concat([new_columns, pd.DataFrame(new_row)], ignore_index=True)
-            # else:
-            #     new_columns._append(pd.Series(), ignore_index=True)
-        # Create an empty DataFrame with the same index as result_matrix and the new columns
-        new_columns = pd.DataFrame(index=result_matrix.index, columns=columns)
-        # Find the correct rows to fill
-        for idx in result_matrix.index:
-            new_columns.loc[idx] = new_row.iloc[0]
-    else:
-        feature_metadata_categorical = get_categorical_pandas_metafeatures(feature, featurename)
-        columns = get_additional_categorical_columns(str(dataset_id), featurename)
-        new_row = pd.DataFrame(columns=columns)
-        new_row.loc[len(result_matrix)] = [
-            feature_metadata_categorical["feature - name"],
-            str(feature_datatype),
-            int(feature_metadata_categorical["feature - count"]),
-            feature_metadata_categorical["feature - unique"],
-            feature_metadata_categorical["feature - top"],
-            feature_metadata_categorical["feature - freq"],
+        comparison_result_matrix = pd.concat([comparison_result_matrix, pd.DataFrame(new_rows)], ignore_index=True)
+    columns = get_matrix_core_columns()
+    new_rows = pd.DataFrame(columns=columns)
+    featurenames = create_featurenames(X_train.columns)
+    for i in range(len(featurenames)):
+        operator, _ = extract_operation_and_original_features(featurenames[i])
+        new_rows.loc[len(new_rows)] = [
+            dataset_id,
+            featurenames[i],
+            operator,
+            model,
+            0
         ]
-        # new_columns = pd.DataFrame(columns=columns)
-        # for row in result_matrix.iterrows():
-            # if row[1].values[0] == int(dataset_id):
-            #     new_columns = pd.concat([new_columns, pd.DataFrame(new_row)], ignore_index=True)
-            # else:
-            #     new_columns._append(pd.Series(), ignore_index=True)
-        new_columns = pd.DataFrame(index=result_matrix.index, columns=columns)
-        # Find the correct rows to fill
-        # matching_indices = result_matrix[result_matrix["dataset - id"] == int(dataset_id)].index
-        # Fill only the matching row(s)
-        for idx in result_matrix.index:
-            new_columns.loc[idx] = new_row.iloc[0]
-    insert_position = result_matrix.shape[1] - 2
-    result_matrix = pd.concat([result_matrix.iloc[:, :insert_position], new_columns, result_matrix.iloc[:, insert_position:]], axis=1)
+    comparison_result_matrix = pd.concat([comparison_result_matrix, pd.DataFrame(new_rows)], ignore_index=True)
+    return comparison_result_matrix
+
+
+def add_method_metadata(result_matrix, dataset_metadata, X_predict, y_predict, method):
+    if method == "d2v":
+        result_matrix = add_d2v_metadata_columns(dataset_metadata, X_predict, result_matrix)
+    elif method == "mfe":
+        result_matrix, _, _, _, _, _, _, _, _ = add_mfe_metadata_columns(X_predict, y_predict, result_matrix)
+    elif method == "pandas":
+        result_matrix = add_pandas_metadata_columns(dataset_metadata, X_predict, result_matrix)
+    elif method == "tabpfn":
+        result_matrix = add_tabpfn_metadata_columns(X_predict, y_predict, result_matrix)
     return result_matrix
 
 
-def main(dataset_id, models):
-    # Select Models
-    if models is None:
-        models = {"GBM": {}, "RF": {}, "KNN": {}, "CAT": {}, "XGB": {}, "LR": {}, "FASTAI": {}, "AG_AUTOMM": {}, "NN_TORCH": {}}
-    else:
-        models = {"GBM": {}}
-    # Read and Prepare Training Data
-    result_matrix = pd.read_parquet("src/Metadata/Operator_Model_Feature_Matrix_3.parquet")
-
-    # Read and Prepare Test Data
-    X_predict, y_predict, dataset_metadata = get_openml_dataset_and_metadata(dataset_id)
-    prediction_data = add_metadata(X_predict, dataset_metadata, models)
-    prediction_data['improvement'] = 0
-    #for featurename in X_predict.columns:
-    #    print("Feature: " + str(featurename))
-    #    feature = pd.DataFrame(prediction_data[featurename])
-    #    prediction_data = add_columns_test(dataset_metadata, result_matrix, feature, featurename, prediction_data)
-
+def predict_improvment(comparison_result_matrix, dataset_metadata, result_matrix, category_or_method, fold):
     # Single-predictor (improvement given all possible operations on features)
-    prediction = predict_autogluon_lgbm(result_matrix, prediction_data, dataset_metadata)
-    prediction.to_parquet("Prediction.parquet")
+    prediction = predict_autogluon_lgbm(result_matrix, comparison_result_matrix, dataset_metadata)
+    prediction.to_parquet("Prediction_" + category_or_method + "_" + fold + ".parquet")
     #  evaluation, prediction, best_operations = predict_operators_for_models(X, y, X_predict, y_predict, models=models, zeroshot=False)
     #  evaluation.to_parquet('Evaluation.parquet')
-    prediction_result = pd.read_parquet("Prediction.parquet")
+    prediction_result = pd.read_parquet("Prediction_" + category_or_method + "_" + fold + ".parquet")
     best_operations = prediction_result.nlargest(n=20, columns="predicted_improvement", keep="first")
-    best_operations.to_parquet("Best_Operations.parquet")
-
+    best_operations.to_parquet("Best_Operations_" + category_or_method + "_" + fold + ".parquet")
     # Multi-predictor (features + operator & improvement)
-    multi_prediction = multi_predict_autogluon_lgbm(result_matrix, prediction_data)
-    multi_prediction.to_parquet('Multi_Prediction.parquet')
+    multi_prediction = multi_predict_autogluon_lgbm(result_matrix, comparison_result_matrix)
+    multi_prediction.to_parquet("Multi_Prediction_" + category_or_method + "_" + fold + ".parquet")
     #  multi_evaluation, multi_prediction = multi_predict_operators_for_models(X, y, X_predict, y_predict, models=models, zeroshot=False)
     #  multi_evaluation.to_parquet('Multi_Evaluation.parquet')
-    multi_prediction_result = pd.read_parquet("Multi_Prediction.parquet")
+    multi_prediction_result = pd.read_parquet("Multi_Prediction_" + category_or_method + "_" + fold + ".parquet")
     multi_best_operations = multi_prediction_result.nlargest(n=20, columns="predicted_improvement", keep="first")
-    multi_best_operations.to_parquet("Multi_Best_Operations.parquet")
+    multi_best_operations.to_parquet("Multi_Best_Operations_" + category_or_method + "_" + fold + ".parquet")
+
+
+def main(dataset_id, model):
+    if model == "GBM":
+        model = "LightGBM_BAG_L1"
+    X_predict, y_predict, dataset_metadata = get_openml_dataset_and_metadata(dataset_id)
+    methods = ["mfe"]
+    folds = 10
+    # methods = ["d2v", "mfe", "pandas", "tabpfn"]
+    for fold in range(folds):
+        for method in methods:
+            print("Read Matrices")
+            result_matrix = pd.read_parquet("../Metadata/" + method + "/" + method + "_metafeatures.parquet")
+            comparison_result_matrix = create_empty_core_matrix_for_new_dataset(dataset_id, model)
+            # comparison_result_matrix = pd.read_parquet("../Metadata/core/Core_Matrix.parquet")
+            # comparison_result_matrix = add_method_metadata(comparison_result_matrix, dataset_metadata, X_predict, y_predict, method)
+            print("Add Metadata to comparison_result_matrix")
+            comparison_result_matrix, dataset_metadata_general_names, dataset_metadata_statistical_names, dataset_metadata_info_theory_names, dataset_metadata_landmarking_names, dataset_metadata_complexity_names, dataset_metadata_clustering_names, dataset_metadata_concept_names, dataset_metadata_itemset_names = add_mfe_metadata_columns(X_predict, y_predict, comparison_result_matrix)
+            categories = [dataset_metadata_general_names, dataset_metadata_statistical_names, dataset_metadata_info_theory_names, dataset_metadata_landmarking_names, dataset_metadata_complexity_names, dataset_metadata_clustering_names, dataset_metadata_concept_names, dataset_metadata_itemset_names]
+            category_names = ["general", "statistical", "info_theory", "landmarking", "complexity", "clustering", "concept", "itemset"]
+            # Keep all categories, sample 5 metafeatures from all categories
+            print("Keep all categories, sample 5 metafeatures from all categories")
+            for i in range(len(categories)):
+                comparison_result_matrix_copy = comparison_result_matrix.copy()
+                category = categories[i]
+                if len(category) > 5:
+                    keep = random.sample(category, 5)
+                    drop = list(set(category) - set(keep))
+                    comparison_result_matrix_copy = comparison_result_matrix_copy.drop(drop, axis=1)
+                predict_improvment(comparison_result_matrix_copy, dataset_metadata, result_matrix, "all", fold)
+            # Remove one category completely and sample 5 metafeatures from the other categories
+            print("Remove one category completely and sample 5 metafeatures from the other categories")
+            for i in range(len(categories)):
+                comparison_result_matrix_copy = comparison_result_matrix.copy()
+                # Drop selected category
+                comparison_result_matrix_copy = comparison_result_matrix_copy.drop(categories[i], axis=1)
+                # Randomly sample metafeatures from the other categories
+                for j in range(len(categories)):
+                    if j != i:
+                        category = categories[j]
+                        if len(category) > 5:
+                            keep = random.sample(category, 5)
+                            drop = list(set(category) - set(keep))
+                            comparison_result_matrix_copy = comparison_result_matrix_copy.drop(drop, axis=1)
+                predict_improvment(comparison_result_matrix_copy, dataset_metadata, result_matrix, "without_" + category_names[i], fold)
+            # Remove all categories completely but one and sample 5 metafeatures from this category
+            print("Remove all categories completely but one and sample 5 metafeatures from this category")
+            for i in range(len(categories)):
+                comparison_result_matrix_copy = comparison_result_matrix.copy()
+                # Drop all but selected category
+                keep_core = get_matrix_core_columns()
+                keep = keep_core + categories[i]
+                comparison_result_matrix_copy = comparison_result_matrix_copy[keep]
+                # Randomly sample metafeatures from the kept category
+                category = categories[i]
+                if len(category) > 5:
+                    keep_core = get_matrix_core_columns()
+                    keep = random.sample(category, 5) + keep_core
+                    drop = list(set(category) - set(keep))
+                    comparison_result_matrix_copy = comparison_result_matrix_copy.drop(drop, axis=1)
+                predict_improvment(comparison_result_matrix_copy, dataset_metadata, result_matrix, category_names[i], fold)
 
 
 if __name__ == '__main__':
-    dataset_id = 189354
+    dataset_id = 2073
     models = "GBM"
     main(dataset_id, models)
