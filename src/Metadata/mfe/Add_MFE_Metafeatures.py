@@ -9,6 +9,7 @@ from src.utils.get_metafeatures import get_mfe_feature_metadata, get_mfe_dataset
 def add_mfe_metadata_columns(X_train, y_train, result_matrix):
     columns = get_additional_mfe_columns()
     new_columns = pd.DataFrame(index=result_matrix.index, columns=columns)
+    dataset_metadata_general_names = dataset_metadata_statistical_names = dataset_metadata_info_theory_names = dataset_metadata_landmarking_names = dataset_metadata_complexity_names = dataset_metadata_clustering_names = dataset_metadata_concept_names = dataset_metadata_itemset_names = None
     for row in result_matrix.iterrows():
         featurename = row[1][1]
         X_train_copy = X_train.copy()
@@ -46,24 +47,33 @@ def add_mfe_metadata_columns(X_train, y_train, result_matrix):
         # y = pd.concat([y_train, y_test]).to_numpy()
         X = X_train_copy.replace([np.inf, -np.inf], np.nan).fillna(0).to_numpy()
         y = y_train.to_numpy()
-        feature_metadata_mfe = get_mfe_feature_metadata(feature)
-        dataset_metadata_mfe = get_mfe_dataset_metadata(X, y)
-        metafeatures = dataset_metadata_mfe[1] + feature_metadata_mfe[1]
-        new_row = pd.DataFrame([metafeatures], columns=columns)
+        # feature_metadata_mfe, feature_metadata_names, feature_metadata_groups = get_mfe_feature_metadata(feature)
+        dataset_metadata_general_mfe, dataset_metadata_general_names, dataset_metadata_general_groups = get_mfe_dataset_metadata(X, y, "general")
+        dataset_metadata_statistical_mfe, dataset_metadata_statistical_names, dataset_metadata_statistical_groups = get_mfe_dataset_metadata(X, y, "statistical")
+        dataset_metadata_info_theory_mfe, dataset_metadata_info_theory_names, dataset_metadata_info_theory_groups = get_mfe_dataset_metadata(X, y, "info-theory")
+        dataset_metadata_landmarking_mfe, dataset_metadata_landmarking_names, dataset_metadata_landmarking_groups = get_mfe_dataset_metadata(X, y, "landmarking")
+        dataset_metadata_complexity_mfe, dataset_metadata_complexity_names, dataset_metadata_complexity_groups = get_mfe_dataset_metadata(X, y, "complexity")
+        dataset_metadata_clustering_mfe, dataset_metadata_clustering_names, dataset_metadata_clustering_groups = get_mfe_dataset_metadata(X, y, "clustering")
+        dataset_metadata_concept_mfe, dataset_metadata_concept_names, dataset_metadata_concept_groups = get_mfe_dataset_metadata(X, y, "concept")
+        dataset_metadata_itemset_mfe, dataset_metadata_itemset_names, dataset_metadata_itemset_groups = get_mfe_dataset_metadata(X, y, "itemset")
+        metafeatures = dataset_metadata_general_mfe[1] + dataset_metadata_statistical_mfe[1] + dataset_metadata_info_theory_mfe[1] + dataset_metadata_landmarking_mfe[1] + dataset_metadata_complexity_mfe[1] + dataset_metadata_clustering_mfe[1] + dataset_metadata_concept_mfe[1] + dataset_metadata_itemset_mfe[1]
+        new_column_names = list(dataset_metadata_general_names + dataset_metadata_statistical_names + dataset_metadata_info_theory_names + dataset_metadata_landmarking_names + dataset_metadata_complexity_names + dataset_metadata_clustering_names + dataset_metadata_concept_names + dataset_metadata_itemset_names)
+        new_columns.columns = new_column_names
+        new_row = pd.DataFrame([metafeatures], columns=new_column_names)
         matching_indices = result_matrix[result_matrix["feature - name"] == str(featurename)].index
         for idx in matching_indices:
             new_columns.loc[idx] = new_row.iloc[0]
     insert_position = result_matrix.shape[1] - 2
     result_matrix = pd.concat([result_matrix.iloc[:, :insert_position], new_columns, result_matrix.iloc[:, insert_position:]], axis=1)
-    return result_matrix
+    return result_matrix, dataset_metadata_general_names, dataset_metadata_statistical_names, dataset_metadata_info_theory_names, dataset_metadata_landmarking_names, dataset_metadata_complexity_names, dataset_metadata_clustering_names, dataset_metadata_concept_names, dataset_metadata_itemset_names
 
 
 def main():
     result_matrix = pd.read_parquet("../core/Core_Matrix_Example.parquet")
     for dataset, _ in result_matrix.groupby('dataset - id'):
         print("Dataset: " + str(dataset))
-        X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset)
-        result_matrix = add_mfe_metadata_columns(X_train, y_train, result_matrix)
+        X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(int(str(dataset)))
+        result_matrix, _, _, _, _, _, _, _, _ = add_mfe_metadata_columns(X_train, y_train, result_matrix)
         result_matrix.to_parquet("mfe_metafeatures_" + str(dataset) + ".parquet")
     result_matrix.to_parquet("mfe_metafeatures.parquet")
 
