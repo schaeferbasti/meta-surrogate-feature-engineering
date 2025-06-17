@@ -16,7 +16,7 @@ def get_additional_pandas_columns():
 
 
 def get_additional_mfe_columns():
-    return [f"col_{i}" for i in range(242)]  # ['attr_to_inst', 'nr_inst', 'sparsity.mean']
+    return [f"col_{i}" for i in range(141)]  # ['attr_to_inst', 'nr_inst', 'sparsity.mean']
 
 
 def get_additional_d2v_columns():
