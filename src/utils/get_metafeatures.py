@@ -60,15 +60,19 @@ def get_mfe_feature_metadata(feature):
     mfe = MFE(groups="all")
     mfe.fit(feature)
     metafeatures = mfe.extract()
-    return metafeatures
+    columns = mfe.extract_metafeature_names()
+    groups = mfe.parse_by_group(["general", "statistical", "model-based", "info-theory", "landmarking", "complexity", "clustering"], metafeatures)
+    return metafeatures, columns, groups
 
 
-def get_mfe_dataset_metadata(X, y):
+def get_mfe_dataset_metadata(X, y, group):
     # mfe = MFE(groups=["general", "statistical", "info-theory", "model-based", "landmarking"])
-    mfe = MFE(groups="all")
+    mfe = MFE(groups=group)
     mfe.fit(X, y)
     metafeatures = mfe.extract()
-    return metafeatures
+    columns = mfe.extract_metafeature_names()
+    group = mfe.parse_by_group(group, metafeatures)
+    return metafeatures, columns, group
 
 
 
