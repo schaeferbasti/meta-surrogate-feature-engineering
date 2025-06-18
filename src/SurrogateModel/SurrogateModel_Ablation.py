@@ -63,18 +63,18 @@ def add_method_metadata(result_matrix, dataset_metadata, X_predict, y_predict, m
     return result_matrix
 
 
-def predict_improvement(result_matrix, comparison_result_matrix, category_or_method, fold):
+def predict_improvement(result_matrix, comparison_result_matrix, category_or_method):
     # Single-predictor (improvement given all possible operations on features)
     try:
-        pd.read_parquet("Prediction_" + str(category_or_method) + "_" + str(fold) + ".parquet")
+        pd.read_parquet("Prediction_" + str(category_or_method) + ".parquet")
     except FileNotFoundError:
         prediction = predict_autogluon_lgbm(result_matrix, comparison_result_matrix)
-        prediction.to_parquet("Prediction_" + str(category_or_method) + "_" + str(fold) + ".parquet")
+        prediction.to_parquet("Prediction_" + str(category_or_method) + ".parquet")
         #  evaluation, prediction, best_operations = predict_operators_for_models(X, y, X_predict, y_predict, models=models, zeroshot=False)
         #  evaluation.to_parquet('Evaluation.parquet')
-        prediction_result = pd.read_parquet("Prediction_" + str(category_or_method) + "_" + str(fold) + ".parquet")
+        prediction_result = pd.read_parquet("Prediction_" + str(category_or_method) + ".parquet")
         best_operations = prediction_result.nlargest(n=20, columns="predicted_improvement", keep="first")
-        best_operations.to_parquet("Best_Operations_" + str(category_or_method) + "_" + str(fold) + ".parquet")
+        best_operations.to_parquet("Best_Operations_" + str(category_or_method) + ".parquet")
     # Multi-predictor (features + operator & improvement)
     # try:
     #    pd.read_parquet("Multi_Prediction_" + str(category_or_method) + "_" + str(fold) + ".parquet")
@@ -121,70 +121,42 @@ def main(dataset_id, model):
         model = "LightGBM_BAG_L1"
     X_predict, y_predict, dataset_metadata = get_openml_dataset_and_metadata(dataset_id)
     methods = ["mfe"]
-    folds = 10
     # methods = ["d2v", "mfe", "pandas", "tabpfn"]
-    for fold in range(folds):
-        for method in methods:
-            print("Read Matrices")
-            result_matrix = pd.read_parquet("../Metadata/" + method + "/" + method + "_metafeatures.parquet")
-            comparison_result_matrix = result_matrix
-            # comparison_result_matrix = create_empty_core_matrix_for_new_dataset(dataset_id, model)
-            # comparison_result_matrix = pd.read_parquet("../Metadata/core/Core_Matrix.parquet")
-            # comparison_result_matrix = add_method_metadata(comparison_result_matrix, dataset_metadata, X_predict, y_predict, method)
-            print("Add Metadata to comparison_result_matrix")
-            # comparison_result_matrix, dataset_metadata_general_names, dataset_metadata_statistical_names, dataset_metadata_info_theory_names, dataset_metadata_landmarking_names, dataset_metadata_complexity_names, dataset_metadata_clustering_names, dataset_metadata_concept_names, dataset_metadata_itemset_names = add_mfe_metadata_columns(X_predict, y_predict, comparison_result_matrix)
-            # categories = [dataset_metadata_general_names, dataset_metadata_statistical_names, dataset_metadata_info_theory_names, dataset_metadata_landmarking_names, dataset_metadata_complexity_names, dataset_metadata_clustering_names, dataset_metadata_concept_names, dataset_metadata_itemset_names]
-            categories = get_dummy_mfe_metafeatures()
-            category_names = ["general", "statistical", "info_theory", "landmarking", "complexity", "clustering", "concept", "itemset"]
-            # Keep all categories, sample 5 metafeatures from all categories
-            print("Keep all categories, sample 5 metafeatures from all categories")
+    for method in methods:
+        print("Read Matrices")
+        result_matrix = pd.read_parquet("../Metadata/" + method + "/" + method + "_metafeatures.parquet")
+        comparison_result_matrix = result_matrix
+        # comparison_result_matrix = create_empty_core_matrix_for_new_dataset(dataset_id, model)
+        # comparison_result_matrix = pd.read_parquet("../Metadata/core/Core_Matrix.parquet")
+        # comparison_result_matrix = add_method_metadata(comparison_result_matrix, dataset_metadata, X_predict, y_predict, method)
+        print("Add Metadata to comparison_result_matrix")
+        # comparison_result_matrix, dataset_metadata_general_names, dataset_metadata_statistical_names, dataset_metadata_info_theory_names, dataset_metadata_landmarking_names, dataset_metadata_complexity_names, dataset_metadata_clustering_names, dataset_metadata_concept_names, dataset_metadata_itemset_names = add_mfe_metadata_columns(X_predict, y_predict, comparison_result_matrix)
+        # categories = [dataset_metadata_general_names, dataset_metadata_statistical_names, dataset_metadata_info_theory_names, dataset_metadata_landmarking_names, dataset_metadata_complexity_names, dataset_metadata_clustering_names, dataset_metadata_concept_names, dataset_metadata_itemset_names]
+        categories = get_dummy_mfe_metafeatures()
+        category_names = ["general", "statistical", "info_theory", "landmarking", "complexity", "clustering", "concept", "itemset"]
+        # Keep all categories
+        print("Keep all categories")
+        comparison_result_matrix_copy = comparison_result_matrix.copy()
+        result_matrix_copy = result_matrix.copy()
+        predict_improvement(result_matrix_copy, comparison_result_matrix_copy, "all")
+        # Remove one category completely and sample 5 metafeatures from the other categories
+        print("Remove one category completely and sample 5 metafeatures from the other categories")
+        for i in range(len(categories)):
             comparison_result_matrix_copy = comparison_result_matrix.copy()
             result_matrix_copy = result_matrix.copy()
-            for i in range(len(categories)):
-                category = categories[i]
-                if len(category) > 5:
-                    keep = random.sample(category, 5)
-                    drop = list(set(category) - set(keep))
-                    comparison_result_matrix_copy = comparison_result_matrix_copy.drop(drop, axis=1)
-                    result_matrix_copy = result_matrix_copy.drop(drop, axis=1)
-            predict_improvement(result_matrix_copy, comparison_result_matrix_copy, "all", fold)
-            # Remove one category completely and sample 5 metafeatures from the other categories
-            print("Remove one category completely and sample 5 metafeatures from the other categories")
-            for i in range(len(categories)):
-                comparison_result_matrix_copy = comparison_result_matrix.copy()
-                result_matrix_copy = result_matrix.copy()
-                # Drop selected category
-                comparison_result_matrix_copy = comparison_result_matrix_copy.drop(categories[i], axis=1)
-                result_matrix_copy = result_matrix_copy.drop(categories[i], axis=1)
-                # Randomly sample metafeatures from the other categories
-                for j in range(len(categories)):
-                    if j != i:
-                        category = categories[j]
-                        if len(category) > 5:
-                            keep = random.sample(category, 5)
-                            drop = list(set(category) - set(keep))
-                            comparison_result_matrix_copy = comparison_result_matrix_copy.drop(drop, axis=1)
-                            result_matrix_copy = result_matrix_copy.drop(drop, axis=1)
-                predict_improvement(result_matrix_copy, comparison_result_matrix_copy, "without_" + category_names[i], fold)
-            # Remove all categories completely but one and sample 5 metafeatures from this category
-            print("Remove all categories completely but one and sample 5 metafeatures from this category")
-            for i in range(len(categories)):
-                comparison_result_matrix_copy = comparison_result_matrix.copy()
-                result_matrix_copy = result_matrix.copy()
-                # Drop all but selected category
-                keep_core = get_matrix_core_columns()
-                keep = keep_core + categories[i]
-                comparison_result_matrix_copy = comparison_result_matrix_copy[keep]
-                result_matrix_copy = result_matrix_copy[keep]
-                # Randomly sample metafeatures from the kept category
-                category = categories[i]
-                if len(category) > 5:
-                    keep_core = get_matrix_core_columns()
-                    keep = random.sample(category, 5) + keep_core
-                    drop = list(set(category) - set(keep))
-                    comparison_result_matrix_copy = comparison_result_matrix_copy.drop(drop, axis=1)
-                    result_matrix_copy = result_matrix_copy.drop(drop, axis=1)
-                predict_improvement(result_matrix_copy, comparison_result_matrix_copy, category_names[i], fold)
+            comparison_result_matrix_copy = comparison_result_matrix_copy.drop(categories[i], axis=1)
+            result_matrix_copy = result_matrix_copy.drop(categories[i], axis=1)
+            predict_improvement(result_matrix_copy, comparison_result_matrix_copy, "without_" + category_names[i])
+        # Remove all categories completely but one
+        print("Remove all categories completely but one and sample 5 metafeatures from this category")
+        for i in range(len(categories)):
+            comparison_result_matrix_copy = comparison_result_matrix.copy()
+            result_matrix_copy = result_matrix.copy()
+            keep_core = get_matrix_core_columns()
+            keep = keep_core + categories[i]
+            comparison_result_matrix_copy = comparison_result_matrix_copy[keep]
+            result_matrix_copy = result_matrix_copy[keep]
+            predict_improvement(result_matrix_copy, comparison_result_matrix_copy, category_names[i])
 
 
 if __name__ == '__main__':
