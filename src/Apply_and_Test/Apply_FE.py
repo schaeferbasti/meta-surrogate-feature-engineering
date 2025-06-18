@@ -1,3 +1,5 @@
+import os
+
 import pandas as pd
 
 from src.utils.create_feature_and_featurename import create_feature_and_featurename
@@ -47,10 +49,18 @@ def execute_feature_engineering(prediction_result):
 
 def main():
     print("Read Prediction Results")
-    prediction_result = pd.read_parquet("../SurrogateModel/Best_Operations.parquet")
-    print("Execute Feature Engineering")
-    data, dataset_id, model = execute_feature_engineering(prediction_result)
-    data.to_parquet("FE_Dataset_" + str(dataset_id) + ".parquet")
+    path = "../SurrogateModel/"
+    files = os.listdir(path)
+    core_files = []
+    for file in files:
+        if file.startswith("Best") and file.endswith('_0.parquet') or file.startswith("Best") and file.endswith('_1.parquet'):
+            core_files.append(file)
+    core_files.sort()
+    for core_file in core_files:
+        prediction_result = pd.read_parquet(path + core_file)
+        print("Execute Feature Engineering")
+        data, dataset_id, model = execute_feature_engineering(prediction_result)
+        data.to_parquet("FE_Dataset_" + str(core_file))
 
 
 if __name__ == "__main__":
