@@ -28,7 +28,7 @@ def add_method_metadata(result_matrix, dataset_metadata, X_predict, y_predict, m
 
 def predict_improvment(comparison_result_matrix, dataset_metadata, result_matrix, category_or_method, fold):
     # Single-predictor (improvement given all possible operations on features)
-    prediction = predict_autogluon_lgbm(result_matrix, comparison_result_matrix, dataset_metadata)
+    prediction = predict_autogluon_lgbm(result_matrix, comparison_result_matrix)
     prediction.to_parquet("Prediction_" + category_or_method + "_" + fold + ".parquet")
     #  evaluation, prediction, best_operations = predict_operators_for_models(X, y, X_predict, y_predict, models=models, zeroshot=False)
     #  evaluation.to_parquet('Evaluation.parquet')
