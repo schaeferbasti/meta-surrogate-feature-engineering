@@ -76,16 +76,16 @@ def predict_improvement(result_matrix, comparison_result_matrix, category_or_met
         best_operations = prediction_result.nlargest(n=20, columns="predicted_improvement", keep="first")
         best_operations.to_parquet("Best_Operations_" + str(category_or_method) + "_" + str(fold) + ".parquet")
     # Multi-predictor (features + operator & improvement)
-    try:
-        pd.read_parquet("Multi_Prediction_" + str(category_or_method) + "_" + str(fold) + ".parquet")
-    except FileNotFoundError:
-        multi_prediction = multi_predict_autogluon_lgbm(result_matrix, comparison_result_matrix)
-        multi_prediction.to_parquet("Multi_Prediction_" + str(category_or_method) + "_" + str(fold) + ".parquet")
+    # try:
+    #    pd.read_parquet("Multi_Prediction_" + str(category_or_method) + "_" + str(fold) + ".parquet")
+    # except FileNotFoundError:
+    #    multi_prediction = multi_predict_autogluon_lgbm(result_matrix, comparison_result_matrix)
+    #    multi_prediction.to_parquet("Multi_Prediction_" + str(category_or_method) + "_" + str(fold) + ".parquet")
         #  multi_evaluation, multi_prediction = multi_predict_operators_for_models(X, y, X_predict, y_predict, models=models, zeroshot=False)
         #  multi_evaluation.to_parquet('Multi_Evaluation.parquet')
-        multi_prediction_result = pd.read_parquet("Multi_Prediction_" + str(category_or_method) + "_" + str(fold) + ".parquet")
-        multi_best_operations = multi_prediction_result.nlargest(n=20, columns="predicted_improvement", keep="first")
-        multi_best_operations.to_parquet("Multi_Best_Operations_" + str(category_or_method) + "_" + str(fold) + ".parquet")
+    #    multi_prediction_result = pd.read_parquet("Multi_Prediction_" + str(category_or_method) + "_" + str(fold) + ".parquet")
+    #    multi_best_operations = multi_prediction_result.nlargest(n=20, columns="predicted_improvement", keep="first")
+    #    multi_best_operations.to_parquet("Multi_Best_Operations_" + str(category_or_method) + "_" + str(fold) + ".parquet")
 
 
 def get_dummy_mfe_metafeatures():
