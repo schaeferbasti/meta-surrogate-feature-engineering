@@ -35,8 +35,13 @@ echo "Allocated memory per node: $SLURM_MEM_PER_NODE MB"
 # conda activate amltk_env
 # echo "conda amltk_env activated"
 # virtualenv .venv
-source .venv/local/bin/activate
+pip install uv
+uv venv --seed --python 3.11 ~/.venvs/tabarena
+source ~/.venvs/tabarena
+# source .venv/local/bin/activate
 echo "Virtual Environment Activated"
+
+pip install -r requirements.txt
 
 # Set the PYTHONPATH to include the src directory
 export PYTHONPATH=$PWD/src:$PYTHONPATH
