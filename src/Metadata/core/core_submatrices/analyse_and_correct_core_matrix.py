@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 
+from src.utils.get_data import get_openml_dataset
 from src.utils.get_operators import get_operators
 
 
@@ -37,8 +38,13 @@ def list_incomplete_df():
         list_of_operators.remove("-")
         list_of_operators.remove("*")
         list_of_operators.remove("/")
+        print("Present number of lines: " + str(result_matrix.shape[0]))
+        X, y = get_openml_dataset(int(dataset_id))
+        n_features = len(X.columns)
+        print("Calculated number of lines of matrix: " + str(n_features * n_features * 13 + n_features * 10 + n_features))
         if set(list_of_operators).issubset(set(result_matrix['operator'])):
             print("✅ All required operators are present.")
+            result_matrix.to_parquet("complete/" + core_file)
         else:
             print("❌ Some required operators are missing.")
             list_of_incomplete_df.append(dataset_id)
@@ -48,7 +54,7 @@ def list_incomplete_df():
     print("List of Incomplete Files: " + str(list_of_incomplete_df))
 
 def main():
-    # remove_duplicate_columns()
+    remove_duplicate_columns()
     list_incomplete_df()
 
 
