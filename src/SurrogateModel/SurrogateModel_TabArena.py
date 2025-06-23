@@ -150,7 +150,7 @@ def main(dataset_id, model):
         result_matrix_copy = result_matrix.copy()
         predict_improvement(result_matrix_copy, comparison_result_matrix_copy, "all")
         # Remove one category completely and sample 5 metafeatures from the other categories
-        print("Remove one category completely and sample 5 metafeatures from the other categories")
+        print("Remove one category completely")
         for i in range(len(categories)):
             comparison_result_matrix_copy = comparison_result_matrix.copy()
             result_matrix_copy = result_matrix.copy()
@@ -158,7 +158,7 @@ def main(dataset_id, model):
             result_matrix_copy = result_matrix_copy.drop(categories[i], axis=1)
             predict_improvement(result_matrix_copy, comparison_result_matrix_copy, "without_" + category_names[i])
         # Remove all categories completely but one
-        print("Remove all categories completely but one and sample 5 metafeatures from this category")
+        print("Remove all categories completely but one")
         for i in range(len(categories)):
             comparison_result_matrix_copy = comparison_result_matrix.copy()
             result_matrix_copy = result_matrix.copy()
@@ -170,6 +170,6 @@ def main(dataset_id, model):
 
 
 if __name__ == '__main__':
-    dataset_id = 2073
+    dataset_id = 190411
     models = "GBM"
     main(dataset_id, models)
