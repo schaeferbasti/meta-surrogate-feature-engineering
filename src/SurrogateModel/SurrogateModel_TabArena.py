@@ -90,9 +90,9 @@ def predict_improvement(result_matrix, comparison_result_matrix, category_or_met
 
     # Predict and score
     prediction_probabilities = clf.predict_proba(X=comparison_result_matrix)
-    roc_auc = roc_auc_score(y_comparison, prediction_probabilities)
-    print("ROC AUC: " + str(roc_auc))
-    prediction_probabilities_df = pd.DataFrame({'Prediction_proba': prediction_probabilities, 'Roc_Auc': roc_auc})
+    # roc_auc = roc_auc_score(y_comparison, prediction_probabilities)
+    # print("ROC AUC: " + str(roc_auc))
+    prediction_probabilities_df = pd.DataFrame({'predicted_improvement': prediction_probabilities})
     prediction_probabilities_df.to_parquet("Prediction_" + str(category_or_method) + ".parquet")
     best_operations = prediction_probabilities_df.nlargest(n=20, columns="predicted_improvement", keep="first")
     best_operations.to_parquet("Best_Operations_" + str(category_or_method) + ".parquet")
