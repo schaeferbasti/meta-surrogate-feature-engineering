@@ -41,6 +41,8 @@ source ~/.venvs/tabarena
 # source .venv/local/bin/activate
 echo "Virtual Environment Activated"
 
+git clone --branch main https://github.com/autogluon/tabrepo.git
+
 pip install -r requirements.txt
 
 # Set the PYTHONPATH to include the src directory
