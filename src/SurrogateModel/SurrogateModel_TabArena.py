@@ -14,10 +14,10 @@ from pymfe.mfe import MFE
 from src.utils.create_feature_and_featurename import create_featurenames, extract_operation_and_original_features
 from src.utils.get_data import get_openml_dataset_and_metadata, get_openml_dataset_split_and_metadata
 from src.utils.get_matrix import get_matrix_core_columns
-from src.Metadata.d2v.Add_d2v_Metafeatures import add_d2v_metadata_columns
+# from src.Metadata.d2v.Add_d2v_Metafeatures import add_d2v_metadata_columns
 from src.Metadata.mfe.Add_MFE_Metafeatures import add_mfe_metadata_columns
-from src.Metadata.pandas.Add_Pandas_Metafeatures import add_pandas_metadata_columns
-from src.Metadata.tabpfn.Add_TabPFN_Metafeatures import add_tabpfn_metadata_columns
+# from src.Metadata.pandas.Add_Pandas_Metafeatures import add_pandas_metadata_columns
+# from src.Metadata.tabpfn.Add_TabPFN_Metafeatures import add_tabpfn_metadata_columns
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -69,14 +69,14 @@ def add_method_metadata(result_matrix, dataset_metadata, X_predict, y_predict, m
 
 
 def predict_improvement(result_matrix, comparison_result_matrix, category_or_method):
-    y_result = result_matrix[:, -1]
-    result_matrix = result_matrix[:, :-1]
-    y_comparison = comparison_result_matrix[:, -1]
-    comparison_result_matrix = comparison_result_matrix[:, :-1]
+    y_result = result_matrix["improvement"]
+    result_matrix = result_matrix.drop("improvement", axis=1)
+    y_comparison = comparison_result_matrix["improvement"]
+    comparison_result_matrix = comparison_result_matrix.drop("improvement", axis=1)
     # Single-predictor (improvement given all possible operations on features)
     feature_generator, label_cleaner = (
         AutoMLPipelineFeatureGenerator(),
-        LabelCleaner.construct(problem_type="binary", y=y),
+        LabelCleaner.construct(problem_type="regression", y=y_result),
     )
     result_matrix, y_result = (
         feature_generator.fit_transform(result_matrix),
@@ -90,9 +90,11 @@ def predict_improvement(result_matrix, comparison_result_matrix, category_or_met
 
     # Predict and score
     prediction_probabilities = clf.predict_proba(X=comparison_result_matrix)
-    print("ROC AUC:", roc_auc_score(y_comparison, prediction_probabilities))
-    prediction_probabilities.to_parquet("Prediction_" + str(category_or_method) + ".parquet")
-    best_operations = prediction_probabilities.nlargest(n=20, columns="predicted_improvement", keep="first")
+    roc_auc = roc_auc_score(y_comparison, prediction_probabilities)
+    print("ROC AUC: " + str(roc_auc))
+    prediction_probabilities_df = pd.DataFrame({'Prediction_proba': prediction_probabilities, 'Roc_Auc': roc_auc})
+    prediction_probabilities_df.to_parquet("Prediction_" + str(category_or_method) + ".parquet")
+    best_operations = prediction_probabilities_df.nlargest(n=20, columns="predicted_improvement", keep="first")
     best_operations.to_parquet("Best_Operations_" + str(category_or_method) + ".parquet")
 
 
@@ -132,7 +134,7 @@ def main(dataset_id, model):
     # methods = ["d2v", "mfe", "pandas", "tabpfn"]
     for method in methods:
         print("Read Matrices")
-        result_matrix = pd.read_parquet("../Metadata/" + method + "/" + method + "_metafeatures.parquet")
+        result_matrix = pd.read_parquet("src/Metadata/" + method + "/" + method + "_metafeatures.parquet")
         comparison_result_matrix = result_matrix
         # comparison_result_matrix = create_empty_core_matrix_for_new_dataset(dataset_id, model)
         # comparison_result_matrix = pd.read_parquet("../Metadata/core/Core_Matrix.parquet")
