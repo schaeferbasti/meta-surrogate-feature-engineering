@@ -134,15 +134,15 @@ def main(dataset_id, model):
     # methods = ["d2v", "mfe", "pandas", "tabpfn"]
     for method in methods:
         print("Read Matrices")
-        result_matrix = pd.read_parquet("src/Metadata/" + method + "/" + method + "_metafeatures.parquet")
-        comparison_result_matrix = result_matrix
-        # comparison_result_matrix = create_empty_core_matrix_for_new_dataset(dataset_id, model)
+        result_matrix = pd.read_parquet("src/Metadata/core/Core_Matrix_Complete.parquet")
+        # comparison_result_matrix = result_matrix
         # comparison_result_matrix = pd.read_parquet("../Metadata/core/Core_Matrix.parquet")
-        # comparison_result_matrix = add_method_metadata(comparison_result_matrix, dataset_metadata, X_predict, y_predict, method)
+        comparison_result_matrix = create_empty_core_matrix_for_new_dataset(dataset_id, model)
+        comparison_result_matrix = add_method_metadata(comparison_result_matrix, dataset_metadata, X_predict, y_predict, method)
         print("Add Metadata to comparison_result_matrix")
-        # comparison_result_matrix, dataset_metadata_general_names, dataset_metadata_statistical_names, dataset_metadata_info_theory_names, dataset_metadata_landmarking_names, dataset_metadata_complexity_names, dataset_metadata_clustering_names, dataset_metadata_concept_names, dataset_metadata_itemset_names = add_mfe_metadata_columns(X_predict, y_predict, comparison_result_matrix)
-        # categories = [dataset_metadata_general_names, dataset_metadata_statistical_names, dataset_metadata_info_theory_names, dataset_metadata_landmarking_names, dataset_metadata_complexity_names, dataset_metadata_clustering_names, dataset_metadata_concept_names, dataset_metadata_itemset_names]
-        categories = get_dummy_mfe_metafeatures()
+        comparison_result_matrix, dataset_metadata_general_names, dataset_metadata_statistical_names, dataset_metadata_info_theory_names, dataset_metadata_landmarking_names, dataset_metadata_complexity_names, dataset_metadata_clustering_names, dataset_metadata_concept_names, dataset_metadata_itemset_names = add_mfe_metadata_columns(X_predict, y_predict, comparison_result_matrix)
+        categories = [dataset_metadata_general_names, dataset_metadata_statistical_names, dataset_metadata_info_theory_names, dataset_metadata_landmarking_names, dataset_metadata_complexity_names, dataset_metadata_clustering_names, dataset_metadata_concept_names, dataset_metadata_itemset_names]
+        #categories = get_dummy_mfe_metafeatures()
         category_names = ["general", "statistical", "info_theory", "landmarking", "complexity", "clustering", "concept", "itemset"]
         # Keep all categories
         print("Keep all categories")
