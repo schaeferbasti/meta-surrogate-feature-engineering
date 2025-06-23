@@ -24,8 +24,9 @@ def create_feature(feature1, feature2, featurename):
 def create_unary_feature_and_featurename(feature1, operator):
     try:
         feature1_float_list = [float(x) for x in feature1]
-    except ValueError:
-        feature1_factorized = feature1.factorize()[0]
+    except (ValueError, TypeError):
+        feature1_factorized = pd.factorize(feature1)[0]
+        print(pd.factorize(feature1)[1])
         feature1_float_list = [float(x) for x in feature1_factorized]
     if operator == "min":
         feature = feature1.apply(lambda x: min(feature1_float_list)).to_list()
@@ -66,9 +67,11 @@ def create_binary_feature_and_featurename(feature1, feature2, operator):
     try:
         feature1_float_list = [float(x) for x in feature1]
         feature2_float_list = [float(x) for x in feature2]
-    except ValueError:
-        feature1_factorized = feature1.factorize()[0]
-        feature2_factorized = feature2.factorize()[0]
+    except (ValueError, TypeError):
+        feature1_factorized = pd.factorize(feature1)[0]
+        print(pd.factorize(feature1)[1])
+        feature2_factorized = pd.factorize(feature2)[0]
+        print(pd.factorize(feature2)[1])
         feature1_float_list = [float(x) for x in feature1_factorized]
         feature2_float_list = [float(x) for x in feature2_factorized]
     if operator == "+" or operator == "add":
