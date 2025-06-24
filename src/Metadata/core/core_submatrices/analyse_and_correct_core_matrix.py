@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 
+from src.Metadata.core.core_submatrices.complete.core_matrix_fusion import core_matrix_fusion
 from src.utils.get_data import get_openml_dataset
 from src.utils.get_operators import get_operators
 
@@ -53,8 +54,10 @@ def list_incomplete_df():
     print("Number of Complete Files: " + str(len(core_files) - len(list_of_incomplete_df)))
     print("List of Incomplete Files: " + str(list_of_incomplete_df))
 
+    core_matrix_fusion("complete/", "../")
+
 def main():
-    remove_duplicate_columns()
+    # remove_duplicate_columns()
     list_incomplete_df()
 
 
