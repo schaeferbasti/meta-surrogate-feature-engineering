@@ -156,8 +156,7 @@ def continue_calculating_improvement_regression(result_matrix, dataset):
 def main(dataset):
     print("Regression Dataset: " + str(dataset))
     try:
-        result_matrix = pd.read_parquet(
-            "core_submatrices/Operator_Model_Feature_Matrix_Core" + str(dataset) + ".parquet")
+        result_matrix = pd.read_parquet("Operator_Model_Feature_Matrix_Core" + str(dataset) + ".parquet")
         check = check_if_complete(result_matrix)
         if check:
             print("Dataset " + str(dataset) + " is complete")
