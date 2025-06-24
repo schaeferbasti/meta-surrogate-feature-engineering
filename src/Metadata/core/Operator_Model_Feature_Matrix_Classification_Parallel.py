@@ -22,7 +22,7 @@ def check_if_complete(result_matrix):
     return check
 
 
-def check_if_operator_is_there(result_matrix, operator):
+def check_if_operator_is_there(result_matrix, operator, binary):
     check = False
     dataset_id = result_matrix["dataset - id"].values[0]
     X, y = get_openml_dataset(int(dataset_id))
@@ -31,8 +31,12 @@ def check_if_operator_is_there(result_matrix, operator):
     operator_count = result_matrix['operator'].value_counts()
     try:
         n_lines_present = operator_count[operator]
-        if n_lines_present == n_lines_calculated:
-            check = True
+        if binary:
+            if n_lines_present == n_lines_calculated * n_lines_calculated:
+                check = True
+        else:
+            if n_lines_present == n_lines_calculated:
+                check = True
     except KeyError:
         return False
     return check
@@ -103,7 +107,7 @@ def continue_calculating_improvement_classification(result_matrix, dataset, path
     X_train_copy = X_train.copy()
     X_test_copy = X_test.copy()
     original_results = get_model_score(X_train, y_train, X_test, y_test, dataset)
-    if check_if_operator_is_there(result_matrix, "delete"):
+    if check_if_operator_is_there(result_matrix, "delete", False):
         print("Result matrix contains all delete operations")
     else:
         for feature1 in X_train_copy.columns:
@@ -124,7 +128,7 @@ def continue_calculating_improvement_classification(result_matrix, dataset, path
             binary_operator = "multiply"
         if binary_operator == "/":
             binary_operator = "/"
-        if check_if_operator_is_there(result_matrix, binary_operator):
+        if check_if_operator_is_there(result_matrix, binary_operator, True):
             print("Result matrix contains all delete operations")
         else:
             missing_binary_operators.append(binary_operator)
@@ -138,7 +142,7 @@ def continue_calculating_improvement_classification(result_matrix, dataset, path
                 result_matrix.to_parquet(path + "Operator_Model_Feature_Matrix_Core" + str(dataset) + ".parquet")
     missing_unary_operators = []
     for unary_operator in unary_operators:
-        if check_if_operator_is_there(result_matrix, unary_operator):
+        if check_if_operator_is_there(result_matrix, unary_operator, False):
             print("Result matrix contains all delete operations")
         else:
             missing_unary_operators.append(unary_operator)
