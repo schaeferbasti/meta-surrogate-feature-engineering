@@ -124,9 +124,9 @@ def predict_autogluon_lgbm(train_data, X_test, dataset_metadata):
     # Evaluation
     # evaluation = pd.DataFrame(predictor.evaluate(X_test, ))
     # Prediction
-    prediction = predictor.predict(X_test)
+    prediction = predictor.predict(test_data)
     prediction.rename("predicted_improvement", inplace=True)
-    prediction_result = pd.concat([X_test[["dataset - id", "feature - name", "model"]], prediction], axis=1)
+    prediction_result = pd.concat([test_data[["dataset - id", "feature - name", "model"]], prediction], axis=1)
     return prediction_result  # evaluation,
 
 
@@ -210,7 +210,7 @@ def init_and_fit_improvement_predictor_classification(label, train_data, zerosho
     )
     predictor.fit(
         time_limit=int(60 * 60 * 4),
-        memory_limit=32,
+        memory_limit=48,
         num_cpus=8,
         num_gpus=0,
         train_data=train_data,
@@ -236,7 +236,7 @@ def init_and_fit_improvement_predictor_regression(label, train_data, zeroshot202
     )
     predictor.fit(
         time_limit=int(60 * 60 * 4),
-        memory_limit=32,
+        memory_limit=48,
         num_cpus=8,
         num_gpus=0,
         train_data=train_data,
