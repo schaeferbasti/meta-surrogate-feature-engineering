@@ -155,7 +155,7 @@ def continue_calculating_improvement_classification(result_matrix, dataset, path
 
 def main(dataset):
     print("Classification Dataset: " + str(dataset))
-    path = "src/Metadata/core/core_submatrices"
+    path = "src/Metadata/core/core_submatrices/"
     try:
         result_matrix = pd.read_parquet(path + "Operator_Model_Feature_Matrix_Core" + str(dataset) + ".parquet")
         check = check_if_complete(result_matrix)
@@ -165,6 +165,7 @@ def main(dataset):
             print("Dataset " + str(dataset) + " is NOT complete")
             continue_calculating_improvement_classification(result_matrix, dataset, path)
     except FileNotFoundError:
+        print("Dataset " + str(dataset) + " is NOT existant")
         columns = get_matrix_core_columns()
         result_matrix = pd.DataFrame(columns=columns)
         unary_operators, binary_operators = get_operators()
@@ -202,4 +203,4 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Run Metadata Classification')
     parser.add_argument('--dataset_classification', type=int, required=True, help='AMLB Classification Dataset')
     args = parser.parse_args()
-    main(args.dataset)
+    main(args.dataset_classification)

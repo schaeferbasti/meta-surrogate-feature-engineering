@@ -102,7 +102,7 @@ def continue_calculating_improvement_regression(result_matrix, dataset, path):
     X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset)
     X_train_copy = X_train.copy()
     X_test_copy = X_test.copy()
-    original_results = get_model_score(X_train, y_train, X_test, y_test, dataset)
+    original_results = get_model_score_regression(X_train, y_train, X_test, y_test, dataset)
     if check_if_operator_is_there(result_matrix, "delete"):
         print("Result matrix contains all delete operations")
     else:
@@ -155,7 +155,7 @@ def continue_calculating_improvement_regression(result_matrix, dataset, path):
 
 def main(dataset):
     print("Regression Dataset: " + str(dataset))
-    path = "src/Metadata/core/core_submatrices"
+    path = "src/Metadata/core/core_submatrices/"
     try:
         result_matrix = pd.read_parquet(path + "Operator_Model_Feature_Matrix_Core" + str(dataset) + ".parquet")
         check = check_if_complete(result_matrix)
