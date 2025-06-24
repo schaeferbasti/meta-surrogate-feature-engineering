@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define the partition on which the job shall run.
-#SBATCH --partition mlhiwidlc_gpu-rtx2080   # bosch_cpu-cascadelake
+#SBATCH --partition bosch_cpu-cascadelake  # mlhiwidlc_gpu-rtx2080
 
 # Define a name for your job
 #SBATCH --job-name Surrogate_Model
