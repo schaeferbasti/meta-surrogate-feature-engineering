@@ -2,10 +2,13 @@ from __future__ import annotations
 
 from autogluon.core.data import LabelCleaner
 from autogluon.features.generators import AutoMLPipelineFeatureGenerator
+from autogluon.tabular.models import CatBoostModel
 from sklearn.metrics import roc_auc_score
 
 # Import a TabArena model
 from tabrepo.benchmark.models.ag.realmlp.realmlp_model import RealMLPModel
+from tabrepo.benchmark.models.ag.tabdpt.tabdpt_model import TabDPTModel
+
 
 import numpy as np
 import pandas as pd
@@ -85,7 +88,9 @@ def predict_improvement(result_matrix, comparison_result_matrix, category_or_met
     comparison_result_matrix, y_comparison = feature_generator.transform(comparison_result_matrix), label_cleaner.transform(y_comparison)
 
     # Train TabArena Model
-    clf = RealMLPModel()
+    # clf = RealMLPModel() # Catboost TabDPT -> tabarena hugging face
+    # clf = TabDPTModel()
+    clf = CatBoostModel()
     clf.fit(X=result_matrix, y=y_result)
 
     # Predict and score
