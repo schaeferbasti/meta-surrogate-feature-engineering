@@ -92,7 +92,7 @@ def recursive_feature_addition(i, n_features_to_add, X_train, y_train, X_test, y
     if i >= n_features_to_add:
         return X_train, y_train, X_test, y_test
     # Reload base matrix
-    result_matrix = pd.read_parquet("src/Metadata/core/Core_Matrix_Complete.parquet")
+    result_matrix = pd.read_parquet("../Metadata/core/Core_Matrix_Complete.parquet")
     # Create comparison matrix for new dataset
     comparison_result_matrix = add_method_metadata(result_matrix, dataset_metadata, X_train, y_train, method)
     comparison_result_matrix, general, statistical, info_theory, landmarking, complexity, clustering, concept, itemset = add_mfe_metadata_columns(X_train, y_train, comparison_result_matrix)
@@ -140,38 +140,30 @@ def predict_improvement(result_matrix, comparison_result_matrix, category_or_met
 
 def main(dataset_id, model):
     model = "LightGBM_BAG_L1"
-    methods = ["d2v", "mfe", "pandas", "tabpfn"]
+    methods = ["pandas", "mfe", "d2v", "tabpfn"]
     n_features_to_add = 10
     j = 0
     for method in methods:
         if method == "mfe":
             categories = get_mfe_categories()
             # Keep all categories
-            X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(
-                dataset_id)
-            recursive_feature_addition_mfe(j, n_features_to_add, X_train, y_train, X_test, y_test, model,
-                                           method, dataset_metadata, None)
+            X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata( dataset_id)
+            recursive_feature_addition_mfe(j, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, None)
 
             # Remove one category completely
-            X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(
-                dataset_id)
+            X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata( dataset_id)
             print("Remove one category completely")
             for i in range(len(categories)):
-                recursive_feature_addition_mfe(j, n_features_to_add, X_train, y_train, X_test, y_test,
-                                               model, method, dataset_metadata, categories[i])
+                recursive_feature_addition_mfe(j, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, categories[i])
 
             # Remove all categories completely but one
-            X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(
-                dataset_id)
+            X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata( dataset_id)
             print("Remove all categories completely but one")
             for i in range(len(categories)):
-                recursive_feature_addition_mfe(j, n_features_to_add, X_train, y_train, X_test, y_test,
-                                               model, method, dataset_metadata, categories[i])
+                recursive_feature_addition_mfe(j, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, categories[i])
         else:
-            X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(
-                dataset_id)
-            recursive_feature_addition(j, n_features_to_add, X_train, y_train, X_test, y_test, model,
-                                       method, dataset_metadata, None)
+            X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
+            recursive_feature_addition(j, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, None)
 
 
 if __name__ == '__main__':
