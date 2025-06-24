@@ -107,7 +107,8 @@ def recursive_feature_addition(i, n_features_to_add, X_train, y_train, X_test, y
     # Reload base matrix
     result_matrix = pd.read_parquet("src/Metadata/core/Core_Matrix_Complete.parquet")
     # Create comparison matrix for new dataset
-    comparison_result_matrix = add_method_metadata(result_matrix, dataset_metadata, X_train, y_train, method)
+    comparison_result_matrix = create_empty_core_matrix_for_dataset(X_train, model)
+    comparison_result_matrix = add_method_metadata(comparison_result_matrix, dataset_metadata, X_train, y_train, method)
     comparison_result_matrix, general, statistical, info_theory, landmarking, complexity, clustering, concept, itemset = add_mfe_metadata_columns(X_train, y_train, comparison_result_matrix)
     # Drop category
     comparison_result_matrix_copy = comparison_result_matrix.drop(columns=category_to_drop, errors='ignore')
@@ -126,7 +127,8 @@ def recursive_feature_addition_mfe(i, n_features_to_add, X_train, y_train, X_tes
     # Reload base matrix
     result_matrix = pd.read_parquet("src/Metadata/core/Core_Matrix_Complete.parquet")
     # Create comparison matrix for new dataset
-    comparison_result_matrix = result_matrix, _, _, _, _, _, _, _, _ = add_mfe_metadata_columns(X_train, y_train, result_matrix)
+    comparison_result_matrix = create_empty_core_matrix_for_dataset(X_train, model)
+    comparison_result_matrix = result_matrix, _, _, _, _, _, _, _, _ = add_mfe_metadata_columns(X_train, y_train, comparison_result_matrix)
     comparison_result_matrix, general, statistical, info_theory, landmarking, complexity, clustering, concept, itemset = add_mfe_metadata_columns(X_train, y_train, comparison_result_matrix)
     # Drop no category, single category or all categories but one
     comparison_result_matrix_copy = comparison_result_matrix.drop(columns=category_to_drop, errors='ignore')
