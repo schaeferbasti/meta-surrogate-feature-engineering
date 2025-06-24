@@ -19,7 +19,7 @@ import warnings
 warnings.filterwarnings('ignore')
 
 
-def create_empty_core_matrix_for_dataset(X_train, y_train, X_test, y_test, model) -> pd.DataFrame:
+def create_empty_core_matrix_for_dataset(X_train, model) -> pd.DataFrame:
     columns = get_matrix_core_columns()
     comparison_result_matrix = pd.DataFrame(columns=columns)
     for feature1 in X_train.columns:
@@ -95,7 +95,8 @@ def recursive_feature_addition(i, n_features_to_add, X_train, y_train, X_test, y
     # Reload base matrix
     result_matrix = pd.read_parquet("../Metadata/core/Core_Matrix_Complete.parquet")
     # Create comparison matrix for new dataset
-    comparison_result_matrix = add_method_metadata(result_matrix, dataset_metadata, X_train, y_train, method)
+    comparison_result_matrix = create_empty_core_matrix_for_dataset(X_train, model)
+    comparison_result_matrix = add_method_metadata(comparison_result_matrix, dataset_metadata, X_train, y_train, method)
     comparison_result_matrix, general, statistical, info_theory, landmarking, complexity, clustering, concept, itemset = add_mfe_metadata_columns(X_train, y_train, comparison_result_matrix)
     # Drop category
     comparison_result_matrix_copy = comparison_result_matrix.drop(columns=category_to_drop, errors='ignore')
@@ -112,9 +113,10 @@ def recursive_feature_addition_mfe(i, n_features_to_add, X_train, y_train, X_tes
     if i >= n_features_to_add:
         return X_train, y_train, X_test, y_test
     # Reload base matrix
-    result_matrix = pd.read_parquet("src/Metadata/core/Core_Matrix_Complete.parquet")
+    result_matrix = pd.read_parquet("../Metadata/core/Core_Matrix_Complete.parquet")
     # Create comparison matrix for new dataset
-    comparison_result_matrix = result_matrix, _, _, _, _, _, _, _, _ = add_mfe_metadata_columns(X_train, y_train, result_matrix)
+    comparison_result_matrix = create_empty_core_matrix_for_dataset(X_train, model)
+    comparison_result_matrix, _, _, _, _, _, _, _, _ = add_mfe_metadata_columns(X_train, y_train, comparison_result_matrix)
     comparison_result_matrix, general, statistical, info_theory, landmarking, complexity, clustering, concept, itemset = add_mfe_metadata_columns(X_train, y_train, comparison_result_matrix)
     # Drop no category, single category or all categories but one
     comparison_result_matrix_copy = comparison_result_matrix.drop(columns=category_to_drop, errors='ignore')
@@ -127,7 +129,7 @@ def recursive_feature_addition_mfe(i, n_features_to_add, X_train, y_train, X_tes
     return X_train, y_train, X_test, y_test
 
 
-def predict_improvement(result_matrix, comparison_result_matrix, category_or_method, fold):
+def predict_improvement(result_matrix, comparison_result_matrix, category_or_method):
     # Single-predictor (improvement given all possible operations on features)
     prediction = predict_autogluon_lgbm(result_matrix, comparison_result_matrix)
     prediction.to_parquet("Prediction_" + str(category_or_method) + "_" + ".parquet")
@@ -141,7 +143,7 @@ def predict_improvement(result_matrix, comparison_result_matrix, category_or_met
 
 def main(dataset_id, model):
     model = "LightGBM_BAG_L1"
-    methods = ["pandas", "mfe", "d2v", "tabpfn"]
+    methods = ["mfe", "pandas", "d2v", "tabpfn"]
     n_features_to_add = 10
     j = 0
     category = "No_Category"
@@ -180,6 +182,6 @@ def main(dataset_id, model):
 
 
 if __name__ == '__main__':
-    dataset_id = 2073
+    dataset_id = 190411
     models = "GBM"
     main(dataset_id, models)
