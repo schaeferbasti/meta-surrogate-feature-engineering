@@ -15,7 +15,7 @@
 #SBATCH --gres=localtmp:100
 
 #Time Format = days-hours:minutes:seconds
-#SBATCH --time=4-00:00:00
+#SBATCH --time=8-00:00:00
 
 #SBATCH --propagate=NONE
 
