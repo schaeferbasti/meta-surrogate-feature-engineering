@@ -34,10 +34,10 @@ def execute_feature_engineering(prediction_result):
     target_label = "target"
     y = y.to_frame(target_label)
     data = pd.concat([X, y], axis=1)
-    print("Factorize Data")
-    X_train, y_train, X_test, y_test = split_data(data, target_label)
-    X_train, y_train, X_test, y_test = factorize_dataset(X_train, y_train, X_test, y_test)
-    data = concat_data(X_train, y_train, X_test, y_test, target_label)
+    #print("Factorize Data")
+    #X_train, y_train, X_test, y_test = split_data(data, target_label)
+    #X_train, y_train, X_test, y_test = factorize_dataset(X_train, y_train, X_test, y_test)
+    #data = concat_data(X_train, y_train, X_test, y_test, target_label)
     print("Add Features to Data")
     try:
         data = pd.read_parquet("FE_Dataset_" + str(dataset_id) + ".parquet")
@@ -60,7 +60,7 @@ def main():
         prediction_result = pd.read_parquet(path + core_file)
         print("Execute Feature Engineering")
         data, dataset_id, model = execute_feature_engineering(prediction_result)
-        data.to_parquet("FE_Dataset_" + str(core_file))
+        data.to_parquet("FE_Dataset_" + str(dataset_id) + "_" + str(core_file))
 
 
 if __name__ == "__main__":
