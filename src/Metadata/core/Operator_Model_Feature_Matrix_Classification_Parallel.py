@@ -97,7 +97,7 @@ def calc_relative_improvement(original_score, modified_score):
         return (original_score - modified_score) / modified_score
 
 
-def continue_calculating_improvement_classification(result_matrix, dataset):
+def continue_calculating_improvement_classification(result_matrix, dataset, path):
     unary_operators, binary_operators = get_operators()
     X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset)
     X_train_copy = X_train.copy()
@@ -113,7 +113,7 @@ def continue_calculating_improvement_classification(result_matrix, dataset):
             new_rows = get_core_result_feature_selection_classification(X_train_reduced, y_train, X_test_reduced, y_test,
                                                                         dataset_metadata, featurename, original_results)
             result_matrix = pd.concat([result_matrix, pd.DataFrame(new_rows)], ignore_index=True)
-            result_matrix.to_parquet("Operator_Model_Feature_Matrix_Core" + str(dataset) + ".parquet")
+            result_matrix.to_parquet(path + "Operator_Model_Feature_Matrix_Core" + str(dataset) + ".parquet")
     missing_binary_operators = []
     for binary_operator in binary_operators:
         if binary_operator == "+":
@@ -135,7 +135,7 @@ def continue_calculating_improvement_classification(result_matrix, dataset):
                 test_feature, featurename = create_feature_and_featurename(feature1=X_test[feature1], feature2=X_test[feature2], operator=operator)
                 new_rows = get_core_result_feature_generation_classification(X_train, y_train, X_test, y_test, dataset_metadata, train_feature, test_feature, featurename, original_results)
                 result_matrix = pd.concat([result_matrix, pd.DataFrame(new_rows)], ignore_index=True)
-                result_matrix.to_parquet("Operator_Model_Feature_Matrix_Core" + str(dataset) + ".parquet")
+                result_matrix.to_parquet(path + "Operator_Model_Feature_Matrix_Core" + str(dataset) + ".parquet")
     missing_unary_operators = []
     for unary_operator in unary_operators:
         if check_if_operator_is_there(result_matrix, unary_operator):
@@ -148,21 +148,22 @@ def continue_calculating_improvement_classification(result_matrix, dataset):
             test_feature, featurename = create_feature_and_featurename(feature1=X_test[feature1], feature2=None, operator=operator)
             new_rows = get_core_result_feature_generation_classification(X_train, y_train, X_test, y_test, dataset_metadata, train_feature, test_feature, featurename, original_results)
             result_matrix = pd.concat([result_matrix, pd.DataFrame(new_rows)], ignore_index=True)
-            result_matrix.to_parquet("Operator_Model_Feature_Matrix_Core" + str(dataset) + ".parquet")
-        result_matrix.to_parquet("Operator_Model_Feature_Matrix_Core" + str(dataset) + ".parquet")
-    result_matrix.to_parquet("Operator_Model_Feature_Matrix_Core" + str(dataset) + ".parquet")
+            result_matrix.to_parquet(path + "Operator_Model_Feature_Matrix_Core" + str(dataset) + ".parquet")
+        result_matrix.to_parquet(path + "Operator_Model_Feature_Matrix_Core" + str(dataset) + ".parquet")
+    result_matrix.to_parquet(path + "Operator_Model_Feature_Matrix_Core" + str(dataset) + ".parquet")
 
 
 def main(dataset):
     print("Classification Dataset: " + str(dataset))
+    path = "src/Metadata/core/core_submatrices"
     try:
-        result_matrix = pd.read_parquet("Operator_Model_Feature_Matrix_Core" + str(dataset) + ".parquet")
+        result_matrix = pd.read_parquet(path + "Operator_Model_Feature_Matrix_Core" + str(dataset) + ".parquet")
         check = check_if_complete(result_matrix)
         if check:
             print("Dataset " + str(dataset) + " is complete")
         else:
             print("Dataset " + str(dataset) + " is NOT complete")
-            continue_calculating_improvement_classification(result_matrix, dataset)
+            continue_calculating_improvement_classification(result_matrix, dataset, path)
     except FileNotFoundError:
         columns = get_matrix_core_columns()
         result_matrix = pd.DataFrame(columns=columns)
@@ -177,7 +178,7 @@ def main(dataset):
             featurename = "without - " + str(feature1)
             new_rows = get_core_result_feature_selection_classification(X_train_reduced, y_train, X_test_reduced, y_test, dataset_metadata, featurename, original_results)
             result_matrix = pd.concat([result_matrix, pd.DataFrame(new_rows)], ignore_index=True)
-            result_matrix.to_parquet("Operator_Model_Feature_Matrix_Core" + str(dataset) + ".parquet")
+            result_matrix.to_parquet(path + "Operator_Model_Feature_Matrix_Core" + str(dataset) + ".parquet")
         for feature1 in X_train_copy.columns:
             for feature2 in X_train_copy.columns:
                 for operator in binary_operators:
@@ -185,16 +186,16 @@ def main(dataset):
                     test_feature, featurename = create_feature_and_featurename(feature1=X_test[feature1], feature2=X_test[feature2],  operator=operator)
                     new_rows = get_core_result_feature_generation_classification(X_train, y_train, X_test, y_test, dataset_metadata, train_feature, test_feature, featurename, original_results)
                     result_matrix = pd.concat([result_matrix, pd.DataFrame(new_rows)], ignore_index=True)
-                    result_matrix.to_parquet("Operator_Model_Feature_Matrix_Core" + str(dataset) + ".parquet")
+                    result_matrix.to_parquet(path + "Operator_Model_Feature_Matrix_Core" + str(dataset) + ".parquet")
         for feature1 in X_train_copy.columns:
             for operator in unary_operators:
                 train_feature, featurename = create_feature_and_featurename(feature1=X_train[feature1], feature2=None, operator=operator)
                 test_feature, featurename = create_feature_and_featurename(feature1=X_test[feature1], feature2=None, operator=operator)
                 new_rows = get_core_result_feature_generation_classification(X_train, y_train, X_test, y_test, dataset_metadata, train_feature, test_feature, featurename, original_results)
                 result_matrix = pd.concat([result_matrix, pd.DataFrame(new_rows)], ignore_index=True)
-                result_matrix.to_parquet("Operator_Model_Feature_Matrix_Core" + str(dataset) + ".parquet")
-            result_matrix.to_parquet("Operator_Model_Feature_Matrix_Core" + str(dataset) + ".parquet")
-        result_matrix.to_parquet("Operator_Model_Feature_Matrix_Core" + str(dataset) + ".parquet")
+                result_matrix.to_parquet(path + "Operator_Model_Feature_Matrix_Core" + str(dataset) + ".parquet")
+            result_matrix.to_parquet(path + "Operator_Model_Feature_Matrix_Core" + str(dataset) + ".parquet")
+        result_matrix.to_parquet(path + "Operator_Model_Feature_Matrix_Core" + str(dataset) + ".parquet")
 
 
 if __name__ == '__main__':
