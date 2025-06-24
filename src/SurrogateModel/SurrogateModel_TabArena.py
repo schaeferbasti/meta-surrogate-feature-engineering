@@ -19,7 +19,8 @@ import pandas as pd
 from pymfe.mfe import MFE
 
 from src.utils.create_feature_and_featurename import create_featurenames, extract_operation_and_original_features
-from src.utils.get_data import get_openml_dataset_and_metadata, get_openml_dataset_split_and_metadata, split_data
+from src.utils.get_data import get_openml_dataset_and_metadata, get_openml_dataset_split_and_metadata, split_data, \
+    concat_data
 from src.utils.get_matrix import get_matrix_core_columns
 # from src.Metadata.d2v.Add_d2v_Metafeatures import add_d2v_metadata_columns
 from src.Metadata.mfe.Add_MFE_Metafeatures import add_mfe_metadata_columns
@@ -169,35 +170,46 @@ def predict_improvement(result_matrix, comparison_result_matrix, category_or_met
     return data
 
 
-def main(dataset_id, model):
+def main(dataset_id):
     model = "LightGBM_BAG_L1"
-    methods = ["d2v", "mfe", "pandas", "tabpfn"]
+    methods = ["pandas", "mfe", "d2v", "tabpfn"]
     n_features_to_add = 10
     j = 0
+    category = "No_Category"
     for method in methods:
         if method == "mfe":
             categories = get_mfe_categories()
             # Keep all categories
+            category = "all"
             X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
-            recursive_feature_addition_mfe(j, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, None)
+            X_train, y_train, X_test, y_test = recursive_feature_addition_mfe(j, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, None)
+            data = concat_data(X_train, y_train, X_test, y_test, "target")
+            data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_" + category + ".parquet")
 
             # Remove one category completely
             X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
             print("Remove one category completely")
             for i in range(len(categories)):
-                recursive_feature_addition_mfe(j, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, categories[i])
+                category = "without_" + str(categories[i])
+                X_train, y_train, X_test, y_test = recursive_feature_addition_mfe(j, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, categories[i])
+                data = concat_data(X_train, y_train, X_test, y_test, "target")
+                data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_" + category + ".parquet")
 
             # Remove all categories completely but one
-            X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
+            X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata( dataset_id)
             print("Remove all categories completely but one")
             for i in range(len(categories)):
-                recursive_feature_addition_mfe(j, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, categories[i])
+                category = "only_" + str(categories[i])
+                X_train, y_train, X_test, y_test = recursive_feature_addition_mfe(j, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, categories[i])
+                data = concat_data(X_train, y_train, X_test, y_test, "target")
+                data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_" + category + ".parquet")
         else:
             X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
-            recursive_feature_addition(j, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, None)
+            X_train, y_train, X_test, y_test = recursive_feature_addition(j, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, None)
+            data = concat_data(X_train, y_train, X_test, y_test, "target")
+            data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_" + category + ".parquet")
 
 
 if __name__ == '__main__':
     dataset_id = 190411
-    models = "GBM"
-    main(dataset_id, models)
+    main(dataset_id)
