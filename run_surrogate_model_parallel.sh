@@ -19,7 +19,7 @@
 
 #SBATCH --propagate=NONE
 
-#SBATCH --array=0-3  # Adjust based on the number of methods
+#SBATCH --array=0-19  # Adjust based on the number of methods
 
 
 echo "Workingdir: $PWD";
@@ -53,7 +53,7 @@ export PYTHONPATH=$PWD/src:$PYTHONPATH
 echo "PYTHONPATH set to $PYTHONPATH"
 
 
-mf_methods=("mfe" "pandas" "d2v" "tabpfn")
+mf_methods=("mfe_all" "mfe_without_general" "mfe_without_statistical" "mfe_without_info_theory" "mfe_without_landmarking" "mfe_without_complexity" "mfe_without_clustering" "mfe_without_concept" "mfe_without_itemset" "mfe_only_general" "mfe_only_statistical" "mfe_only_info_theory" "mfe_only_landmarking" "mfe_only_complexity" "mfe_only_clustering" "mfe_only_concept" "mfe_only_itemset" "pandas" "d2v" "tabpfn")
 # dataset_regression=${datasets_regression[$SLURM_ARRAY_TASK_ID]}
 mf_method=${mf_methods[$SLURM_ARRAY_TASK_ID]}
 

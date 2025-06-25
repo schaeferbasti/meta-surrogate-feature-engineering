@@ -179,29 +179,29 @@ def main(method, dataset_id):
     n_features_to_add = 10
     j = 0
     category = "No_Category"
-    if method == "mfe":
+    if method.startswith("mfe"):
         categories = get_mfe_categories()
         # Keep all categories
-        category = "all"
-        X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
-        X_train, y_train, X_test, y_test = recursive_feature_addition_mfe(j, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, None)
-        data = concat_data(X_train, y_train, X_test, y_test, "target")
-        data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_" + category + ".parquet")
+        if "all" in method:
+            X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
+            X_train, y_train, X_test, y_test = recursive_feature_addition_mfe(j, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, None)
+            data = concat_data(X_train, y_train, X_test, y_test, "target")
+            data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_" + category + ".parquet")
 
         # Remove one category completely
-        X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
-        print("Remove one category completely")
-        for i in range(len(categories)):
-            category = "without_" + str(categories[i])
+        if "without" in method:
+            X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
+            print("Remove one category completely")
+            category = method.split("mfe_")[1]
             X_train, y_train, X_test, y_test = recursive_feature_addition_mfe(j, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, categories[i])
             data = concat_data(X_train, y_train, X_test, y_test, "target")
             data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_" + category + ".parquet")
 
         # Remove all categories completely but one
-        X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata( dataset_id)
-        print("Remove all categories completely but one")
-        for i in range(len(categories)):
-            category = "only_" + str(categories[i])
+        if "only" in method:
+            X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata( dataset_id)
+            print("Remove all categories completely but one")
+            category = method.split("mfe_")[1]
             X_train, y_train, X_test, y_test = recursive_feature_addition_mfe(j, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, categories[i])
             data = concat_data(X_train, y_train, X_test, y_test, "target")
             data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_" + category + ".parquet")
