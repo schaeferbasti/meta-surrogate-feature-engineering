@@ -63,7 +63,7 @@ mf_method=${mf_methods[$SLURM_ARRAY_TASK_ID]}
 start=`date +%s`
 
 # shellcheck disable=SC2048
-python3 src/SurrogateModel/SurrogateModel_TabArena_Recursion_Parallel.py  --method "$mf_method" # "$SLURM_ARRAY_TASK_ID" "$*"
+python3 src/SurrogateModel/SurrogateModel_TabArena_Recursion_Parallel.py  --mf_method "$mf_method" # "$SLURM_ARRAY_TASK_ID" "$*"
 
 # Print the allocated memory per node
 echo "Allocated memory per node: $SLURM_MEM_PER_NODE MB"
