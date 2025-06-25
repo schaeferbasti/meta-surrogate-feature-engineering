@@ -93,6 +93,27 @@ def get_mfe_categories():
     return group_feature_lists
 
 
+def get_mfe_category(category):
+    X_dummy = np.array([[0, 1], [1, 0]])
+    y_dummy = np.array([0, 1])
+
+    # Initialize result dictionary
+    groups = [
+        category
+    ]
+
+    # This will hold your result like:
+    # [dataset_metadata_general_names, dataset_metadata_statistical_names, ...]
+    group_feature_lists = []
+
+    for group in groups:
+        mfe = MFE(groups=[group])
+        mfe.fit(X_dummy, y_dummy)
+        feature_names, _ = mfe.extract()
+        group_feature_lists.append(feature_names)
+    return group_feature_lists
+
+
 def add_method_metadata(result_matrix, dataset_metadata, X_predict, y_predict, method):
     if method == "d2v":
         result_matrix = add_d2v_metadata_columns(dataset_metadata, X_predict, result_matrix)
@@ -193,7 +214,9 @@ def main(method, dataset_id):
         if "without" in method:
             X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
             category = method.split("mfe_")[1]
-            X_train, y_train, X_test, y_test = recursive_feature_addition_mfe(j, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, categories[i])
+            category_name = category.split("_")[1]
+            category_to_remove = get_mfe_category(category_name)
+            X_train, y_train, X_test, y_test = recursive_feature_addition_mfe(j, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, category_to_remove)
             data = concat_data(X_train, y_train, X_test, y_test, "target")
             data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_" + category + ".parquet")
 
@@ -201,7 +224,10 @@ def main(method, dataset_id):
         if "only" in method:
             X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata( dataset_id)
             category = method.split("mfe_")[1]
-            X_train, y_train, X_test, y_test = recursive_feature_addition_mfe(j, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, categories[i])
+            category_name = category.split("_")[1]
+            category_to_keeo = get_mfe_category(category_name)
+            categories_to_remove = categories.remove(category_to_keeo)
+            X_train, y_train, X_test, y_test = recursive_feature_addition_mfe(j, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, categories_to_remove)
             data = concat_data(X_train, y_train, X_test, y_test, "target")
             data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_" + category + ".parquet")
     else:
