@@ -31,27 +31,27 @@ def get_pandas_metafeatures(feature_df, featurename):
 
 def check_and_complete_pandas_description(feature_pandas_description):
     if "count" not in feature_pandas_description.index:
-        feature_pandas_description.loc["count"] = np.NaN
+        feature_pandas_description.loc["count"] = np.nan
     if "unique" not in feature_pandas_description.index:
-        feature_pandas_description.loc["unique"] = np.NaN
+        feature_pandas_description.loc["unique"] = np.nan
     if "top" not in feature_pandas_description.index:
-        feature_pandas_description.loc["top"] = np.NaN
+        feature_pandas_description.loc["top"] = np.nan
     if "freq" not in feature_pandas_description.index:
-        feature_pandas_description.loc["freq"] = np.NaN
+        feature_pandas_description.loc["freq"] = np.nan
     if "mean" not in feature_pandas_description.index:
-        feature_pandas_description.loc["mean"] = np.NaN
+        feature_pandas_description.loc["mean"] = np.nan
     if "std" not in feature_pandas_description.index:
-        feature_pandas_description.loc["std"] = np.NaN
+        feature_pandas_description.loc["std"] = np.nan
     if "min" not in feature_pandas_description.index:
-        feature_pandas_description.loc["min"] = np.NaN
+        feature_pandas_description.loc["min"] = np.nan
     if "25%" not in feature_pandas_description.index:
-        feature_pandas_description.loc["25%"] = np.NaN
+        feature_pandas_description.loc["25%"] = np.nan
     if "50%" not in feature_pandas_description.index:
-        feature_pandas_description.loc["50%"] = np.NaN
+        feature_pandas_description.loc["50%"] = np.nan
     if "75%" not in feature_pandas_description.index:
-        feature_pandas_description.loc["75%"] = np.NaN
+        feature_pandas_description.loc["75%"] = np.nan
     if "max" not in feature_pandas_description.index:
-        feature_pandas_description.loc["max"] = np.NaN
+        feature_pandas_description.loc["max"] = np.nan
     return feature_pandas_description
 
 
