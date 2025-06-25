@@ -98,19 +98,16 @@ def get_mfe_category(category):
     y_dummy = np.array([0, 1])
 
     # Initialize result dictionary
-    groups = [
-        category
-    ]
+    group = [category]
 
     # This will hold your result like:
     # [dataset_metadata_general_names, dataset_metadata_statistical_names, ...]
     group_feature_lists = []
 
-    for group in groups:
-        mfe = MFE(groups=[group])
-        mfe.fit(X_dummy, y_dummy)
-        feature_names, _ = mfe.extract()
-        group_feature_lists.append(feature_names)
+    mfe = MFE(groups=group)
+    mfe.fit(X_dummy, y_dummy)
+    feature_names, _ = mfe.extract()
+    group_feature_lists.append(feature_names)
     return group_feature_lists
 
 
@@ -191,13 +188,14 @@ def predict_improvement(result_matrix, comparison_result_matrix, category_or_met
 
 
 def main(method, dataset_id):
+    if method == "dtov":
+        method = "d2v"
     print("Method: " + str(method) + ", Dataset: " + str(dataset_id))
     model = "LightGBM_BAG_L1"
     n_features_to_add = 10
     j = 0
     category = "No_Category"
     if method.startswith("mfe"):
-        categories = get_mfe_categories()
         # Keep all categories
         if "all" in method:
             X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
@@ -210,6 +208,8 @@ def main(method, dataset_id):
             X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
             category = method.split("mfe_")[1]
             category_name = category.split("_")[1]
+            if category_name == "info":
+                category_name = "info-theory"
             category_to_remove = get_mfe_category(category_name)
             X_train, y_train, X_test, y_test = feature_addition_mfe(j, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, category_to_remove)
             data = concat_data(X_train, y_train, X_test, y_test, "target")
@@ -220,8 +220,11 @@ def main(method, dataset_id):
             X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata( dataset_id)
             category = method.split("mfe_")[1]
             category_name = category.split("_")[1]
-            category_to_keeo = get_mfe_category(category_name)
-            categories_to_remove = categories.remove(category_to_keeo)
+            if category_name == "info":
+                category_name = "info-theory"
+            category_to_keep = get_mfe_category(category_name)
+            categories = get_mfe_categories()
+            categories_to_remove = categories.remove(category_to_keep)
             X_train, y_train, X_test, y_test = feature_addition_mfe(j, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, categories_to_remove)
             data = concat_data(X_train, y_train, X_test, y_test, "target")
             data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_" + category + "_best.parquet")
@@ -233,8 +236,9 @@ def main(method, dataset_id):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Run Surrogate Model with Metadata from Method')
-    parser.add_argument('--mf_method', required=True, help='Metafeature Method')
-    args = parser.parse_args()
-    dataset_id = 190411
-    main(args.mf_method, dataset_id)
+    #parser = argparse.ArgumentParser(description='Run Surrogate Model with Metadata from Method')
+    #parser.add_argument('--mf_method', required=True, help='Metafeature Method')
+    #args = parser.parse_args()
+    #dataset_id = 190411
+    #main(args.mf_method, dataset_id)
+    main("mfe_only_info_theory", 190411)
