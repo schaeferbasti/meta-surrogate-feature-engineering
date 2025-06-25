@@ -7,7 +7,7 @@
 #SBATCH --job-name Surrogate_Model_Parallel
 
 # Define the files to write the outputs of the job to.
-#SBATCH --output logs/%x-%A.out   # STDOUT  %x and %A will be replaced by the job name and job id, respectively. short: -o logs/%x-%A.out
+#SBATCH --output logs/%x-%A_%a.out   # STDOUT  %x and %A will be replaced by the job name and job id, respectively. short: -o logs/%x-%A.out
 
 # Define the amount of memory required per node
 #SBATCH --mem=96GB
