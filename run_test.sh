@@ -4,7 +4,7 @@
 #SBATCH --partition bosch_cpu-cascadelake  # mlhiwidlc_gpu-rtx2080
 
 # Define a name for your job
-#SBATCH --job-name Surrogate_Model
+#SBATCH --job-name Test
 
 # Define the files to write the outputs of the job to.
 #SBATCH --output logs/%x-%A.out   # STDOUT  %x and %A will be replaced by the job name and job id, respectively. short: -o logs/%x-%A.out
