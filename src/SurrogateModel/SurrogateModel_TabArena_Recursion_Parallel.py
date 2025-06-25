@@ -175,6 +175,7 @@ def predict_improvement(result_matrix, comparison_result_matrix, category_or_met
 
 
 def main(method, dataset_id):
+    print("Method: " + str(method) + ", Dataset: " + str(dataset_id))
     model = "LightGBM_BAG_L1"
     n_features_to_add = 10
     j = 0
@@ -191,7 +192,6 @@ def main(method, dataset_id):
         # Remove one category completely
         if "without" in method:
             X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
-            print("Remove one category completely")
             category = method.split("mfe_")[1]
             X_train, y_train, X_test, y_test = recursive_feature_addition_mfe(j, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, categories[i])
             data = concat_data(X_train, y_train, X_test, y_test, "target")
@@ -200,7 +200,6 @@ def main(method, dataset_id):
         # Remove all categories completely but one
         if "only" in method:
             X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata( dataset_id)
-            print("Remove all categories completely but one")
             category = method.split("mfe_")[1]
             X_train, y_train, X_test, y_test = recursive_feature_addition_mfe(j, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, categories[i])
             data = concat_data(X_train, y_train, X_test, y_test, "target")
