@@ -227,9 +227,8 @@ def main(method, dataset_id):
 
 
 if __name__ == '__main__':
-    #parser = argparse.ArgumentParser(description='Run Surrogate Model with Metadata from Method')
-    #parser.add_argument('--mf_method', required=True, help='Metafeature Method')
-    #args = parser.parse_args()
-    #dataset_id = 190411
-    #main(args.mf_method, dataset_id)
-    main("mfe_only_info_theory", 190411)
+    parser = argparse.ArgumentParser(description='Run Surrogate Model with Metadata from Method')
+    parser.add_argument('--mf_method', required=True, help='Metafeature Method')
+    args = parser.parse_args()
+    dataset_id = 190411
+    main(args.mf_method, dataset_id)
