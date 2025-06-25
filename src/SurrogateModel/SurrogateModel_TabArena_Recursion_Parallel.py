@@ -96,19 +96,10 @@ def get_mfe_categories():
 def get_mfe_category(category):
     X_dummy = np.array([[0, 1], [1, 0]])
     y_dummy = np.array([0, 1])
-
-    # Initialize result dictionary
-    group = [category]
-
-    # This will hold your result like:
-    # [dataset_metadata_general_names, dataset_metadata_statistical_names, ...]
-    group_feature_lists = []
-
-    mfe = MFE(groups=group)
+    mfe = MFE(groups=category)
     mfe.fit(X_dummy, y_dummy)
     feature_names, _ = mfe.extract()
-    group_feature_lists.append(feature_names)
-    return group_feature_lists
+    return feature_names
 
 
 def add_method_metadata(result_matrix, dataset_metadata, X_predict, y_predict, method):
@@ -226,8 +217,8 @@ def main(method, dataset_id):
                 category_name = "info-theory"
             category_to_keep = get_mfe_category(category_name)
             categories = get_mfe_categories()
-            categories_to_remove = categories.remove(category_to_keep)
-            X_train, y_train, X_test, y_test = recursive_feature_addition_mfe(j, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, categories_to_remove)
+            categories.remove(category_to_keep)
+            X_train, y_train, X_test, y_test = recursive_feature_addition_mfe(j, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, categories)
             data = concat_data(X_train, y_train, X_test, y_test, "target")
             data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_" + category + "_recursion.parquet")
     else:
