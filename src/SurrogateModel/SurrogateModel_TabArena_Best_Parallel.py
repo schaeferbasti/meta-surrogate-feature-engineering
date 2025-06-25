@@ -185,7 +185,6 @@ def predict_improvement(result_matrix, comparison_result_matrix, category_or_met
     # Predict and score
     prediction = clf.predict(X=comparison_result_matrix)
     prediction_df = pd.concat([comparison_result_matrix[["dataset - id", "feature - name", "model"]], prediction], axis=1)
-    prediction_df.to_parquet("Prediction_" + str(category_or_method) + ".parquet")
     best_operations = prediction_df.nlargest(n=10, columns="predicted_improvement", keep="first")
     data, _, _ = execute_feature_engineering(best_operations)
     return data
@@ -204,7 +203,7 @@ def main(method, dataset_id):
             X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
             X_train, y_train, X_test, y_test = feature_addition_mfe(j, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, None)
             data = concat_data(X_train, y_train, X_test, y_test, "target")
-            data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_" + category + ".parquet")
+            data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_" + category + "_best.parquet")
 
         # Remove one category completely
         if "without" in method:
@@ -214,7 +213,7 @@ def main(method, dataset_id):
             category_to_remove = get_mfe_category(category_name)
             X_train, y_train, X_test, y_test = feature_addition_mfe(j, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, category_to_remove)
             data = concat_data(X_train, y_train, X_test, y_test, "target")
-            data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_" + category + ".parquet")
+            data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_" + category + "_best.parquet")
 
         # Remove all categories completely but one
         if "only" in method:
@@ -225,12 +224,12 @@ def main(method, dataset_id):
             categories_to_remove = categories.remove(category_to_keeo)
             X_train, y_train, X_test, y_test = feature_addition_mfe(j, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, categories_to_remove)
             data = concat_data(X_train, y_train, X_test, y_test, "target")
-            data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_" + category + ".parquet")
+            data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_" + category + "_best.parquet")
     else:
         X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
         X_train, y_train, X_test, y_test = feature_addition(j, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, None)
         data = concat_data(X_train, y_train, X_test, y_test, "target")
-        data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_" + category + ".parquet")
+        data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_" + category + "_best.parquet")
 
 
 if __name__ == '__main__':
