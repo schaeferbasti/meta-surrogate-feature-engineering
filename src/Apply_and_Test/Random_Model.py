@@ -1,11 +1,7 @@
-from __future__ import annotations
-
 import random
-
 import pandas as pd
 
-from src.utils.create_feature_and_featurename import create_featurenames, extract_operation_and_original_features, \
-    create_feature_and_featurename
+from src.utils.create_feature_and_featurename import create_featurenames, extract_operation_and_original_features, create_feature_and_featurename
 from src.utils.get_data import get_openml_dataset_split_and_metadata, split_data, concat_data, get_openml_dataset
 
 
