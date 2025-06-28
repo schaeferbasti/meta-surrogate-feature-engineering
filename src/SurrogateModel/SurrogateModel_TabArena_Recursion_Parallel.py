@@ -170,8 +170,8 @@ def predict_improvement(result_matrix, comparison_result_matrix, category_or_met
 
     # Train TabArena Model
     # clf = RealMLPModel() # Catboost TabDPT -> tabarena hugging face
-    clf = TabDPTModel()
-    # clf = CatBoostModel()
+    # clf = TabDPTModel()
+    clf = CatBoostModel()
     clf.fit(X=result_matrix, y=y_result)
 
     # Predict and score
@@ -183,7 +183,9 @@ def predict_improvement(result_matrix, comparison_result_matrix, category_or_met
 
 
 def main(method, dataset_id):
-    print("Method: " + str(method) + ", Dataset: " + str(dataset_id))
+    if method == "dtov":
+        method = "d2v"
+    print("Method: " + str(method) + ", Dataset: " + str(dataset_id) + str("CatBoost"))
     model = "LightGBM_BAG_L1"
     n_features_to_add = 10
     j = 0
