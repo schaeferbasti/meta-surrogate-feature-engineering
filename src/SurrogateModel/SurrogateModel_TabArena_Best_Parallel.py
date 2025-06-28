@@ -192,7 +192,7 @@ def main(method, dataset_id):
             X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
             X_train, y_train, X_test, y_test = feature_addition_mfe(j, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, None)
             data = concat_data(X_train, y_train, X_test, y_test, "target")
-            data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_" + category + "_best.parquet")
+            data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_" + category + "_CatBoost_best.parquet")
 
         # Remove one category completely
         if "without" in method:
@@ -204,7 +204,7 @@ def main(method, dataset_id):
             category_to_remove = get_mfe_category(category_name)
             X_train, y_train, X_test, y_test = feature_addition_mfe(j, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, category_to_remove)
             data = concat_data(X_train, y_train, X_test, y_test, "target")
-            data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_" + category + "_best.parquet")
+            data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_" + category + "_CatBoost_best.parquet")
 
         # Remove all categories completely but one
         if "only" in method:
@@ -218,12 +218,12 @@ def main(method, dataset_id):
             categories.remove(category_to_keep)
             X_train, y_train, X_test, y_test = feature_addition_mfe(j, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, categories)
             data = concat_data(X_train, y_train, X_test, y_test, "target")
-            data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_" + category + "_best.parquet")
+            data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_" + category + "_CatBoost_best.parquet")
     else:
         X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
         X_train, y_train, X_test, y_test = feature_addition(j, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, None)
         data = concat_data(X_train, y_train, X_test, y_test, "target")
-        data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_" + category + "_best.parquet")
+        data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_" + category + "_CatBoost_best.parquet")
 
 
 if __name__ == '__main__':
