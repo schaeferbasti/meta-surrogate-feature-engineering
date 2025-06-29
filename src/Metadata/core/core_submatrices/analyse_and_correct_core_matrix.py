@@ -57,7 +57,7 @@ def list_incomplete_df():
     core_matrix_fusion("complete/", "../")
 
 def main():
-    # remove_duplicate_columns()
+    remove_duplicate_columns()
     list_incomplete_df()
 
 
