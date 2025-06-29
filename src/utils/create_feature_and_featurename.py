@@ -29,6 +29,7 @@ def create_unary_feature_and_featurename(feature1, operator):
         feature1_factorized = pd.factorize(feature1)[0]
         print(pd.factorize(feature1)[1])
         feature1_float_list = [float(x) for x in feature1_factorized]
+        feature1 = pd.Series(feature1_float_list)
     if operator == "min":
         feature = feature1.apply(lambda x: min(feature1_float_list)).to_list()
         featurename = "min(" + str(feature1.name) + ")"
