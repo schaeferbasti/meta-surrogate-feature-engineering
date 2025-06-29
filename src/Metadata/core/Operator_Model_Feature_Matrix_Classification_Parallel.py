@@ -3,7 +3,8 @@ import argparse
 import numpy as np
 import pandas as pd
 
-from src.utils.create_feature_and_featurename import create_feature_and_featurename, extract_operation_and_original_features
+from src.utils.create_feature_and_featurename import create_feature_and_featurename, \
+    extract_operation_and_original_features, create_featurename
 from src.utils.get_data import get_openml_dataset_split_and_metadata, get_openml_dataset
 from src.utils.get_matrix import get_matrix_core_columns
 from src.utils.get_operators import get_operators
@@ -18,6 +19,15 @@ def check_if_complete(result_matrix):
     n_lines_calculated = n_features * n_features * 13 + n_features * 10 + n_features
     n_lines_present = result_matrix.shape[0]
     if n_lines_present == n_lines_calculated:
+        check = True
+    return check
+
+
+def check_if_feature_is_there(result_matrix, feature1, feature2, operator):
+    check = False
+    featurename = create_featurename(feature1, feature2, operator)
+    featurenames = result_matrix["feature - name"].values
+    if featurename in featurenames:
         check = True
     return check
 
@@ -118,41 +128,27 @@ def continue_calculating_improvement_classification(result_matrix, dataset, path
                                                                         dataset_metadata, featurename, original_results)
             result_matrix = pd.concat([result_matrix, pd.DataFrame(new_rows)], ignore_index=True)
             result_matrix.to_parquet(path + "Operator_Model_Feature_Matrix_Core" + str(dataset) + ".parquet")
-    missing_binary_operators = []
-    for binary_operator in binary_operators:
-        if binary_operator == "+":
-            binary_operator = "add"
-        if binary_operator == "-":
-            binary_operator = "subtract"
-        if binary_operator == "*":
-            binary_operator = "multiply"
-        if binary_operator == "/":
-            binary_operator = "/"
-        if check_if_operator_is_there(result_matrix, binary_operator, True):
-            print("Result matrix contains all delete operations")
-        else:
-            missing_binary_operators.append(binary_operator)
     for feature1 in X_train_copy.columns:
         for feature2 in X_train_copy.columns:
-            for operator in missing_binary_operators:
-                train_feature, featurename = create_feature_and_featurename(feature1=X_train[feature1], feature2=X_train[feature2], operator=operator)
-                test_feature, featurename = create_feature_and_featurename(feature1=X_test[feature1], feature2=X_test[feature2], operator=operator)
+            for operator in binary_operators:
+                if check_if_feature_is_there(result_matrix, feature1, feature2, operator):
+                    continue
+                else:
+                    train_feature, featurename = create_feature_and_featurename(feature1=X_train[feature1], feature2=X_train[feature2], operator=operator)
+                    test_feature, featurename = create_feature_and_featurename(feature1=X_test[feature1], feature2=X_test[feature2], operator=operator)
+                    new_rows = get_core_result_feature_generation_classification(X_train, y_train, X_test, y_test, dataset_metadata, train_feature, test_feature, featurename, original_results)
+                    result_matrix = pd.concat([result_matrix, pd.DataFrame(new_rows)], ignore_index=True)
+                    result_matrix.to_parquet(path + "Operator_Model_Feature_Matrix_Core" + str(dataset) + ".parquet")
+    for feature1 in X_train_copy.columns:
+        for operator in unary_operators:
+            if check_if_feature_is_there(result_matrix, feature1, None, operator):
+                continue
+            else:
+                train_feature, featurename = create_feature_and_featurename(feature1=X_train[feature1], feature2=None, operator=operator)
+                test_feature, featurename = create_feature_and_featurename(feature1=X_test[feature1], feature2=None, operator=operator)
                 new_rows = get_core_result_feature_generation_classification(X_train, y_train, X_test, y_test, dataset_metadata, train_feature, test_feature, featurename, original_results)
                 result_matrix = pd.concat([result_matrix, pd.DataFrame(new_rows)], ignore_index=True)
                 result_matrix.to_parquet(path + "Operator_Model_Feature_Matrix_Core" + str(dataset) + ".parquet")
-    missing_unary_operators = []
-    for unary_operator in unary_operators:
-        if check_if_operator_is_there(result_matrix, unary_operator, False):
-            print("Result matrix contains all delete operations")
-        else:
-            missing_unary_operators.append(unary_operator)
-    for feature1 in X_train_copy.columns:
-        for operator in missing_unary_operators:
-            train_feature, featurename = create_feature_and_featurename(feature1=X_train[feature1], feature2=None, operator=operator)
-            test_feature, featurename = create_feature_and_featurename(feature1=X_test[feature1], feature2=None, operator=operator)
-            new_rows = get_core_result_feature_generation_classification(X_train, y_train, X_test, y_test, dataset_metadata, train_feature, test_feature, featurename, original_results)
-            result_matrix = pd.concat([result_matrix, pd.DataFrame(new_rows)], ignore_index=True)
-            result_matrix.to_parquet(path + "Operator_Model_Feature_Matrix_Core" + str(dataset) + ".parquet")
         result_matrix.to_parquet(path + "Operator_Model_Feature_Matrix_Core" + str(dataset) + ".parquet")
     result_matrix.to_parquet(path + "Operator_Model_Feature_Matrix_Core" + str(dataset) + ".parquet")
 
