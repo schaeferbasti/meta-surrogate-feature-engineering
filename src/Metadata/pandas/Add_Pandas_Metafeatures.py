@@ -78,7 +78,7 @@ def add_pandas_metadata_columns(dataset_metadata, X_train, result_matrix):
 
 
 def main():
-    result_matrix = pd.read_parquet("../core/Core_Matrix_Complete.parquet")
+    result_matrix = pd.read_parquet("src/Metadata/core/Core_Matrix_Complete.parquet")
     columns = get_additional_pandas_columns()
     result_matrix_columns = result_matrix.columns.values.tolist()
     columns = columns + result_matrix_columns
@@ -90,8 +90,8 @@ def main():
         result_matrix_dataset = add_pandas_metadata_columns(dataset_metadata, X_train, result_matrix_dataset)
         result_matrix_pandas.columns = result_matrix_dataset.columns
         result_matrix_pandas = pd.concat([result_matrix_pandas, result_matrix_dataset], axis=0)
-        result_matrix_pandas.to_parquet("Pandas_Matrix_Complete" + str(dataset) + ".parquet")
-    result_matrix_pandas.to_parquet("Pandas_Matrix_Complete.parquet")
+        result_matrix_pandas.to_parquet("src/Metadata/pandas/Pandas_Matrix_Complete" + str(dataset) + ".parquet")
+    result_matrix_pandas.to_parquet("src/Metadata/pandas/Pandas_Matrix_Complete.parquet")
 
 
 if __name__ == '__main__':
