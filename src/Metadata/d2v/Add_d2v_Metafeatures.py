@@ -114,13 +114,15 @@ def add_d2v_metadata_columns(dataset_metadata, X_train, result_matrix):
 def main():
     result_matrix = pd.read_parquet("src/Metadata/core/Core_Matrix_Example.parquet")
     columns = get_additional_d2v_columns()
+    result_matrix_columns = result_matrix.columns.values.tolist()
+    columns = columns + result_matrix_columns
     result_matrix_pandas = pd.DataFrame(columns=columns)
     for dataset, _ in result_matrix.groupby('dataset - id'):
         print("Dataset: " + str(dataset))
         X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(int(str(dataset)))
         result_matrix_dataset = result_matrix[result_matrix['dataset - id'] == dataset]
         result_matrix_dataset = add_d2v_metadata_columns(dataset_metadata, X_train, result_matrix_dataset)
-        result_matrix_pandas = pd.concat([result_matrix_pandas, result_matrix_dataset], axis=1)
+        result_matrix_pandas = pd.concat([result_matrix_pandas, result_matrix_dataset], axis=0)
         result_matrix_pandas.to_parquet("src/Metadata/d2v/D2V_Matrix_Complete" + str(dataset) + ".parquet")
     result_matrix_pandas.to_parquet("src/Metadata/d2v/D2V_Matrix_Complete.parquet")
 
