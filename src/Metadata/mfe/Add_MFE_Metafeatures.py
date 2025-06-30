@@ -79,7 +79,7 @@ def main():
         result_matrix_dataset, dataset_metadata_general_names, dataset_metadata_statistical_names, dataset_metadata_info_theory_names, dataset_metadata_landmarking_names, dataset_metadata_complexity_names, dataset_metadata_clustering_names, dataset_metadata_concept_names, dataset_metadata_itemset_names = add_mfe_metadata_columns(X_train, y_train, result_matrix_dataset)
         new_column_names = list(dataset_metadata_general_names + dataset_metadata_statistical_names + dataset_metadata_info_theory_names + dataset_metadata_landmarking_names + dataset_metadata_complexity_names + dataset_metadata_clustering_names + dataset_metadata_concept_names + dataset_metadata_itemset_names)
         result_matrix_pandas.columns = new_column_names
-        result_matrix_pandas = pd.concat([result_matrix_pandas, result_matrix_dataset], axis=1)
+        result_matrix_pandas = pd.concat([result_matrix_pandas, result_matrix_dataset], axis=0)
         result_matrix_pandas.to_parquet("src/Metadata/mfe/MFE_all_Matrix_Complete" + str(dataset) + ".parquet")
     result_matrix_pandas.to_parquet("src/Metadata/mfe/MFE_all_Matrix_Complete.parquet")
 
