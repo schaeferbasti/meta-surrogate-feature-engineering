@@ -42,11 +42,7 @@ def get_openml_dataset_split_and_metadata(openml_task_id: int) -> tuple[
         download_qualities=True,
         download_features_meta_data=True,
     )
-    if task.task_type != openml.tasks.TaskType.SUPERVISED_REGRESSION or task.task_type != openml.tasks.TaskType.MULTITASK_REGRESSION:
-        dataset_metadata = {"task_id": task.task_id, "task_type": task.task_type,
-                        "number_of_classes": len(task.class_labels) if task.class_labels else 'N/A'}
-    else:
-        dataset_metadata = {"task_id": task.task_id, "task_type": task.task_type, "number_of_classes": 'N/A'}
+    dataset_metadata = {"task_id": task.task_id, "task_type": task.task_type, "number_of_classes": 'N/A'}
     train_idx, test_idx = task.get_train_test_split_indices()
     X, y = task.get_X_and_y(dataset_format="dataframe")  # type: ignore
     X_train, y_train = X.iloc[train_idx], y.iloc[train_idx]
