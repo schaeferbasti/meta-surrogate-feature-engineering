@@ -4,7 +4,7 @@
 #SBATCH --partition bosch_cpu-cascadelake  # mlhiwidlc_gpu-rtx2080
 
 # Define a name for your job
-#SBATCH --job-name D2V_MF
+#SBATCH --job-name d2v_MF
 
 # Define the files to write the outputs of the job to.
 #SBATCH --output logs/%x-%A.out   # STDOUT  %x and %A will be replaced by the job name and job id, respectively. short: -o logs/%x-%A.out
