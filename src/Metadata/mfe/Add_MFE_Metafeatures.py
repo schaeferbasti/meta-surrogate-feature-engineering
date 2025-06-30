@@ -71,6 +71,8 @@ def add_mfe_metadata_columns(X_train, y_train, result_matrix):
 def main():
     result_matrix = pd.read_parquet("src/Metadata/core/Core_Matrix_Example.parquet")
     columns = get_additional_mfe_columns()
+    result_matrix_columns = result_matrix.columns.values.tolist()
+    columns = columns + result_matrix_columns
     result_matrix_pandas = pd.DataFrame(columns=columns)
     for dataset, _ in result_matrix.groupby('dataset - id'):
         print("Dataset: " + str(dataset))
