@@ -6,6 +6,7 @@ from src.utils.get_data import get_openml_dataset_split_and_metadata
 from src.utils.get_matrix import get_additional_mfe_columns
 from src.utils.get_metafeatures import get_mfe_feature_metadata, get_mfe_dataset_metadata
 
+
 def add_mfe_metadata_columns(X_train, y_train, result_matrix):
     columns = get_additional_mfe_columns()
     new_columns = pd.DataFrame(index=result_matrix.index, columns=columns)

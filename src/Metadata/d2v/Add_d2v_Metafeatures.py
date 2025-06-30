@@ -97,6 +97,7 @@ def get_d2v_metafeatures(dataset_id):
     metafeatures = pd.DataFrame(np.vstack(datasetmf).mean(axis=0)[None], index=[args.file])
     return metafeatures
 
+
 def add_d2v_metadata_columns(dataset_metadata, X_train, result_matrix):
     columns = get_additional_d2v_columns()
     metafeatures = get_d2v_metafeatures(dataset_metadata["task_id"])
