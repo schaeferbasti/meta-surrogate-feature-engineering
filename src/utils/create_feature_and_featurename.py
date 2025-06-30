@@ -60,6 +60,9 @@ def create_unary_feature_and_featurename(feature1, operator):
     elif operator == "residual":
         feature = feature1.apply(lambda x: float(x) - np.floor(float(x))).to_list()
         featurename = "residual(" + str(feature1.name) + ")"
+    elif operator == "delete":
+        feature = None
+        featurename = str(feature1.name)
     else:
         raise NotImplementedError(f"Unrecognized operator {operator}.")
     return feature, featurename
@@ -171,6 +174,11 @@ def extract_operation_and_original_features(s):
         operation = match.group(1)  # The operation (before brackets)
         features = match.group(2).split(", ")  # The features inside brackets
         return operation, features
+    match = re.match(r"(without - \s*)", s)
+    if match:
+        operation = "delete" # The operation (before brackets)
+        features = s.split(" - ")[1]  # The features inside brackets
+        return operation, [features]
     return None, []
 
 
