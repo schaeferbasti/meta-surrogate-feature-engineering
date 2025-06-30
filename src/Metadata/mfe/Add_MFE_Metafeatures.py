@@ -69,13 +69,17 @@ def add_mfe_metadata_columns(X_train, y_train, result_matrix):
 
 
 def main():
-    result_matrix = pd.read_parquet("../core/Core_Matrix_Example.parquet")
+    result_matrix = pd.read_parquet("src/Metadata/core/Core_Matrix_Example.parquet")
+    columns = get_additional_mfe_columns()
+    result_matrix_pandas = pd.DataFrame(columns=columns)
     for dataset, _ in result_matrix.groupby('dataset - id'):
         print("Dataset: " + str(dataset))
-        X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(int(str(dataset)))
-        result_matrix, _, _, _, _, _, _, _, _ = add_mfe_metadata_columns(X_train, y_train, result_matrix)
-        result_matrix.to_parquet("mfe_metafeatures_" + str(dataset) + ".parquet")
-    result_matrix.to_parquet("mfe_metafeatures.parquet")
+        X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset)
+        result_matrix_dataset = result_matrix[result_matrix['dataset - id'] == dataset]
+        result_matrix_dataset = add_mfe_metadata_columns(X_train, y_train, result_matrix_dataset)
+        result_matrix_pandas = pd.concat([result_matrix_pandas, result_matrix_dataset], axis=1)
+        result_matrix.to_parquet("src/Metadata/mfe/MFE_all_Matrix_Complete" + str(dataset) + ".parquet")
+    result_matrix.to_parquet("src/Metadata/mfe/MFE_all_Matrix_Complete.parquet")
 
 
 if __name__ == '__main__':

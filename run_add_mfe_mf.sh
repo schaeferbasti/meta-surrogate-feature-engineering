@@ -4,7 +4,7 @@
 #SBATCH --partition bosch_cpu-cascadelake  # mlhiwidlc_gpu-rtx2080
 
 # Define a name for your job
-#SBATCH --job-name Pandas_MF
+#SBATCH --job-name MFE_MF
 
 # Define the files to write the outputs of the job to.
 #SBATCH --output logs/%x-%A.out   # STDOUT  %x and %A will be replaced by the job name and job id, respectively. short: -o logs/%x-%A.out
@@ -56,7 +56,7 @@ echo "PYTHONPATH set to $PYTHONPATH"
 start=`date +%s`
 
 # shellcheck disable=SC2048
-python3 src/Metadata/pandas/Add_Pandas_Metafeatures.py  "$SLURM_ARRAY_TASK_ID" "$*"
+python3 src/Metadata/mfe/Add_MFE_Metafeatures.py  "$SLURM_ARRAY_TASK_ID" "$*"
 
 # Print the allocated memory per node
 echo "Allocated memory per node: $SLURM_MEM_PER_NODE MB"
