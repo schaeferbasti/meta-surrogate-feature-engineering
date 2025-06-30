@@ -1,31 +1,23 @@
 from __future__ import annotations
 
-from autogluon.core.data import LabelCleaner
-from autogluon.features.generators import AutoMLPipelineFeatureGenerator
-from autogluon.tabular.models import CatBoostModel
-from sklearn.metrics import roc_auc_score
+import time
+import numpy as np
+import pandas as pd
+from pymfe.mfe import MFE
 
 from src.Apply_and_Test.Apply_FE import execute_feature_engineering
 from src.Metadata.d2v.Add_d2v_Metafeatures import add_d2v_metadata_columns
 from src.Metadata.pandas.Add_Pandas_Metafeatures import add_pandas_metadata_columns
 from src.Metadata.tabpfn.Add_TabPFN_Metafeatures import add_tabpfn_metadata_columns
+from src.Metadata.mfe.Add_MFE_Metafeatures import add_mfe_metadata_columns
 # Import a TabArena model
-from tabrepo.benchmark.models.ag.realmlp.realmlp_model import RealMLPModel
-from tabrepo.benchmark.models.ag.tabdpt.tabdpt_model import TabDPTModel
-
-
-import numpy as np
-import pandas as pd
-from pymfe.mfe import MFE
+# from tabrepo.benchmark.models.ag.realmlp.realmlp_model import RealMLPModel
+# from tabrepo.benchmark.models.ag.tabdpt.tabdpt_model import TabDPTModel
+from autogluon.tabular.models import CatBoostModel
 
 from src.utils.create_feature_and_featurename import create_featurenames, extract_operation_and_original_features
-from src.utils.get_data import get_openml_dataset_and_metadata, get_openml_dataset_split_and_metadata, split_data, \
-    concat_data
+from src.utils.get_data import get_openml_dataset_split_and_metadata, split_data, concat_data
 from src.utils.get_matrix import get_matrix_core_columns
-# from src.Metadata.d2v.Add_d2v_Metafeatures import add_d2v_metadata_columns
-from src.Metadata.mfe.Add_MFE_Metafeatures import add_mfe_metadata_columns
-# from src.Metadata.pandas.Add_Pandas_Metafeatures import add_pandas_metadata_columns
-# from src.Metadata.tabpfn.Add_TabPFN_Metafeatures import add_tabpfn_metadata_columns
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -105,19 +97,22 @@ def recursive_feature_addition(i, n_features_to_add, X_train, y_train, X_test, y
     if i >= n_features_to_add:
         return X_train, y_train, X_test, y_test
     # Reload base matrix
-    result_matrix = pd.read_parquet("src/Metadata/core/Core_Matrix_Complete.parquet")
+    result_matrix = pd.read_parquet("../Metadata/core/Core_Matrix_Complete.parquet")
     # Create comparison matrix for new dataset
+    start = time.time()
     comparison_result_matrix = create_empty_core_matrix_for_dataset(X_train, model)
     comparison_result_matrix = add_method_metadata(comparison_result_matrix, dataset_metadata, X_train, y_train, method)
-    comparison_result_matrix, general, statistical, info_theory, landmarking, complexity, clustering, concept, itemset = add_mfe_metadata_columns(X_train, y_train, comparison_result_matrix)
-    # Drop category
-    comparison_result_matrix_copy = comparison_result_matrix.drop(columns=category_to_drop, errors='ignore')
-    result_matrix_copy = result_matrix.drop(columns=category_to_drop, errors='ignore')
+    end = time.time()
+    print("Time for creating Comparison Result Matrix: " + str(end - start))
+    comparison_result_matrix.to_parquet("Comparison_Result_Matrix.parquet")
     # Predict and split again
-    data = predict_improvement(result_matrix_copy, comparison_result_matrix_copy, "all")
+    start = time.time()
+    data = predict_improvement(result_matrix, comparison_result_matrix, method, i)
+    end = time.time()
+    print("Time for Predicting Improvement using CatBoost: " + str(end - start))
     X_train, y_train, X_test, y_test = split_data(data, "target")
     # Recurse
-    recursive_feature_addition_mfe(i + 1, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, category_to_drop)
+    recursive_feature_addition(i + 1, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, category_to_drop)
     return X_train, y_train, X_test, y_test
 
 
@@ -134,40 +129,30 @@ def recursive_feature_addition_mfe(i, n_features_to_add, X_train, y_train, X_tes
     comparison_result_matrix_copy = comparison_result_matrix.drop(columns=category_to_drop, errors='ignore')
     result_matrix_copy = result_matrix.drop(columns=category_to_drop, errors='ignore')
     # Predict and split again
-    data = predict_improvement(result_matrix_copy, comparison_result_matrix_copy, "all")
+    data = predict_improvement(result_matrix_copy, comparison_result_matrix_copy, "all", i)
     X_train, y_train, X_test, y_test = split_data(data, "target")
     # Recurse
     recursive_feature_addition_mfe(i + 1, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, category_to_drop)
     return X_train, y_train, X_test, y_test
 
 
-def predict_improvement(result_matrix, comparison_result_matrix, category_or_method):
+def predict_improvement(result_matrix, comparison_result_matrix, category_or_method, i):
     y_result = result_matrix["improvement"]
     result_matrix = result_matrix.drop("improvement", axis=1)
     y_comparison = comparison_result_matrix["improvement"]
     comparison_result_matrix = comparison_result_matrix.drop("improvement", axis=1)
-    # Single-predictor (improvement given all possible operations on features)
-    feature_generator, label_cleaner = (
-        AutoMLPipelineFeatureGenerator(),
-        LabelCleaner.construct(problem_type="regression", y=y_result),
-    )
-    result_matrix, y_result = (
-        feature_generator.fit_transform(result_matrix),
-        label_cleaner.transform(y_result),
-    )
-    comparison_result_matrix, y_comparison = feature_generator.transform(comparison_result_matrix), label_cleaner.transform(y_comparison)
-
     # Train TabArena Model
     # clf = RealMLPModel() # Catboost TabDPT -> tabarena hugging face
-    clf = TabDPTModel()
-    # clf = CatBoostModel()
+    # clf = TabDPTModel()
+    clf = CatBoostModel()
     clf.fit(X=result_matrix, y=y_result)
 
     # Predict and score
     prediction = clf.predict(X=comparison_result_matrix)
-    prediction_df = pd.concat([comparison_result_matrix[["dataset - id", "feature - name", "model"]], prediction], axis=1)
-    prediction_df.to_parquet("Prediction_" + str(category_or_method) + ".parquet")
-    best_operation = prediction_df.nlargest(n=1, columns="predicted_improvement", keep="first")
+    prediction_df = pd.DataFrame(prediction, columns=["predicted_improvement"])
+    prediction_concat_df = pd.concat([comparison_result_matrix[["dataset - id", "feature - name", "model"]], prediction_df], axis=1)
+    prediction_concat_df.to_parquet("Prediction_" + str(category_or_method) + "_" + str(i) + ".parquet")
+    best_operation = prediction_concat_df.nlargest(n=1, columns="predicted_improvement", keep="first")
     data, _, _ = execute_feature_engineering(best_operation)
     return data
 
@@ -207,7 +192,10 @@ def main(dataset_id):
                 data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_" + category + "_CatBoost_recursion.parquet")
         else:
             X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
+            start = time.time()
             X_train, y_train, X_test, y_test = recursive_feature_addition(j, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, None)
+            end = time.time()
+            print("Time for creating Comparison Result Matrix: " + str(end - start))
             data = concat_data(X_train, y_train, X_test, y_test, "target")
             data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_" + category + "_CatBoost_recursion.parquet")
 
