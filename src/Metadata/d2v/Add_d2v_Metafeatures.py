@@ -121,8 +121,8 @@ def main():
         result_matrix_dataset = result_matrix[result_matrix['dataset - id'] == dataset]
         result_matrix_dataset = add_d2v_metadata_columns(dataset_metadata, X_train, result_matrix_dataset)
         result_matrix_pandas = pd.concat([result_matrix_pandas, result_matrix_dataset], axis=1)
-        result_matrix.to_parquet("src/Metadata/d2v/D2V_Matrix_Complete" + str(dataset) + ".parquet")
-    result_matrix.to_parquet("src/Metadata/d2v/D2V_Matrix_Complete.parquet")
+        result_matrix_pandas.to_parquet("src/Metadata/d2v/D2V_Matrix_Complete" + str(dataset) + ".parquet")
+    result_matrix_pandas.to_parquet("src/Metadata/d2v/D2V_Matrix_Complete.parquet")
 
 
 if __name__ == '__main__':
