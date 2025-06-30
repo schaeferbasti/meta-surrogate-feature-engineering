@@ -35,10 +35,19 @@ def execute_feature_engineering(prediction_result):
     target_label = "target"
     y = y.to_frame(target_label)
     data = pd.concat([X, y], axis=1)
-    #print("Factorize Data")
-    #X_train, y_train, X_test, y_test = split_data(data, target_label)
-    #X_train, y_train, X_test, y_test = factorize_dataset(X_train, y_train, X_test, y_test)
-    #data = concat_data(X_train, y_train, X_test, y_test, target_label)
+    try:
+        data = pd.read_parquet("FE_Dataset_" + str(dataset_id) + ".parquet")
+    except FileNotFoundError:
+        data = get_additional_features(data, prediction_result)
+    return data, dataset_id, model
+
+
+def execute_feature_engineering_recursive(prediction_result, X, y):
+    dataset_id = int(prediction_result["dataset - id"].values[0])
+    model = prediction_result["model"].values[0]
+    target_label = "target"
+    y = y.to_frame(target_label)
+    data = pd.concat([X, y], axis=1)
     try:
         data = pd.read_parquet("FE_Dataset_" + str(dataset_id) + ".parquet")
     except FileNotFoundError:
