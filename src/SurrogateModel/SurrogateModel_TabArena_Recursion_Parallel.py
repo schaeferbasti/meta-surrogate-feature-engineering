@@ -125,7 +125,7 @@ def recursive_feature_addition(i, n_features_to_add, X_train, y_train, X_test, y
     comparison_result_matrix_copy = comparison_result_matrix.drop(columns=category_to_drop, errors='ignore')
     result_matrix_copy = result_matrix.drop(columns=category_to_drop, errors='ignore')
     # Predict and split again
-    data = predict_improvement(result_matrix_copy, comparison_result_matrix_copy, "all")
+    data = predict_improvement(result_matrix_copy, comparison_result_matrix_copy, method)
     X_train, y_train, X_test, y_test = split_data(data, "target")
     # Recurse
     recursive_feature_addition_mfe(i + 1, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, category_to_drop)
@@ -177,6 +177,7 @@ def predict_improvement(result_matrix, comparison_result_matrix, category_or_met
     # Predict and score
     prediction = clf.predict(X=comparison_result_matrix)
     prediction_df = pd.concat([comparison_result_matrix[["dataset - id", "feature - name", "model"]], prediction], axis=1)
+    prediction_df.to_parquet("Prediction_" + str(category_or_method) + ".parquet")
     best_operation = prediction_df.nlargest(n=1, columns="predicted_improvement", keep="first")
     data, _, _ = execute_feature_engineering(best_operation)
     return data
