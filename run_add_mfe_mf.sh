@@ -10,7 +10,7 @@
 #SBATCH --output logs/%x-%A.out   # STDOUT  %x and %A will be replaced by the job name and job id, respectively. short: -o logs/%x-%A.out
 
 # Define the amount of memory required per node
-#SBATCH --mem=192GB
+#SBATCH --mem=150GB
 #SBATCH -c 8
 #SBATCH --gres=localtmp:100
 
