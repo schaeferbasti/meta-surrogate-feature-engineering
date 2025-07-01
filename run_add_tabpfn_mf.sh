@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define the partition on which the job shall run.
-#SBATCH --partition bosch_cpu-cascadelake  # mlhiwidlc_gpu-rtx2080
+#SBATCH --partition mlhiwidlc_gpu-rtx2080  # bosch_cpu-cascadelake #
 
 # Define a name for your job
 #SBATCH --job-name TabPFN_MF
@@ -12,7 +12,7 @@
 # Define the amount of memory required per node
 #SBATCH --mem=96GB
 #SBATCH -c 8
-#SBATCH --gres=localtmp:100
+#SBATCH --gres=localtmp:100  # gpu:8 ###
 
 #Time Format = days-hours:minutes:seconds
 #SBATCH --time=4-00:00:00
