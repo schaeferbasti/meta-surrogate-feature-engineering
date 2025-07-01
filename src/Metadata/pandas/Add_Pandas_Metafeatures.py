@@ -105,6 +105,8 @@ def main():
                 print("Time for Pandas on Dataset " + str(dataset) + ": " + str(end_dataset - start_dataset))
             except TypeError:
                 continue
+            except KeyError:
+                continue
     result_matrix_pandas.to_parquet("src/Metadata/pandas/Pandas_Matrix_Complete.parquet")
     end = time.time()
     print("Time for complete Pandas MF: " + str(end - start) + " on " + str(counter) + " datasets.")
