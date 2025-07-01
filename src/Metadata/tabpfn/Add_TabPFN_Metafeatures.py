@@ -1,4 +1,5 @@
 import os
+import time
 
 import numpy as np
 import pandas as pd
@@ -64,23 +65,31 @@ def add_tabpfn_metadata_columns(X_train, y_train, result_matrix):
 
 
 def main():
-    result_matrix = pd.read_parquet("src/Metadata/core/Core_Matrix_Example.parquet")
+    result_matrix = pd.read_parquet("src/Metadata/core/Core_Matrix_Complete.parquet")
     columns = get_additional_tabpfn_columns()
     result_matrix_columns = result_matrix.columns.values.tolist()
     columns = columns + result_matrix_columns
     result_matrix_pandas = pd.DataFrame(columns=columns)
+    start = time.time()
+    counter = 0
     for dataset, _ in result_matrix.groupby('dataset - id'):
         print("Dataset: " + str(dataset))
         try:
             pd.read_parquet("src/Metadata/tabpfn/TabPFN_Matrix_Complete" + str(dataset) + ".parquet")
         except FileNotFoundError:
+            counter += 1
+            start_dataset = time.time()
             X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(int(str(dataset)))
             result_matrix_dataset = result_matrix[result_matrix['dataset - id'] == dataset]
             result_matrix_dataset = add_tabpfn_metadata_columns(X_train, y_train, result_matrix_dataset)
             result_matrix_pandas.columns = result_matrix_dataset.columns
             result_matrix_pandas = pd.concat([result_matrix_pandas, result_matrix_dataset], axis=0)
             result_matrix_pandas.to_parquet("src/Metadata/tabpfn/TabPFN_Matrix_Complete" + str(dataset) + ".parquet")
+            end_dataset = time.time()
+            print("Time for TabPFN on Dataset " + str(dataset) + ": "+ str(end_dataset - start_dataset))
     result_matrix_pandas.to_parquet("src/Metadata/tabpfn/TabPFN_Matrix_Complete.parquet")
+    end = time.time()
+    print("Time for complete TabPFN MF: " + str(end - start) + " on " + str(counter) + " datasets.")
 
 
 if __name__ == '__main__':
