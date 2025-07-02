@@ -19,7 +19,7 @@
 
 #SBATCH --propagate=NONE
 
-#SBATCH --array=0-6  # Adjust based on the number of methods
+#SBATCH --array=0-7  # Adjust based on the number of methods
 
 
 echo "Workingdir: $PWD";
