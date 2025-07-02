@@ -13,7 +13,7 @@ from src.Metadata.mfe.Add_MFE_Metafeatures import add_mfe_metadata_columns
 from autogluon.tabular.models import CatBoostModel
 
 from src.utils.create_feature_and_featurename import create_featurenames, extract_operation_and_original_features
-from src.utils.get_data import get_openml_dataset_split_and_metadata, split_data, concat_data
+from src.utils.get_data import get_openml_dataset_split_and_metadata, concat_data
 from src.utils.get_matrix import get_matrix_core_columns
 
 import warnings
@@ -94,8 +94,13 @@ def recursive_feature_addition(i, n_features_to_add, X, y, model, method, datase
     if i >= n_features_to_add:
         return X, y
     # Reload base matrix
-    result_matrix = pd.read_parquet("../Metadata/core/Core_Matrix_Complete.parquet")
-    # Create comparison matrix for new dataset
+    if method == "pandas":
+        result_matrix = pd.read_parquet("../Metadata/pandas/Pandas_Matrix_Complete.parquet")
+    elif method == "tabpfn":
+        result_matrix = pd.read_parquet("../Metadata/tabpfn/TabFPN_Matrix_Complete.parquet")
+    else:
+        result_matrix = pd.read_parquet("../Metadata/d2v/D2V_Matrix_Complete.parquet")
+        method = "d2v"    # Create comparison matrix for new dataset
     start = time.time()
     comparison_result_matrix = create_empty_core_matrix_for_dataset(X, model)
     comparison_result_matrix = add_method_metadata(comparison_result_matrix, dataset_metadata, X, y, method)
@@ -197,5 +202,5 @@ def main(dataset_id):
 
 
 if __name__ == '__main__':
-    dataset_id = 190411
+    dataset_id = 2073
     main(dataset_id)
