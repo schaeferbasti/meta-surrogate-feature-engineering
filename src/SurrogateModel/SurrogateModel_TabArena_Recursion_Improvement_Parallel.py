@@ -193,5 +193,5 @@ if __name__ == '__main__':
     wanted_min_relative_improvement = 0.1
     time_limit = 600
     start_time = time.time()
-    main(args.dataset, wanted_min_relative_improvement, time_limit, start_time, method)
+    main(int(args.dataset), wanted_min_relative_improvement, time_limit, start_time, method)
     # main(359968, wanted_min_relative_improvement, time_limit, start_time, method)
