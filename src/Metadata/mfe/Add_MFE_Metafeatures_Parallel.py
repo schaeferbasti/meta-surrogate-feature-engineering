@@ -6,14 +6,13 @@ import pandas as pd
 
 from src.utils.create_feature_and_featurename import create_feature
 from src.utils.get_data import get_openml_dataset_split_and_metadata
-from src.utils.get_matrix import get_additional_mfe_columns
-from src.utils.get_metafeatures import get_mfe_feature_metadata, get_mfe_dataset_metadata
+from src.utils.get_matrix import get_additional_mfe_columns_group
+from src.utils.get_metafeatures import get_mfe_dataset_metadata
 
 
 def add_mfe_metadata_columns_group(X_train, y_train, result_matrix, group):
-    columns = get_additional_mfe_columns()
+    columns = get_additional_mfe_columns_group(group)
     new_columns = pd.DataFrame(index=result_matrix.index, columns=columns)
-    dataset_metadata_group_names = None
     for row in result_matrix.iterrows():
         featurename = row[1][1]
         X_train_copy = X_train.copy()
@@ -51,7 +50,8 @@ def add_mfe_metadata_columns_group(X_train, y_train, result_matrix, group):
 def main(group):
     result_matrix = pd.read_parquet("src/Metadata/core/Core_Matrix_Complete.parquet")
     start = time.time()
-    result_matrix_pandas = None
+    columns = get_additional_mfe_columns_group(group)
+    result_matrix_pandas = pd.DataFrame(columns=columns)
     counter = 0
     for dataset, _ in result_matrix.groupby('dataset - id'):
         print("Dataset: " + str(dataset))
@@ -63,8 +63,7 @@ def main(group):
                 start_dataset = time.time()
                 X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(int(str(dataset)))
                 result_matrix_dataset = result_matrix[result_matrix['dataset - id'] == dataset]
-                result_matrix = add_mfe_metadata_columns_group(X_train, y_train, result_matrix_dataset, group)
-                result_matrix_pandas = pd.DataFrame(columns=result_matrix_dataset.columns)
+                result_matrix_dataset = add_mfe_metadata_columns_group(X_train, y_train, result_matrix_dataset, group)
                 result_matrix_pandas = pd.concat([result_matrix_pandas, result_matrix_dataset], axis=0)
                 result_matrix_pandas.to_parquet("src/Metadata/mfe/MFE_" + str(group) + "_Matrix_Complete" + str(dataset) + ".parquet")
                 end_dataset = time.time()
