@@ -168,7 +168,7 @@ def create_featurenames(feature_list):
     return featurenames
 
 
-def extract_operation_and_original_features(s):
+def extract_operation_and_original_features_old(s):
     match = re.match(r"([^\s(]+)\s*\(([^)]+)\)", s)  # Capture operation and features
     if match:
         operation = match.group(1)  # The operation (before brackets)
@@ -176,9 +176,45 @@ def extract_operation_and_original_features(s):
         return operation, features
     match = re.match(r"(without - \s*)", s)
     if match:
-        operation = "delete" # The operation (before brackets)
+        operation = "delete"  # The operation (before brackets)
         features = s.split(" - ")[1]  # The features inside brackets
         return operation, [features]
+    return None, []
+
+
+def extract_operation_and_original_features(s):
+    def split_arguments(s):
+        args = []
+        depth = 0
+        current = ''
+        for char in s:
+            if char == ',' and depth == 0:
+                args.append(current.strip())
+                current = ''
+            else:
+                if char == '(':
+                    depth += 1
+                elif char == ')':
+                    depth -= 1
+                current += char
+        if current:
+            args.append(current.strip())
+        return args
+
+    # Handle 'without - xxx'
+    if s.startswith("without - "):
+        operation = "delete"
+        features = [s.split(" - ")[1].strip()]
+        return operation, features
+
+    # Match top-level operation and inside of the parentheses
+    match = re.match(r"([^\s(]+)\s*\((.*)\)", s)
+    if match:
+        operation = match.group(1)
+        inside = match.group(2)
+        features = split_arguments(inside)
+        return operation, features
+
     return None, []
 
 

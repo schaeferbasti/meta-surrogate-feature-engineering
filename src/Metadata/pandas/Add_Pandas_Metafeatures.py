@@ -1,3 +1,4 @@
+import re
 import time
 
 import pandas as pd
@@ -6,18 +7,101 @@ from src.utils.create_feature_and_featurename import create_feature
 from src.utils.get_data import get_openml_dataset_split_and_metadata
 from src.utils.get_matrix import get_additional_pandas_columns
 from src.utils.get_metafeatures import get_pandas_metafeatures
+from src.utils.get_operators import get_operators
+
+
+def get_operator_count(featurename, operators):
+    featurename_correct = featurename.replace("+", "add")
+    featurename_correct = featurename_correct.replace("-(", "subtract(")
+    featurename_correct = featurename_correct.replace("*", "multiply")
+    featurename_correct = featurename_correct.replace("/", "divide")
+    operator_count = 0
+
+    # Sort operators by length (longest first to avoid sub-matching)
+    sorted_operators = sorted(operators, key=len, reverse=True)
+    for i, n in enumerate(sorted_operators):
+        if n == "+":
+            sorted_operators[i] = "add"
+        if n == "-":
+            sorted_operators[i] = "subtract"
+        if n == "*":
+            sorted_operators[i] = "multiply"
+        if n == "/":
+            sorted_operators[i] = "divide"
+
+    for op in sorted_operators:
+        # Escape special regex characters like +, *, etc.
+        # escaped_op = re.escape(op)
+        # Match operator followed by '(' (function-style)
+        pattern = rf'\b{op}\s*\('
+        matches = re.findall(pattern, featurename_correct)
+        pattern_without = rf'\b{op}\s*\ - '
+        matches_without = re.findall(pattern_without, featurename_correct)
+        count = len(matches + matches_without)
+        operator_count += count
+
+        # Optionally: remove matched parts to avoid overlapping if needed
+        # featurename = re.sub(pattern, '', featurename)
+
+    return operator_count
+
+
+def split_top_level_args(arg_str):
+    """Split function arguments at the top level (outside nested parentheses)."""
+    args = []
+    bracket_level = 0
+    current_arg = []
+    for char in arg_str:
+        if char == ',' and bracket_level == 0:
+            args.append(''.join(current_arg).strip())
+            current_arg = []
+        else:
+            if char == '(':
+                bracket_level += 1
+            elif char == ')':
+                bracket_level -= 1
+            current_arg.append(char)
+    if current_arg:
+        args.append(''.join(current_arg).strip())
+    return args
 
 
 def add_pandas_metadata_columns(dataset_metadata, X_train, result_matrix):
     columns = get_additional_pandas_columns()
     new_columns = pd.DataFrame(index=result_matrix.index, columns=columns)
+    unary_operators, binary_operators = get_operators()
+    operators = unary_operators + binary_operators + ["without"]
     for row in result_matrix.iterrows():
         dataset = row[1][0]
         featurename = row[1][1]
+        operator_count = get_operator_count(featurename, operators)
         X_train_copy = X_train.copy()
         if featurename.startswith("without"):
             feature_to_delete = featurename.split(" - ")[1]
             X_train_copy = X_train_copy.drop(feature_to_delete, axis=1)
+        elif operator_count > 1:
+            features = featurename.split("(")[1].replace(")", "").replace(" ", "")
+            inner = featurename.split("(", 1)[1].rsplit(")", 1)[0]
+            args = split_top_level_args(inner)
+            featurename1 = args[0]
+            featurename2 = args[1] if len(args) > 1 else None
+            if "(" in featurename1:
+                feature1 = X_train_copy[featurename1]
+            else:
+                featurename1 = features.split(",")[0]
+                feature1 = X_train_copy[featurename1]
+            if featurename2 is not None:
+                if "(" in featurename2:
+                    feature2 = X_train_copy[featurename2]
+                else:
+                    feature2 = X_train_copy[featurename2]
+            else:
+                feature2 = None
+            new_feature = create_feature(feature1, feature2, featurename)
+            X_train_copy = X_train_copy.reset_index(drop=True)
+            new_feature_df = pd.DataFrame(new_feature, columns=[featurename])
+            new_feature_df = new_feature_df.reset_index(drop=True)
+            X_train_copy = pd.concat([X_train_copy, new_feature_df], axis=1, ignore_index=False)
         else:
             features = featurename.split("(")[1].replace(")", "").replace(" ", "")
             if "," in features:
@@ -30,8 +114,10 @@ def add_pandas_metadata_columns(dataset_metadata, X_train, result_matrix):
                 feature1 = X_train_copy[featurename1]
                 feature2 = None
             new_feature = create_feature(feature1, feature2, featurename)
+            X_train_copy = X_train_copy.reset_index(drop=True)
             new_feature_df = pd.DataFrame(new_feature, columns=[featurename])
-            X_train_copy = pd.concat([X_train_copy, new_feature_df])
+            new_feature_df = new_feature_df.reset_index(drop=True)
+            X_train_copy = pd.concat([X_train_copy, new_feature_df], axis=1, ignore_index=False)
         try:
             feature = pd.DataFrame(X_train_copy[featurename])
             feature_metadata = get_pandas_metafeatures(feature, featurename)
