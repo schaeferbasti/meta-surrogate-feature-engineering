@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from pymfe.mfe import MFE
 
-from src.Apply_and_Test.Apply_FE import execute_feature_engineering
+from src.Apply_and_Test.Apply_FE import execute_feature_engineering_recursive
 from src.Metadata.d2v.Add_d2v_Metafeatures import add_d2v_metadata_columns
 from src.Metadata.pandas.Add_Pandas_Metafeatures import add_pandas_metadata_columns
 from src.Metadata.tabpfn.Add_TabPFN_Metafeatures import add_tabpfn_metadata_columns
@@ -13,7 +13,7 @@ from src.Metadata.mfe.Add_MFE_Metafeatures import add_mfe_metadata_columns
 from autogluon.tabular.models import CatBoostModel
 
 from src.utils.create_feature_and_featurename import create_featurenames, extract_operation_and_original_features
-from src.utils.get_data import get_openml_dataset_split_and_metadata, split_data, concat_data
+from src.utils.get_data import get_openml_dataset_split_and_metadata, concat_data
 from src.utils.get_matrix import get_matrix_core_columns
 
 import warnings
@@ -90,59 +90,61 @@ def add_method_metadata(result_matrix, dataset_metadata, X_predict, y_predict, m
     return result_matrix
 
 
-def recursive_feature_addition(i, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, category_to_drop):
+def recursive_feature_addition(i, n_features_to_add, X, y, model, method, dataset_metadata, category_to_drop, wanted_min_relative_improvement):
     # Reload base matrix
-    result_matrix = pd.read_parquet("../Metadata/core/Core_Matrix_Complete.parquet")
-    # Create comparison matrix for new dataset
+    if method == "pandas":
+        result_matrix = pd.read_parquet("../Metadata/pandas/Pandas_Matrix_Complete.parquet")
+    elif method == "tabpfn":
+        result_matrix = pd.read_parquet("../Metadata/tabpfn/TabFPN_Matrix_Complete.parquet")
+    else:
+        result_matrix = pd.read_parquet("../Metadata/d2v/D2V_Matrix_Complete.parquet")
+        method = "d2v"    # Create comparison matrix for new dataset
     start = time.time()
-    # comparison_result_matrix = create_empty_core_matrix_for_dataset(X_train, model)
-    # comparison_result_matrix = add_method_metadata(comparison_result_matrix, dataset_metadata, X_train, y_train, method)
-    comparison_result_matrix = pd.read_parquet("Comparison_Result_Matrix.parquet")
+    comparison_result_matrix = create_empty_core_matrix_for_dataset(X, model)
+    comparison_result_matrix = add_method_metadata(comparison_result_matrix, dataset_metadata, X, y, method)
+    #comparison_result_matrix = pd.read_parquet("Comparison_Result_Matrix.parquet")
     end = time.time()
     print("Time for creating Comparison Result Matrix: " + str(end - start))
-    # comparison_result_matrix.to_parquet("Comparison_Result_Matrix.parquet")
+    comparison_result_matrix.to_parquet("Comparison_Result_Matrix.parquet")
     # Predict and split again
     start = time.time()
-    X_train_new, y_train_new, X_test_new, y_test_new = predict_improvement(result_matrix, comparison_result_matrix, method, i, X_train, y_train, X_test, y_test)
+    X_new, y_new = predict_improvement(result_matrix, comparison_result_matrix, method, i, X, y, wanted_min_relative_improvement)
     end = time.time()
     print("Time for Predicting Improvement using CatBoost: " + str(end - start))
-    new_columns = X_train_new.columns.values
-    old_columns = X_train.columns.values
-    if np.array_equal(new_columns, old_columns):
-        return X_train_new, y_train_new, X_test_new, y_test_new
-    # Recurse
+    if X_new.equals(X):  # if X_new.shape == X.shape
+        return X, y
     else:
-        recursive_feature_addition(i + 1, n_features_to_add, X_train_new, y_train_new, X_test_new, y_test_new, model, method, dataset_metadata, category_to_drop)
-    return X_train_new, y_train_new, X_test_new, y_test_new
+        return recursive_feature_addition(i + 1, n_features_to_add, X, y, model, method, dataset_metadata, category_to_drop, wanted_min_relative_improvement)
 
 
-def recursive_feature_addition_mfe(i, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, category_to_drop):
+def recursive_feature_addition_mfe(i, n_features_to_add, X, y, model, method, dataset_metadata, category_to_drop, wanted_min_relative_improvement):
+    if i >= n_features_to_add:
+        return X, y
     # Reload base matrix
-    result_matrix = pd.read_parquet("src/Metadata/mfe/MFE_Matrix_Complete.parquet")
+    result_matrix = pd.read_parquet("../Metadata/mfe/MFE_Matrix_Complete.parquet")
     # Create comparison matrix for new dataset
-    comparison_result_matrix = create_empty_core_matrix_for_dataset(X_train, model)
-    comparison_result_matrix = result_matrix, _, _, _, _, _, _, _, _ = add_mfe_metadata_columns(X_train, y_train, comparison_result_matrix)
-    comparison_result_matrix, general, statistical, info_theory, landmarking, complexity, clustering, concept, itemset = add_mfe_metadata_columns(X_train, y_train, comparison_result_matrix)
+    comparison_result_matrix = create_empty_core_matrix_for_dataset(X, model)
+    comparison_result_matrix = result_matrix, _, _, _, _, _, _, _, _ = add_mfe_metadata_columns(X, y, comparison_result_matrix)
+    comparison_result_matrix, general, statistical, info_theory, landmarking, complexity, clustering, concept, itemset = add_mfe_metadata_columns(X, y, comparison_result_matrix)
     # Drop no category, single category or all categories but one
     comparison_result_matrix_copy = comparison_result_matrix.drop(columns=category_to_drop, errors='ignore')
     result_matrix_copy = result_matrix.drop(columns=category_to_drop, errors='ignore')
     # Predict and split again
-    data = predict_improvement(result_matrix_copy, comparison_result_matrix_copy, "all", i, X_train, y_train, X_test, y_test)
-    X_train, y_train, X_test, y_test = split_data(data, "target")
+    X_new, y_new = predict_improvement(result_matrix_copy, comparison_result_matrix_copy, "all", i, X, y, wanted_min_relative_improvement)
     # Recurse
-    if data is None:
-        return X_train, y_train, X_test, y_test
-    recursive_feature_addition_mfe(i + 1, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, category_to_drop)
-    return X_train, y_train, X_test, y_test
+    if X_new.equals(X):  # if X_new.shape == X.shape
+        return X, y
+    else:
+        return recursive_feature_addition(i + 1, n_features_to_add, X, y, model, method, dataset_metadata, category_to_drop, wanted_min_relative_improvement)
 
 
-def predict_improvement(result_matrix, comparison_result_matrix, category_or_method, i, X_train, y_train, X_test, y_test):
+def predict_improvement(result_matrix, comparison_result_matrix, category_or_method, i, X_train, y_train, wanted_min_relative_improvement):
     y_result = result_matrix["improvement"]
     result_matrix = result_matrix.drop("improvement", axis=1)
     y_comparison = comparison_result_matrix["improvement"]
     comparison_result_matrix = comparison_result_matrix.drop("improvement", axis=1)
     # Train TabArena Model
-    # clf = RealMLPModel() # Catboost TabDPT -> tabarena hugging face
+    # clf = RealMLPModel()
     # clf = TabDPTModel()
     clf = CatBoostModel()
     clf.fit(X=result_matrix, y=y_result)
@@ -153,15 +155,16 @@ def predict_improvement(result_matrix, comparison_result_matrix, category_or_met
     prediction_concat_df = pd.concat([comparison_result_matrix[["dataset - id", "feature - name", "model"]], prediction_df], axis=1)
     prediction_concat_df.to_parquet("Prediction_" + str(category_or_method) + "_" + str(i) + ".parquet")
     best_operation = prediction_concat_df.nlargest(n=1, columns="predicted_improvement", keep="first")
-    if best_operation["predicted_improvement"].values[0] < 0.1:
-        return X_train, y_train, X_test, y_test
+    if best_operation["predicted_improvement"].values[0] < wanted_min_relative_improvement:
+        print(best_operation["predicted_improvement"].values[0])
+        return X_train, y_train
     else:
-        data, _, _ = execute_feature_engineering(best_operation)
-        X_train, y_train, X_test, y_test = split_data(data, "target")
-    return X_train, y_train, X_test, y_test
+        print(best_operation["predicted_improvement"].values[0])
+        X, y, _, _ = execute_feature_engineering_recursive(best_operation, X_train, y_train)
+    return X, y
 
 
-def main(dataset_id):
+def main(dataset_id, wanted_min_relative_improvement):
     model = "LightGBM_BAG_L1"
     methods = ["pandas", "mfe", "d2v", "tabpfn"]
     n_features_to_add = 10
@@ -173,7 +176,7 @@ def main(dataset_id):
             # Keep all categories
             category = "all"
             X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
-            X_train, y_train, X_test, y_test = recursive_feature_addition_mfe(j, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, None)
+            X_train, y_train = recursive_feature_addition_mfe(j, n_features_to_add, X_train, y_train, model, method, dataset_metadata, None, wanted_min_relative_improvement)
             data = concat_data(X_train, y_train, X_test, y_test, "target")
             data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_" + category + "_CatBoost_recursion.parquet")
 
@@ -182,22 +185,22 @@ def main(dataset_id):
             print("Remove one category completely")
             for i in range(len(categories)):
                 category = "without_" + str(categories[i])
-                X_train, y_train, X_test, y_test = recursive_feature_addition_mfe(j, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, categories[i])
+                X_train, y_train = recursive_feature_addition_mfe(j, n_features_to_add, X_train, y_train, model, method, dataset_metadata, categories[i], wanted_min_relative_improvement)
                 data = concat_data(X_train, y_train, X_test, y_test, "target")
                 data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_" + category + "_CatBoost_recursion.parquet")
 
             # Remove all categories completely but one
-            X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata( dataset_id)
+            X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
             print("Remove all categories completely but one")
             for i in range(len(categories)):
                 category = "only_" + str(categories[i])
-                X_train, y_train, X_test, y_test = recursive_feature_addition_mfe(j, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, categories[i])
+                X_train, y_train = recursive_feature_addition_mfe(j, n_features_to_add, X_train, y_train, model, method, dataset_metadata, categories[i], wanted_min_relative_improvement)
                 data = concat_data(X_train, y_train, X_test, y_test, "target")
                 data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_" + category + "_CatBoost_recursion.parquet")
         else:
             X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
             start = time.time()
-            X_train, y_train, X_test, y_test = recursive_feature_addition(j, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, None)
+            X_train, y_train = recursive_feature_addition(j, n_features_to_add, X_train, y_train, model, method, dataset_metadata, None, wanted_min_relative_improvement)
             end = time.time()
             print("Time for creating Comparison Result Matrix: " + str(end - start))
             data = concat_data(X_train, y_train, X_test, y_test, "target")
@@ -205,5 +208,6 @@ def main(dataset_id):
 
 
 if __name__ == '__main__':
-    dataset_id = 190411
-    main(dataset_id)
+    dataset_id = 2073
+    wanted_min_relative_improvement = 0.1
+    main(dataset_id, wanted_min_relative_improvement)
