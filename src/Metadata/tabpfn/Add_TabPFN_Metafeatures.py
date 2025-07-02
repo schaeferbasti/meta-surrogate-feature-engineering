@@ -1,23 +1,13 @@
-import os
 import time
 
 import numpy as np
 import pandas as pd
-import scipy
 from sklearn.decomposition import PCA
-from tabpfn import TabPFNClassifier
 
 from src.utils.create_feature_and_featurename import create_feature
 from src.utils.get_data import get_openml_dataset_split_and_metadata
 from src.utils.get_matrix import get_additional_tabpfn_columns
-
-
-def get_tabpfn_embedding(X, y):
-    # os.environ["TABPFN_ALLOW_CPU_LARGE_DATASET"] = "1"
-    clf = TabPFNClassifier(device="cuda")
-    clf.fit(X, y)
-    embeddings = clf.get_embeddings(X)
-    return embeddings
+from src.utils.get_metafeatures import get_tabpfn_embedding
 
 
 def add_tabpfn_metadata_columns(X_train, y_train, result_matrix):

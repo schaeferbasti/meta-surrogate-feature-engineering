@@ -16,8 +16,6 @@ def get_operator_count(featurename, operators):
     featurename_correct = featurename_correct.replace("*", "multiply")
     featurename_correct = featurename_correct.replace("/", "divide")
     operator_count = 0
-
-    # Sort operators by length (longest first to avoid sub-matching)
     sorted_operators = sorted(operators, key=len, reverse=True)
     for i, n in enumerate(sorted_operators):
         if n == "+":
@@ -30,24 +28,16 @@ def get_operator_count(featurename, operators):
             sorted_operators[i] = "divide"
 
     for op in sorted_operators:
-        # Escape special regex characters like +, *, etc.
-        # escaped_op = re.escape(op)
-        # Match operator followed by '(' (function-style)
         pattern = rf'\b{op}\s*\('
         matches = re.findall(pattern, featurename_correct)
         pattern_without = rf'\b{op}\s*\ - '
         matches_without = re.findall(pattern_without, featurename_correct)
         count = len(matches + matches_without)
         operator_count += count
-
-        # Optionally: remove matched parts to avoid overlapping if needed
-        # featurename = re.sub(pattern, '', featurename)
-
     return operator_count
 
 
 def split_top_level_args(arg_str):
-    """Split function arguments at the top level (outside nested parentheses)."""
     args = []
     bracket_level = 0
     current_arg = []
