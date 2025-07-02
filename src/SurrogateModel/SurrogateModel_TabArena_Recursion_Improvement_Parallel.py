@@ -97,11 +97,11 @@ def recursive_feature_addition(X, y, model, method, dataset_metadata, category_t
         return X, y
     # Reload base matrix
     if method == "pandas":
-        result_matrix = pd.read_parquet("../Metadata/pandas/Pandas_Matrix_Complete.parquet")
+        result_matrix = pd.read_parquet("src/Metadata/pandas/Pandas_Matrix_Complete.parquet")
     elif method == "tabpfn":
-        result_matrix = pd.read_parquet("../Metadata/tabpfn/TabFPN_Matrix_Complete.parquet")
+        result_matrix = pd.read_parquet("src/Metadata/tabpfn/TabFPN_Matrix_Complete.parquet")
     else:
-        result_matrix = pd.read_parquet("../Metadata/d2v/D2V_Matrix_Complete.parquet")
+        result_matrix = pd.read_parquet("src/Metadata/d2v/D2V_Matrix_Complete.parquet")
         method = "d2v"    # Create comparison matrix for new dataset
     datasets = pd.unique(result_matrix["dataset - id"]).tolist()
     print("Datasets in Pandas Matrix: " + str(datasets))
@@ -131,7 +131,7 @@ def recursive_feature_addition_mfe(X, y, model, method, dataset_metadata, catego
         print("Time limit reached")
         return X, y
     # Reload base matrix
-    result_matrix = pd.read_parquet("../Metadata/mfe/MFE_Matrix_Complete.parquet")
+    result_matrix = pd.read_parquet("src/Metadata/mfe/MFE_Matrix_Complete.parquet")
     # Create comparison matrix for new dataset
     comparison_result_matrix = create_empty_core_matrix_for_dataset(X, model, dataset_id)
     comparison_result_matrix = result_matrix, _, _, _, _, _, _, _, _ = add_mfe_metadata_columns(X, y, comparison_result_matrix)
