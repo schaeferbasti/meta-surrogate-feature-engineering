@@ -114,8 +114,7 @@ def recursive_feature_addition(i, n_features_to_add, X, y, model, method, datase
     end = time.time()
     print("Time for Predicting Improvement using CatBoost: " + str(end - start))
     # Recurse
-    recursive_feature_addition(i + 1, n_features_to_add, X, y, model, method, dataset_metadata, category_to_drop)
-    return X, y
+    return recursive_feature_addition(i + 1, n_features_to_add, X, y, model, method, dataset_metadata, category_to_drop)
 
 
 def recursive_feature_addition_mfe(i, n_features_to_add, X, y, model, method, dataset_metadata, category_to_drop):
