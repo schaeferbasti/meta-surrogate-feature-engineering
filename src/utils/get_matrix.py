@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+from pymfe.mfe import MFE
 
 from src.utils.create_feature_and_featurename import create_featurenames
 
@@ -17,6 +18,17 @@ def get_additional_pandas_columns():
 
 def get_additional_mfe_columns():
     return [f"col_{i}" for i in range(141)]  # ['attr_to_inst', 'nr_inst', 'sparsity.mean']
+
+
+def get_additional_mfe_columns_group(group):
+    X_dummy = np.array([[0, 1], [1, 0]])
+    y_dummy = np.array([0, 1])
+    # mfe = MFE(groups=["general", "statistical", "info-theory", "model-based", "landmarking"])
+    mfe = MFE(groups=group)
+    mfe.fit(X_dummy, y_dummy)
+    metafeatures = mfe.extract()
+    columns = mfe.extract_metafeature_names()
+    return columns
 
 
 def get_additional_d2v_columns():
