@@ -90,7 +90,10 @@ def add_method_metadata(result_matrix, dataset_metadata, X_predict, y_predict, m
     return result_matrix
 
 
-def recursive_feature_addition(i, n_features_to_add, X, y, model, method, dataset_metadata, category_to_drop, wanted_min_relative_improvement):
+def recursive_feature_addition(i, n_features_to_add, X, y, model, method, dataset_metadata, category_to_drop, wanted_min_relative_improvement, time_limit, start_time):
+    if time.time() - start_time > time_limit:
+        print("Time limit reached")
+        return X, y
     # Reload base matrix
     if method == "pandas":
         result_matrix = pd.read_parquet("../Metadata/pandas/Pandas_Matrix_Complete.parquet")
@@ -114,11 +117,12 @@ def recursive_feature_addition(i, n_features_to_add, X, y, model, method, datase
     if X_new.equals(X):  # if X_new.shape == X.shape
         return X, y
     else:
-        return recursive_feature_addition(i + 1, n_features_to_add, X, y, model, method, dataset_metadata, category_to_drop, wanted_min_relative_improvement)
+        return recursive_feature_addition(i + 1, n_features_to_add, X, y, model, method, dataset_metadata, category_to_drop, wanted_min_relative_improvement, time_limit, start_time)
 
 
-def recursive_feature_addition_mfe(i, n_features_to_add, X, y, model, method, dataset_metadata, category_to_drop, wanted_min_relative_improvement):
-    if i >= n_features_to_add:
+def recursive_feature_addition_mfe(i, n_features_to_add, X, y, model, method, dataset_metadata, category_to_drop, wanted_min_relative_improvement, time_limit, start_time):
+    if time.time() - start_time > time_limit:
+        print("Time limit reached")
         return X, y
     # Reload base matrix
     result_matrix = pd.read_parquet("../Metadata/mfe/MFE_Matrix_Complete.parquet")
@@ -135,7 +139,7 @@ def recursive_feature_addition_mfe(i, n_features_to_add, X, y, model, method, da
     if X_new.equals(X):  # if X_new.shape == X.shape
         return X, y
     else:
-        return recursive_feature_addition(i + 1, n_features_to_add, X, y, model, method, dataset_metadata, category_to_drop, wanted_min_relative_improvement)
+        return recursive_feature_addition(i + 1, n_features_to_add, X, y, model, method, dataset_metadata, category_to_drop, wanted_min_relative_improvement, time_limit, start_time)
 
 
 def predict_improvement(result_matrix, comparison_result_matrix, category_or_method, i, X_train, y_train, wanted_min_relative_improvement):
@@ -164,19 +168,20 @@ def predict_improvement(result_matrix, comparison_result_matrix, category_or_met
     return X, y
 
 
-def main(dataset_id, wanted_min_relative_improvement):
+def main(dataset_id, wanted_min_relative_improvement, time_limit, start_time):
     model = "LightGBM_BAG_L1"
     methods = ["pandas", "mfe", "d2v", "tabpfn"]
     n_features_to_add = 10
     j = 0
     category = "No_Category"
     for method in methods:
+        print("Method:", method)
         if method == "mfe":
             categories = get_mfe_categories()
             # Keep all categories
             category = "all"
             X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
-            X_train, y_train = recursive_feature_addition_mfe(j, n_features_to_add, X_train, y_train, model, method, dataset_metadata, None, wanted_min_relative_improvement)
+            X_train, y_train = recursive_feature_addition_mfe(j, n_features_to_add, X_train, y_train, model, method, dataset_metadata, None, wanted_min_relative_improvement, time_limit, start_time)
             data = concat_data(X_train, y_train, X_test, y_test, "target")
             data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_" + category + "_CatBoost_recursion.parquet")
 
@@ -185,7 +190,7 @@ def main(dataset_id, wanted_min_relative_improvement):
             print("Remove one category completely")
             for i in range(len(categories)):
                 category = "without_" + str(categories[i])
-                X_train, y_train = recursive_feature_addition_mfe(j, n_features_to_add, X_train, y_train, model, method, dataset_metadata, categories[i], wanted_min_relative_improvement)
+                X_train, y_train = recursive_feature_addition_mfe(j, n_features_to_add, X_train, y_train, model, method, dataset_metadata, categories[i], wanted_min_relative_improvement, time_limit, start_time)
                 data = concat_data(X_train, y_train, X_test, y_test, "target")
                 data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_" + category + "_CatBoost_recursion.parquet")
 
@@ -194,13 +199,13 @@ def main(dataset_id, wanted_min_relative_improvement):
             print("Remove all categories completely but one")
             for i in range(len(categories)):
                 category = "only_" + str(categories[i])
-                X_train, y_train = recursive_feature_addition_mfe(j, n_features_to_add, X_train, y_train, model, method, dataset_metadata, categories[i], wanted_min_relative_improvement)
+                X_train, y_train = recursive_feature_addition_mfe(j, n_features_to_add, X_train, y_train, model, method, dataset_metadata, categories[i], wanted_min_relative_improvement, time_limit, start_time)
                 data = concat_data(X_train, y_train, X_test, y_test, "target")
                 data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_" + category + "_CatBoost_recursion.parquet")
         else:
             X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
             start = time.time()
-            X_train, y_train = recursive_feature_addition(j, n_features_to_add, X_train, y_train, model, method, dataset_metadata, None, wanted_min_relative_improvement)
+            X_train, y_train = recursive_feature_addition(j, n_features_to_add, X_train, y_train, model, method, dataset_metadata, None, wanted_min_relative_improvement, time_limit, start_time)
             end = time.time()
             print("Time for creating Comparison Result Matrix: " + str(end - start))
             data = concat_data(X_train, y_train, X_test, y_test, "target")
@@ -209,5 +214,7 @@ def main(dataset_id, wanted_min_relative_improvement):
 
 if __name__ == '__main__':
     dataset_id = 2073
-    wanted_min_relative_improvement = 0.1
-    main(dataset_id, wanted_min_relative_improvement)
+    wanted_min_relative_improvement = 0.001
+    time_limit = 30
+    start_time = time.time()
+    main(dataset_id, wanted_min_relative_improvement, time_limit, start_time)
