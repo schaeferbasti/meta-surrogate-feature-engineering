@@ -104,7 +104,7 @@ def recursive_feature_addition(X, y, X_test, y_test, model, method, dataset_meta
         result_matrix = pd.read_parquet("src/Metadata/d2v/D2V_Matrix_Complete.parquet")
         method = "d2v"    # Create comparison matrix for new dataset
     datasets = pd.unique(result_matrix["dataset - id"]).tolist()
-    print("Datasets in Pandas Matrix: " + str(datasets))
+    print("Datasets in " + str(method) + " Matrix: " + str(datasets))
 
     if dataset_id in datasets:
         result_matrix = result_matrix[result_matrix["dataset - id"] != dataset_id]
@@ -226,7 +226,7 @@ def main_wrapper():
     # parser.add_argument('--mf_method', required=True, help='Metafeature Method')
     parser.add_argument('--dataset', required=True, help='Metafeature Method')
     args = parser.parse_args()
-    method = "pandas"
+    method = "d2v"
     wanted_min_relative_improvement = 0.001
     main(int(args.dataset), wanted_min_relative_improvement, method)
 
