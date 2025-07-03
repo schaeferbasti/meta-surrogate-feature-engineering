@@ -102,6 +102,12 @@ def recursive_feature_addition(X, y, model, method, dataset_metadata, category_t
     else:
         result_matrix = pd.read_parquet("../Metadata/d2v/D2V_Matrix_Complete.parquet")
         method = "d2v"    # Create comparison matrix for new dataset
+    datasets = pd.unique(result_matrix["dataset - id"]).tolist()
+    print("Datasets in Pandas Matrix: " + str(datasets))
+
+    if dataset_id in datasets:
+        result_matrix = result_matrix[result_matrix["dataset - id"] != dataset_id]
+
     start = time.time()
     comparison_result_matrix = create_empty_core_matrix_for_dataset(X, model)
     comparison_result_matrix = add_method_metadata(comparison_result_matrix, dataset_metadata, X, y, method)
