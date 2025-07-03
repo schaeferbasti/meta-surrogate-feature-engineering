@@ -30,6 +30,7 @@ def main():
     start = time.time()
     counter = 0
     for dataset, _ in result_matrix.groupby('dataset - id'):
+        get_name_and_split_and_save_dataset(dataset)
         print("Dataset: " + str(dataset))
         try:
             pd.read_parquet("src/Metadata/d2v/D2V_Matrix_Complete" + str(dataset) + ".parquet")

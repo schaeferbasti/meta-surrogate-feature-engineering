@@ -143,7 +143,7 @@ def get_name_and_split_and_save_dataset(openml_task_id):
     )
     train_idx, test_idx = task.get_train_test_split_indices()
     X, y = task.get_X_and_y(dataset_format="dataframe")
-    root_dir = "dataset2vec/datasets/" + name + "/"
+    root_dir = "src/Metadata/d2v/dataset2vec/datasets/" + name + "/"
     try:
         os.makedirs(root_dir)
     except FileExistsError:
