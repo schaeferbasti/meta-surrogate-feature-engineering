@@ -21,6 +21,7 @@ def get_additional_features(X, y, prediction_result):
             feature, featurename = create_feature_and_featurename(X[original_features[0]], None, operation)
         if feature is not None:
             feature = pd.Series(feature).to_frame(additional_feature)
+            X = X.reset_index(drop=True)
             X = pd.concat([X, feature], axis=1)
         else:
             X = X.drop(featurename, axis=1)
