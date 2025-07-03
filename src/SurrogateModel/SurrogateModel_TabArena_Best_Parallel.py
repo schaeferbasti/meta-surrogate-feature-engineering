@@ -1,7 +1,11 @@
 from __future__ import annotations
 
 import argparse
+import multiprocessing
+import sys
+import time
 
+import psutil
 from autogluon.core.data import LabelCleaner
 from autogluon.features.generators import AutoMLPipelineFeatureGenerator
 from autogluon.tabular.models import CatBoostModel
@@ -116,7 +120,7 @@ def feature_addition(i, n_features_to_add, X_train, y_train, X_test, y_test, mod
     if i >= n_features_to_add:
         return X_train, y_train, X_test, y_test
     # Reload base matrix
-    result_matrix = pd.read_parquet("src/Metadata/core/Core_Matrix_Complete.parquet")
+    result_matrix = pd.read_parquet("src/Metadata/pandas/Pandas_Matrix_Complete.parquet")
     # Create comparison matrix for new dataset
     comparison_result_matrix = create_empty_core_matrix_for_dataset(X_train, model)
     comparison_result_matrix = add_method_metadata(comparison_result_matrix, dataset_metadata, X_train, y_train, method)
@@ -127,6 +131,8 @@ def feature_addition(i, n_features_to_add, X_train, y_train, X_test, y_test, mod
     # Predict and split again
     data = predict_improvement(result_matrix_copy, comparison_result_matrix_copy, "all")
     X_train, y_train, X_test, y_test = split_data(data, "target")
+    data = concat_data(X_train, y_train, X_test, y_test, "target")
+    data.to_parquet("FE_" + str(dataset_metadata["dataset - id"]) + "_" + str(method) + "_CatBoost_best.parquet")
     return X_train, y_train, X_test, y_test
 
 
@@ -179,12 +185,11 @@ def predict_improvement(result_matrix, comparison_result_matrix, category_or_met
 
 
 def main(method, dataset_id):
-    if method == "dtov":
-        method = "d2v"
     print("Method: " + str(method) + ", Dataset: " + str(dataset_id) + str("CatBoost"))
     model = "LightGBM_BAG_L1"
     n_features_to_add = 10
     j = 0
+    """
     category = "No_Category"
     if method.startswith("mfe"):
         # Keep all categories
@@ -220,15 +225,54 @@ def main(method, dataset_id):
             data = concat_data(X_train, y_train, X_test, y_test, "target")
             data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_" + category + "_CatBoost_best.parquet")
     else:
-        X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
-        X_train, y_train, X_test, y_test = feature_addition(j, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, None)
-        data = concat_data(X_train, y_train, X_test, y_test, "target")
-        data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_" + category + "_CatBoost_best.parquet")
+    """
+    X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
+    X_train, y_train, X_test, y_test = feature_addition(j, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, None)
+    data = concat_data(X_train, y_train, X_test, y_test, "target")
+    data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_CatBoost_best.parquet")
+
+
+def run_with_resource_limits(target_func, mem_limit_mb, time_limit_sec, check_interval=5):
+    process = multiprocessing.Process(target=target_func)
+    process.start()
+    pid = process.pid
+    start_time = time.time()
+
+    while process.is_alive():
+        try:
+            mem = psutil.Process(pid).memory_info().rss / (1024 * 1024)  # MB
+            elapsed_time = time.time() - start_time
+
+            if mem > mem_limit_mb:
+                print(f"[Monitor] Memory exceeded: {mem:.2f} MB > {mem_limit_mb} MB. Terminating.")
+                process.terminate()
+                break
+
+            if elapsed_time > time_limit_sec:
+                print(f"[Monitor] Time limit exceeded: {elapsed_time:.1f} sec > {time_limit_sec} sec. Terminating.")
+                process.terminate()
+                break
+
+        except psutil.NoSuchProcess:
+            break
+        time.sleep(check_interval)
+
+    process.join()
+    return process.exitcode
+
+
+def main_wrapper():
+    parser = argparse.ArgumentParser(description='Run Surrogate Model with Metadata from Method')
+    # parser.add_argument('--mf_method', required=True, help='Metafeature Method')
+    parser.add_argument('--dataset', required=True, help='Dataset')
+    args = parser.parse_args()
+    main("pandas", args.dataset_id)
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Run Surrogate Model with Metadata from Method')
-    parser.add_argument('--mf_method', required=True, help='Metafeature Method')
-    args = parser.parse_args()
-    dataset_id = 190411
-    main(args.mf_method, dataset_id)
+    memory_limit_mb = 64000  # 64 GB
+    time_limit_sec = 3600  # 1h
+    exit_code = run_with_resource_limits(main_wrapper, memory_limit_mb, time_limit_sec)
+    if exit_code != 0:
+        print(f"Process exited with code {exit_code}")
+        sys.exit(exit_code)
