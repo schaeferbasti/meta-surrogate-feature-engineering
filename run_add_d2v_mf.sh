@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define the partition on which the job shall run.
-#SBATCH --partition bosch_cpu-cascadelake  # mlhiwidlc_gpu-rtx2080
+#SBATCH --partition mlhiwidlc_gpu-rtx2080 # bosch_cpu-cascadelake #
 
 # Define a name for your job
 #SBATCH --job-name d2v_MF
@@ -15,7 +15,7 @@
 #SBATCH --gres=localtmp:100
 
 #Time Format = days-hours:minutes:seconds
-#SBATCH --time=4-00:00:00
+#SBATCH --time=1-00:00:00
 
 #SBATCH --propagate=NONE
 
@@ -56,7 +56,7 @@ echo "PYTHONPATH set to $PYTHONPATH"
 start=`date +%s`
 
 # shellcheck disable=SC2048
-python3 src/Metadata/d2v/Add_d2v_Metafeatures.py  "$SLURM_ARRAY_TASK_ID" "$*"
+python3 src/Metadata/d2v/Add_d2v_Metafeatures.py
 
 # Print the allocated memory per node
 echo "Allocated memory per node: $SLURM_MEM_PER_NODE MB"
