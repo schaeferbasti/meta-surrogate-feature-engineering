@@ -185,7 +185,7 @@ def predict_improvement(result_matrix, comparison_result_matrix, category_or_met
 
 
 def main(method, dataset_id):
-    print("Method: " + str(method) + ", Dataset: " + str(dataset_id) + str("CatBoost"))
+    print("Method: " + str(method) + ", Dataset: " + str(dataset_id) + ", Model: " + str("CatBoost"))
     model = "LightGBM_BAG_L1"
     n_features_to_add = 10
     j = 0
@@ -266,7 +266,7 @@ def main_wrapper():
     # parser.add_argument('--mf_method', required=True, help='Metafeature Method')
     parser.add_argument('--dataset', required=True, help='Dataset')
     args = parser.parse_args()
-    main("pandas", args.dataset)
+    main("pandas", int(args.dataset))
 
 
 if __name__ == '__main__':
