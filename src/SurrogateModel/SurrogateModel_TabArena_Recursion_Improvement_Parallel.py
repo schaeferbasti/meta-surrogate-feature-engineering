@@ -216,7 +216,7 @@ def main_wrapper():
     args = parser.parse_args()
     method = "pandas"
     wanted_min_relative_improvement = 0.001
-    time_limit = 7200
+    time_limit = 3600
     start_time = time.time()
     main(int(args.dataset), wanted_min_relative_improvement, time_limit, start_time, method)
 
