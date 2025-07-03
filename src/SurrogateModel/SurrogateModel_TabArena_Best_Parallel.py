@@ -266,7 +266,7 @@ def main_wrapper():
     # parser.add_argument('--mf_method', required=True, help='Metafeature Method')
     parser.add_argument('--dataset', required=True, help='Dataset')
     args = parser.parse_args()
-    main("pandas", args.dataset_id)
+    main("pandas", args.dataset)
 
 
 if __name__ == '__main__':
