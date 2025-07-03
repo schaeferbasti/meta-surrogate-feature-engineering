@@ -123,7 +123,7 @@ def recursive_feature_addition(X, y, model, method, dataset_metadata, category_t
     if X_new.equals(X):  # if X_new.shape == X.shape
         return X, y
     else:
-        return recursive_feature_addition(X, y, model, method, dataset_metadata, category_to_drop, wanted_min_relative_improvement, time_limit, start_time)
+        return recursive_feature_addition(X_new, y_new, model, method, dataset_metadata, category_to_drop, wanted_min_relative_improvement, time_limit, start_time)
 
 
 def recursive_feature_addition_mfe(X, y, model, method, dataset_metadata, category_to_drop, wanted_min_relative_improvement, time_limit, start_time):
@@ -145,7 +145,7 @@ def recursive_feature_addition_mfe(X, y, model, method, dataset_metadata, catego
     if X_new.equals(X):  # if X_new.shape == X.shape
         return X, y
     else:
-        return recursive_feature_addition(X, y, model, method, dataset_metadata, category_to_drop, wanted_min_relative_improvement, time_limit, start_time)
+        return recursive_feature_addition(y_new, y_new, model, method, dataset_metadata, category_to_drop, wanted_min_relative_improvement, time_limit, start_time)
 
 
 def predict_improvement(result_matrix, comparison_result_matrix, category_or_method, X_train, y_train, wanted_min_relative_improvement):
