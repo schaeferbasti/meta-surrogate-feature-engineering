@@ -233,7 +233,7 @@ def main_wrapper():
 
 if __name__ == '__main__':
     memory_limit_mb = 64000     # 64 GB
-    time_limit_sec = 3600       # 1h
+    time_limit_sec = 10800       # 3h
     exit_code = run_with_resource_limits(main_wrapper, memory_limit_mb, time_limit_sec)
     if exit_code != 0:
         print(f"Process exited with code {exit_code}")
