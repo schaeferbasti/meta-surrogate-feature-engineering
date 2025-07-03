@@ -260,7 +260,7 @@ def main_wrapper():
     # parser.add_argument('--mf_method', required=True, help='Metafeature Method')
     parser.add_argument('--dataset', required=True, help='Dataset')
     args = parser.parse_args()
-    method = "d2v"
+    method = "pandas"
     main(int(args.dataset), method)
 
 
