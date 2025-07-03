@@ -132,7 +132,8 @@ def feature_addition(i, n_features_to_add, X_train, y_train, X_test, y_test, mod
     X_new, y_new = predict_improvement(result_matrix, comparison_result_matrix, method)
     end = time.time()
     print("Time for Predicting Improvement using CatBoost: " + str(end - start))
-    data = concat_data(X_new, y_new, X_test, y_test, "target")
+    y_list = y_new['target'].tolist()
+    data = concat_data(X_new, y_list, X_test, y_test, "target")
     data.to_parquet("FE_" + str(dataset_metadata["dataset - id"]) + "_" + str(method) + "_CatBoost_best.parquet")
     return X_new, y_new, X_test, y_test
 
@@ -147,11 +148,15 @@ def feature_addition_mfe(i, n_features_to_add, X_train, y_train, X_test, y_test,
     comparison_result_matrix, _, _, _, _, _, _, _, _ = add_mfe_metadata_columns(X_train, y_train, comparison_result_matrix)
     comparison_result_matrix, general, statistical, info_theory, landmarking, complexity, clustering, concept, itemset = add_mfe_metadata_columns(X_train, y_train, comparison_result_matrix)
     # Drop no category, single category or all categories but one
-    comparison_result_matrix_copy = comparison_result_matrix.drop(columns=category_to_drop, errors='ignore')
-    result_matrix_copy = result_matrix.drop(columns=category_to_drop, errors='ignore')
     # Predict and split again
-    X, y = predict_improvement(result_matrix_copy, comparison_result_matrix_copy, "all")
-    return X, y, X_test, y_test
+    start = time.time()
+    X_new, y_new = predict_improvement(result_matrix, comparison_result_matrix, "all")
+    end = time.time()
+    print("Time for Predicting Improvement using CatBoost: " + str(end - start))
+    y_list = y_new['target'].tolist()
+    data = concat_data(X_new, y_list, X_test, y_test, "target")
+    data.to_parquet("FE_" + str(dataset_metadata["dataset - id"]) + "_" + str(method) + "_CatBoost_best.parquet")
+    return X_new, y_new, X_test, y_test
 
 
 def predict_improvement(result_matrix, comparison_result_matrix, category_or_method):
