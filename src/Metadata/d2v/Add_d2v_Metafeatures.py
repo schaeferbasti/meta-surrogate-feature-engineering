@@ -48,6 +48,8 @@ def main():
                 print("Time for d2v on Dataset " + str(dataset) + ": " + str(end_dataset - start_dataset))
             except TypeError:
                 continue
+            except ValueError:
+                continue
     result_matrix_pandas.to_parquet("src/Metadata/d2v/D2V_Matrix_Complete.parquet")
     end = time.time()
     print("Time for complete d2v MF: " + str(end - start) + " on " + str(counter) + " datasets.")
