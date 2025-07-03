@@ -152,7 +152,8 @@ def get_d2v_metafeatures(dataset_id):
         dataset2vec = tf.keras.Model(inputs=[x, nclasses, nfeature, ninstanc], outputs=metafeatures)
         return dataset2vec
 
-    rootdir = os.path.dirname(os.path.realpath(__file__)) + "/dataset2vec"
+    # rootdir = os.path.dirname(os.path.realpath(__file__)) + "/dataset2vec"
+    rootdir = "src/Metadata/d2v/dataset2vec"
     log_dir = os.path.join(rootdir, "checkpoints", f"searchspace-a/split-0/dataset2vec/vanilla/configuration-0/2025-06-05-18-47-03-578668")
     save_dir = os.path.join(rootdir, "extracted")
     configuration = json.load(open(os.path.join(log_dir, "configuration.txt"), "r"))
