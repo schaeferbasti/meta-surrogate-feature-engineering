@@ -94,10 +94,7 @@ def add_method_metadata(result_matrix, dataset_metadata, X_predict, y_predict, m
     return result_matrix
 
 
-def recursive_feature_addition(X, y, model, method, dataset_metadata, category_to_drop, wanted_min_relative_improvement, time_limit, start_time, dataset_id):
-    if time.time() - start_time > time_limit:
-        print("Time limit reached")
-        return X, y
+def recursive_feature_addition(X, y, X_test, y_test, model, method, dataset_metadata, category_to_drop, wanted_min_relative_improvement, dataset_id):
     # Reload base matrix
     if method == "pandas":
         result_matrix = pd.read_parquet("src/Metadata/pandas/Pandas_Matrix_Complete.parquet")
@@ -124,15 +121,16 @@ def recursive_feature_addition(X, y, model, method, dataset_metadata, category_t
     end = time.time()
     print("Time for Predicting Improvement using CatBoost: " + str(end - start))
     if X_new.equals(X):  # if X_new.shape == X.shape
+        data = concat_data(X, y, X_test, y_test, "target")
+        data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_CatBoost_recursion.parquet")
         return X, y
     else:
-        return recursive_feature_addition(X_new, y_new, model, method, dataset_metadata, category_to_drop, wanted_min_relative_improvement, time_limit, start_time, dataset_id)
+        data = concat_data(X_new, y_new, X_test, y_test, "target")
+        data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_CatBoost_recursion.parquet")
+        return recursive_feature_addition(X_new, y_new, X_test, y_test, model, method, dataset_metadata, category_to_drop, wanted_min_relative_improvement, dataset_id)
 
 
-def recursive_feature_addition_mfe(X, y, model, method, dataset_metadata, category_to_drop, wanted_min_relative_improvement, time_limit, start_time, dataset_id):
-    if time.time() - start_time > time_limit:
-        print("Time limit reached")
-        return X, y
+def recursive_feature_addition_mfe(X, y, X_test, y_test, model, method, dataset_metadata, category_to_drop, wanted_min_relative_improvement, dataset_id):
     # Reload base matrix
     result_matrix = pd.read_parquet("src/Metadata/mfe/MFE_Matrix_Complete.parquet")
     # Create comparison matrix for new dataset
@@ -146,9 +144,13 @@ def recursive_feature_addition_mfe(X, y, model, method, dataset_metadata, catego
     X_new, y_new = predict_improvement(result_matrix_copy, comparison_result_matrix_copy, "all", X, y, wanted_min_relative_improvement)
     # Recurse
     if X_new.equals(X):  # if X_new.shape == X.shape
+        data = concat_data(X, y, X_test, y_test, "target")
+        data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_CatBoost_recursion.parquet")
         return X, y
     else:
-        return recursive_feature_addition(X_new, y_new, model, method, dataset_metadata, category_to_drop, wanted_min_relative_improvement, time_limit, start_time, dataset_id)
+        data = concat_data(X_new, y_new, X_test, y_test, "target")
+        data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_CatBoost_recursion.parquet")
+        return recursive_feature_addition(X_new, y_new, X_test, y_test, model, method, dataset_metadata, category_to_drop, wanted_min_relative_improvement, dataset_id)
 
 
 def predict_improvement(result_matrix, comparison_result_matrix, category_or_method, X_train, y_train, wanted_min_relative_improvement):
@@ -179,29 +181,38 @@ def predict_improvement(result_matrix, comparison_result_matrix, category_or_met
     return X, y
 
 
-def main(dataset_id, wanted_min_relative_improvement, time_limit, start_time, method):
+def main(dataset_id, wanted_min_relative_improvement, method):
     model = "LightGBM_BAG_L1"
     X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
     start = time.time()
-    X_train, y_train = recursive_feature_addition(X_train, y_train, model, method, dataset_metadata, None, wanted_min_relative_improvement, time_limit, start_time, dataset_id)
+    X_train, y_train = recursive_feature_addition(X_train, y_train, X_test, y_test, model, method, dataset_metadata, None, wanted_min_relative_improvement, dataset_id)
     end = time.time()
     print("Time for creating Comparison Result Matrix: " + str(end - start))
     data = concat_data(X_train, y_train, X_test, y_test, "target")
     data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_CatBoost_recursion.parquet")
 
 
-def run_with_memory_limit(target_func, mem_limit_mb, check_interval=1):
+def run_with_resource_limits(target_func, mem_limit_mb, time_limit_sec, check_interval=5):
     process = multiprocessing.Process(target=target_func)
     process.start()
     pid = process.pid
+    start_time = time.time()
 
     while process.is_alive():
         try:
             mem = psutil.Process(pid).memory_info().rss / (1024 * 1024)  # MB
+            elapsed_time = time.time() - start_time
+
             if mem > mem_limit_mb:
-                print(f"Memory exceeded: {mem:.2f} MB > {mem_limit_mb} MB. Killing process.")
+                print(f"[Monitor] Memory exceeded: {mem:.2f} MB > {mem_limit_mb} MB. Terminating.")
                 process.terminate()
                 break
+
+            if elapsed_time > time_limit_sec:
+                print(f"[Monitor] Time limit exceeded: {elapsed_time:.1f} sec > {time_limit_sec} sec. Terminating.")
+                process.terminate()
+                break
+
         except psutil.NoSuchProcess:
             break
         time.sleep(check_interval)
@@ -216,14 +227,13 @@ def main_wrapper():
     args = parser.parse_args()
     method = "pandas"
     wanted_min_relative_improvement = 0.001
-    time_limit = 3600
-    start_time = time.time()
-    main(int(args.dataset), wanted_min_relative_improvement, time_limit, start_time, method)
+    main(int(args.dataset), wanted_min_relative_improvement, method)
 
 
 if __name__ == '__main__':
-    memory_limit_mb = 64000  # 64 GB
-    exit_code = run_with_memory_limit(main_wrapper, memory_limit_mb)
+    memory_limit_mb = 64000     # 64 GB
+    time_limit_sec = 3600       # 1h
+    exit_code = run_with_resource_limits(main_wrapper, memory_limit_mb, time_limit_sec)
     if exit_code != 0:
         print(f"Process exited with code {exit_code}")
         sys.exit(exit_code)
