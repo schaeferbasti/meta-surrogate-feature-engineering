@@ -24,9 +24,8 @@ def main():
             original_results = pd.read_parquet("test_results/Original_Result_" + str(dataset_id) + ".parquet")
         except FileNotFoundError:
             original_results = get_model_score_origin(X_train, y_train, X_test, y_test, dataset_id, "Original")
-            result.to_parquet("test_results/Original_Result_" + str(dataset_id) + ".parquet")
-        result = pd.concat([result, original_results], ignore_index=True)
-        result.to_parquet("test_results/Result_" + str(dataset_id) + ".parquet")
+            original_results = original_results[original_results['model'] == "LightGBM_BAG_L1"]
+            original_results.to_parquet("test_results/Original_Result_" + str(dataset_id) + ".parquet")
         print("Original Results: " + str(original_results))
 
         # Random and MFE Results
@@ -43,24 +42,25 @@ def main():
         except FileNotFoundError:
             X_train, y_train, X_test, y_test = split_data(data, target_label)
             results = get_model_score_origin(X_train, y_train, X_test, y_test, dataset_id, origin)
+            results = results[results['model'] == "LightGBM_BAG_L1"]
             if origin == "Random":
                 print("Random Results: " + str(results))
             if origin == "pandas":
                 print("Pandas Results: " + str(results))
             results.to_parquet("test_results/" + str(origin) + "_Result_" + str(dataset_id) + ".parquet")
-        result = pd.concat([result, results], ignore_index=True)
-        result.to_parquet("test_results/Result_" + str(dataset_id) + ".parquet")
-
         # OpenFE
         try:
             openfe_results = pd.read_parquet("test_results/OpenFE_Result_" + str(dataset_id) + ".parquet")
         except FileNotFoundError:
             X_train, y_train, X_test, y_test = get_openfe_data(X_train, y_train, X_test, y_test)
             openfe_results = get_model_score_origin(X_train, y_train, X_test, y_test, dataset_id, "OpenFE")
+            openfe_results = openfe_results[openfe_results['model'] == "LightGBM_BAG_L1"]
             openfe_results.to_parquet("test_results/OpenFE_Result_" + str(dataset_id) + ".parquet")
             print("OpenFE Results: " + str(openfe_results))
-        result = pd.concat([result, openfe_results], ignore_index=True)
-        result.to_parquet("test_results/Result_" + str(dataset_id) + ".parquet")
+    result = pd.concat([result, original_results], ignore_index=True)
+    result = pd.concat([result, results], ignore_index=True)
+    result = pd.concat([result, openfe_results], ignore_index=True)
+    result.to_parquet("test_results/Result_" + str(dataset_id) + ".parquet")
 
 
 if __name__ == "__main__":
