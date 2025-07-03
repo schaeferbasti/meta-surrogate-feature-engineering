@@ -110,20 +110,33 @@ def feature_addition(i, n_features_to_add, X_train, y_train, X_test, y_test, mod
     if i >= n_features_to_add:
         return X_train, y_train, X_test, y_test
     # Reload base matrix
-    result_matrix = pd.read_parquet("src/Metadata/pandas/Pandas_Matrix_Complete.parquet")
-    # Create comparison matrix for new dataset
+    if method == "pandas":
+        result_matrix = pd.read_parquet("src/Metadata/pandas/Pandas_Matrix_Complete.parquet")
+    elif method == "tabpfn":
+        result_matrix = pd.read_parquet("src/Metadata/tabpfn/TabFPN_Matrix_Complete.parquet")
+    else:
+        result_matrix = pd.read_parquet("src/Metadata/d2v/D2V_Matrix_Complete.parquet")
+        method = "d2v"
+    datasets = pd.unique(result_matrix["dataset - id"]).tolist()
+    print("Datasets in " + str(method) + " Matrix: " + str(datasets))
+
+    if dataset_id in datasets:
+        result_matrix = result_matrix[result_matrix["dataset - id"] != dataset_id]
+
+    start = time.time()
     comparison_result_matrix = create_empty_core_matrix_for_dataset(X_train, model, dataset_id)
     comparison_result_matrix = add_method_metadata(comparison_result_matrix, dataset_metadata, X_train, y_train, method)
-    comparison_result_matrix, general, statistical, info_theory, landmarking, complexity, clustering, concept, itemset = add_mfe_metadata_columns(X_train, y_train, comparison_result_matrix)
-    # Drop category
-    comparison_result_matrix_copy = comparison_result_matrix.drop(columns=category_to_drop, errors='ignore')
-    result_matrix_copy = result_matrix.drop(columns=category_to_drop, errors='ignore')
+    end = time.time()
+    print("Time for creating Comparison Result Matrix: " + str(end - start))
+    comparison_result_matrix.to_parquet("Comparison_Result_Matrix.parquet")
     # Predict and split again
-    data = predict_improvement(result_matrix_copy, comparison_result_matrix_copy, "all")
-    X_train, y_train, X_test, y_test = split_data(data, "target")
-    data = concat_data(X_train, y_train, X_test, y_test, "target")
+    start = time.time()
+    X_new, y_new = predict_improvement(result_matrix, comparison_result_matrix, method)
+    end = time.time()
+    print("Time for Predicting Improvement using CatBoost: " + str(end - start))
+    data = concat_data(X_new, y_new, X_test, y_test, "target")
     data.to_parquet("FE_" + str(dataset_metadata["dataset - id"]) + "_" + str(method) + "_CatBoost_best.parquet")
-    return X_train, y_train, X_test, y_test
+    return X_new, y_new, X_test, y_test
 
 
 def feature_addition_mfe(i, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, category_to_drop, dataset_id):
@@ -133,15 +146,14 @@ def feature_addition_mfe(i, n_features_to_add, X_train, y_train, X_test, y_test,
     result_matrix = pd.read_parquet("src/Metadata/core/Core_Matrix_Complete.parquet")
     # Create comparison matrix for new dataset
     comparison_result_matrix = create_empty_core_matrix_for_dataset(X_train, model, dataset_id)
-    comparison_result_matrix = result_matrix, _, _, _, _, _, _, _, _ = add_mfe_metadata_columns(X_train, y_train, comparison_result_matrix)
+    comparison_result_matrix, _, _, _, _, _, _, _, _ = add_mfe_metadata_columns(X_train, y_train, comparison_result_matrix)
     comparison_result_matrix, general, statistical, info_theory, landmarking, complexity, clustering, concept, itemset = add_mfe_metadata_columns(X_train, y_train, comparison_result_matrix)
     # Drop no category, single category or all categories but one
     comparison_result_matrix_copy = comparison_result_matrix.drop(columns=category_to_drop, errors='ignore')
     result_matrix_copy = result_matrix.drop(columns=category_to_drop, errors='ignore')
     # Predict and split again
-    data = predict_improvement(result_matrix_copy, comparison_result_matrix_copy, "all")
-    X_train, y_train, X_test, y_test = split_data(data, "target")
-    return X_train, y_train, X_test, y_test
+    X, y = predict_improvement(result_matrix_copy, comparison_result_matrix_copy, "all")
+    return X, y, X_test, y_test
 
 
 def predict_improvement(result_matrix, comparison_result_matrix, category_or_method):
@@ -149,32 +161,23 @@ def predict_improvement(result_matrix, comparison_result_matrix, category_or_met
     result_matrix = result_matrix.drop("improvement", axis=1)
     y_comparison = comparison_result_matrix["improvement"]
     comparison_result_matrix = comparison_result_matrix.drop("improvement", axis=1)
-    # Single-predictor (improvement given all possible operations on features)
-    feature_generator, label_cleaner = (
-        AutoMLPipelineFeatureGenerator(),
-        LabelCleaner.construct(problem_type="regression", y=y_result),
-    )
-    result_matrix, y_result = (
-        feature_generator.fit_transform(result_matrix),
-        label_cleaner.transform(y_result),
-    )
-    comparison_result_matrix, y_comparison = feature_generator.transform(comparison_result_matrix), label_cleaner.transform(y_comparison)
-
     # Train TabArena Model
-    # clf = RealMLPModel() # Catboost TabDPT -> tabarena hugging face
+    # clf = RealMLPModel()
     # clf = TabDPTModel()
     clf = CatBoostModel()
     clf.fit(X=result_matrix, y=y_result)
 
     # Predict and score
     prediction = clf.predict(X=comparison_result_matrix)
-    prediction_df = pd.concat([comparison_result_matrix[["dataset - id", "feature - name", "model"]], prediction], axis=1)
-    best_operations = prediction_df.nlargest(n=10, columns="predicted_improvement", keep="first")
-    data, _, _ = execute_feature_engineering(best_operations)
-    return data
+    prediction_df = pd.DataFrame(prediction, columns=["predicted_improvement"])
+    prediction_concat_df = pd.concat([comparison_result_matrix[["dataset - id", "feature - name", "model"]], prediction_df], axis=1)
+    prediction_concat_df.to_parquet("Prediction_" + str(category_or_method) + ".parquet")
+    best_operation = prediction_concat_df.nlargest(n=10, columns="predicted_improvement", keep="first")
+    X, y, _, _ = execute_feature_engineering(best_operation)
+    return X, y
 
 
-def main(method, dataset_id):
+def main(dataset_id, method):
     print("Method: " + str(method) + ", Dataset: " + str(dataset_id) + ", Model: " + str("CatBoost"))
     model = "LightGBM_BAG_L1"
     n_features_to_add = 10
@@ -217,7 +220,10 @@ def main(method, dataset_id):
     else:
     """
     X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
+    start = time.time()
     X_train, y_train, X_test, y_test = feature_addition(j, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, None, dataset_id)
+    end = time.time()
+    print("Time for creating Comparison Result Matrix: " + str(end - start))
     data = concat_data(X_train, y_train, X_test, y_test, "target")
     data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_CatBoost_best.parquet")
 
@@ -256,7 +262,8 @@ def main_wrapper():
     # parser.add_argument('--mf_method', required=True, help='Metafeature Method')
     parser.add_argument('--dataset', required=True, help='Dataset')
     args = parser.parse_args()
-    main("pandas", int(args.dataset))
+    method = "d2v"
+    main(int(args.dataset), method)
 
 
 if __name__ == '__main__':
