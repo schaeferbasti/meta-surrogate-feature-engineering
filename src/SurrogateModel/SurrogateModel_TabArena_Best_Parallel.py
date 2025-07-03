@@ -10,8 +10,6 @@ import numpy as np
 import pandas as pd
 
 from pymfe.mfe import MFE
-from autogluon.core.data import LabelCleaner
-from autogluon.features.generators import AutoMLPipelineFeatureGenerator
 from autogluon.tabular.models import CatBoostModel
 
 from src.Apply_and_Test.Apply_FE import execute_feature_engineering
@@ -19,7 +17,7 @@ from src.Metadata.d2v.Add_d2v_Metafeatures import add_d2v_metadata_columns
 from src.Metadata.pandas.Add_Pandas_Metafeatures import add_pandas_metadata_columns
 from src.Metadata.tabpfn.Add_TabPFN_Metafeatures import add_tabpfn_metadata_columns
 from src.utils.create_feature_and_featurename import create_featurenames, extract_operation_and_original_features
-from src.utils.get_data import get_openml_dataset_split_and_metadata, split_data, concat_data
+from src.utils.get_data import get_openml_dataset_split_and_metadata, concat_data
 from src.utils.get_matrix import get_matrix_core_columns
 from src.Metadata.mfe.Add_MFE_Metafeatures import add_mfe_metadata_columns
 
@@ -257,23 +255,19 @@ def run_with_resource_limits(target_func, mem_limit_mb, time_limit_sec, check_in
     return process.exitcode
 
 
-def main_wrapper(dataset):
-
-    method = "d2v"
-    main(int(dataset), method)
-
-
-if __name__ == '__main__':
+def main_wrapper():
     parser = argparse.ArgumentParser(description='Run Surrogate Model with Metadata from Method')
     # parser.add_argument('--mf_method', required=True, help='Metafeature Method')
     parser.add_argument('--dataset', required=True, help='Dataset')
     args = parser.parse_args()
-    main_wrapper(args.dataset)
-    """
+    method = "d2v"
+    main(int(args.dataset), method)
+
+
+if __name__ == '__main__':
     memory_limit_mb = 64000  # 64 GB
     time_limit_sec = 3600  # 1h
     exit_code = run_with_resource_limits(main_wrapper, memory_limit_mb, time_limit_sec)
     if exit_code != 0:
         print(f"Process exited with code {exit_code}")
         sys.exit(exit_code)
-    """
