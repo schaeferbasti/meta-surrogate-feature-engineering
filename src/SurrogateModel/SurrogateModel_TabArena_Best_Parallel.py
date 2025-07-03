@@ -257,17 +257,18 @@ def run_with_resource_limits(target_func, mem_limit_mb, time_limit_sec, check_in
     return process.exitcode
 
 
-def main_wrapper():
+def main_wrapper(dataset):
+
+    method = "d2v"
+    main(int(dataset), method)
+
+
+if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Run Surrogate Model with Metadata from Method')
     # parser.add_argument('--mf_method', required=True, help='Metafeature Method')
     parser.add_argument('--dataset', required=True, help='Dataset')
     args = parser.parse_args()
-    method = "d2v"
-    main(int(args.dataset), method)
-
-
-if __name__ == '__main__':
-    main_wrapper()
+    main_wrapper(args.dataset)
     """
     memory_limit_mb = 64000  # 64 GB
     time_limit_sec = 3600  # 1h
