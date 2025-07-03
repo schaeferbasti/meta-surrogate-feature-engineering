@@ -135,7 +135,7 @@ def recursive_feature_addition_mfe(X, y, X_test, y_test, model, method, dataset_
     result_matrix = pd.read_parquet("src/Metadata/mfe/MFE_Matrix_Complete.parquet")
     # Create comparison matrix for new dataset
     comparison_result_matrix = create_empty_core_matrix_for_dataset(X, model, dataset_id)
-    comparison_result_matrix = result_matrix, _, _, _, _, _, _, _, _ = add_mfe_metadata_columns(X, y, comparison_result_matrix)
+    comparison_result_matrix, _, _, _, _, _, _, _, _ = add_mfe_metadata_columns(X, y, comparison_result_matrix)
     comparison_result_matrix, general, statistical, info_theory, landmarking, complexity, clustering, concept, itemset = add_mfe_metadata_columns(X, y, comparison_result_matrix)
     # Drop no category, single category or all categories but one
     comparison_result_matrix_copy = comparison_result_matrix.drop(columns=category_to_drop, errors='ignore')
@@ -223,6 +223,7 @@ def run_with_resource_limits(target_func, mem_limit_mb, time_limit_sec, check_in
 
 def main_wrapper():
     parser = argparse.ArgumentParser(description='Run CatBoost Surrogate Model with Metadata from Method')
+    # parser.add_argument('--mf_method', required=True, help='Metafeature Method')
     parser.add_argument('--dataset', required=True, help='Metafeature Method')
     args = parser.parse_args()
     method = "pandas"
