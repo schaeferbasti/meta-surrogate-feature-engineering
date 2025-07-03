@@ -4,40 +4,30 @@ import argparse
 import multiprocessing
 import sys
 import time
-
 import psutil
+
+import numpy as np
+import pandas as pd
+
+from pymfe.mfe import MFE
 from autogluon.core.data import LabelCleaner
 from autogluon.features.generators import AutoMLPipelineFeatureGenerator
 from autogluon.tabular.models import CatBoostModel
-from sklearn.metrics import roc_auc_score
 
 from src.Apply_and_Test.Apply_FE import execute_feature_engineering
 from src.Metadata.d2v.Add_d2v_Metafeatures import add_d2v_metadata_columns
 from src.Metadata.pandas.Add_Pandas_Metafeatures import add_pandas_metadata_columns
 from src.Metadata.tabpfn.Add_TabPFN_Metafeatures import add_tabpfn_metadata_columns
-# Import a TabArena model
-from tabrepo.benchmark.models.ag.realmlp.realmlp_model import RealMLPModel
-from tabrepo.benchmark.models.ag.tabdpt.tabdpt_model import TabDPTModel
-
-
-import numpy as np
-import pandas as pd
-from pymfe.mfe import MFE
-
 from src.utils.create_feature_and_featurename import create_featurenames, extract_operation_and_original_features
-from src.utils.get_data import get_openml_dataset_and_metadata, get_openml_dataset_split_and_metadata, split_data, \
-    concat_data
+from src.utils.get_data import get_openml_dataset_split_and_metadata, split_data, concat_data
 from src.utils.get_matrix import get_matrix_core_columns
-# from src.Metadata.d2v.Add_d2v_Metafeatures import add_d2v_metadata_columns
 from src.Metadata.mfe.Add_MFE_Metafeatures import add_mfe_metadata_columns
-# from src.Metadata.pandas.Add_Pandas_Metafeatures import add_pandas_metadata_columns
-# from src.Metadata.tabpfn.Add_TabPFN_Metafeatures import add_tabpfn_metadata_columns
 
 import warnings
 warnings.filterwarnings('ignore')
 
 
-def create_empty_core_matrix_for_dataset(X_train, model) -> pd.DataFrame:
+def create_empty_core_matrix_for_dataset(X_train, model, dataset_id) -> pd.DataFrame:
     columns = get_matrix_core_columns()
     comparison_result_matrix = pd.DataFrame(columns=columns)
     for feature1 in X_train.columns:
@@ -116,13 +106,13 @@ def add_method_metadata(result_matrix, dataset_metadata, X_predict, y_predict, m
     return result_matrix
 
 
-def feature_addition(i, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, category_to_drop):
+def feature_addition(i, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, category_to_drop, dataset_id):
     if i >= n_features_to_add:
         return X_train, y_train, X_test, y_test
     # Reload base matrix
     result_matrix = pd.read_parquet("src/Metadata/pandas/Pandas_Matrix_Complete.parquet")
     # Create comparison matrix for new dataset
-    comparison_result_matrix = create_empty_core_matrix_for_dataset(X_train, model)
+    comparison_result_matrix = create_empty_core_matrix_for_dataset(X_train, model, dataset_id)
     comparison_result_matrix = add_method_metadata(comparison_result_matrix, dataset_metadata, X_train, y_train, method)
     comparison_result_matrix, general, statistical, info_theory, landmarking, complexity, clustering, concept, itemset = add_mfe_metadata_columns(X_train, y_train, comparison_result_matrix)
     # Drop category
@@ -136,13 +126,13 @@ def feature_addition(i, n_features_to_add, X_train, y_train, X_test, y_test, mod
     return X_train, y_train, X_test, y_test
 
 
-def feature_addition_mfe(i, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, category_to_drop):
+def feature_addition_mfe(i, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, category_to_drop, dataset_id):
     if i >= n_features_to_add:
         return X_train, y_train, X_test, y_test
     # Reload base matrix
     result_matrix = pd.read_parquet("src/Metadata/core/Core_Matrix_Complete.parquet")
     # Create comparison matrix for new dataset
-    comparison_result_matrix = create_empty_core_matrix_for_dataset(X_train, model)
+    comparison_result_matrix = create_empty_core_matrix_for_dataset(X_train, model, dataset_id)
     comparison_result_matrix = result_matrix, _, _, _, _, _, _, _, _ = add_mfe_metadata_columns(X_train, y_train, comparison_result_matrix)
     comparison_result_matrix, general, statistical, info_theory, landmarking, complexity, clustering, concept, itemset = add_mfe_metadata_columns(X_train, y_train, comparison_result_matrix)
     # Drop no category, single category or all categories but one
@@ -227,7 +217,7 @@ def main(method, dataset_id):
     else:
     """
     X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
-    X_train, y_train, X_test, y_test = feature_addition(j, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, None)
+    X_train, y_train, X_test, y_test = feature_addition(j, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, None, dataset_id)
     data = concat_data(X_train, y_train, X_test, y_test, "target")
     data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_CatBoost_best.parquet")
 
