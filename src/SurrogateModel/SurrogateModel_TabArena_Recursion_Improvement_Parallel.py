@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 import argparse
+import multiprocessing
+import sys
 import time
 import numpy as np
 import pandas as pd
+import psutil
 from pymfe.mfe import MFE
 
 from src.Apply_and_Test.Apply_FE import execute_feature_engineering_recursive
@@ -153,6 +156,7 @@ def predict_improvement(result_matrix, comparison_result_matrix, category_or_met
     result_matrix = result_matrix.drop("improvement", axis=1)
     y_comparison = comparison_result_matrix["improvement"]
     comparison_result_matrix = comparison_result_matrix.drop("improvement", axis=1)
+    print("Old columns: " + str(X_train.columns))
     # Train TabArena Model
     # clf = RealMLPModel()
     # clf = TabDPTModel()
@@ -166,11 +170,12 @@ def predict_improvement(result_matrix, comparison_result_matrix, category_or_met
     prediction_concat_df.to_parquet("Prediction_" + str(category_or_method) + ".parquet")
     best_operation = prediction_concat_df.nlargest(n=1, columns="predicted_improvement", keep="first")
     if best_operation["predicted_improvement"].values[0] < wanted_min_relative_improvement:
-        print(best_operation["predicted_improvement"].values[0])
+        print("Predicted improvement of best operation: " + str(best_operation["predicted_improvement"].values[0]) + " - not good enough")
         return X_train, y_train
     else:
-        print(best_operation["predicted_improvement"].values[0])
+        print("Predicted improvement of best operation: " + str(best_operation["predicted_improvement"].values[0]) + " - execute feature engineering")
         X, y, _, _ = execute_feature_engineering_recursive(best_operation, X_train, y_train)
+        print("New columns: " + str(X.columns))
     return X, y
 
 
@@ -185,13 +190,40 @@ def main(dataset_id, wanted_min_relative_improvement, time_limit, start_time, me
     data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_CatBoost_recursion.parquet")
 
 
-if __name__ == '__main__':
+def run_with_memory_limit(target_func, mem_limit_mb, check_interval=1):
+    process = multiprocessing.Process(target=target_func)
+    process.start()
+    pid = process.pid
+
+    while process.is_alive():
+        try:
+            mem = psutil.Process(pid).memory_info().rss / (1024 * 1024)  # MB
+            if mem > mem_limit_mb:
+                print(f"Memory exceeded: {mem:.2f} MB > {mem_limit_mb} MB. Killing process.")
+                process.terminate()
+                break
+        except psutil.NoSuchProcess:
+            break
+        time.sleep(check_interval)
+
+    process.join()
+    return process.exitcode
+
+
+def main_wrapper():
     parser = argparse.ArgumentParser(description='Run CatBoost Surrogate Model with Metadata from Method')
     parser.add_argument('--dataset', required=True, help='Metafeature Method')
     args = parser.parse_args()
     method = "pandas"
-    wanted_min_relative_improvement = 0.1
-    time_limit = 3600
+    wanted_min_relative_improvement = 0.001
+    time_limit = 7200
     start_time = time.time()
     main(int(args.dataset), wanted_min_relative_improvement, time_limit, start_time, method)
-    # main(359968, wanted_min_relative_improvement, time_limit, start_time, method)
+
+
+if __name__ == '__main__':
+    memory_limit_mb = 64000  # 64 GB
+    exit_code = run_with_memory_limit(main_wrapper, memory_limit_mb)
+    if exit_code != 0:
+        print(f"Process exited with code {exit_code}")
+        sys.exit(exit_code)
