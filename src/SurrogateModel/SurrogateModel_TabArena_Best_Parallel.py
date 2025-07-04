@@ -170,11 +170,10 @@ def predict_improvement(result_matrix, comparison_result_matrix, category_or_met
     # clf = RealMLPModel()
     # clf = TabDPTModel()
     clf = CatBoostModel()
-    print(result_matrix.columns)
     clf.fit(X=result_matrix, y=y_result)
 
     # Predict and score
-    print(comparison_result_matrix.columns)
+    comparison_result_matrix.columns = result_matrix.columns
     prediction = clf.predict(X=comparison_result_matrix)
     prediction_df = pd.DataFrame(prediction, columns=["predicted_improvement"])
     prediction_concat_df = pd.concat([comparison_result_matrix[["dataset - id", "feature - name", "model"]], prediction_df], axis=1)
