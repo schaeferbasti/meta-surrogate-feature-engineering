@@ -1,7 +1,9 @@
 import glob
 
 import pandas as pd
+import os
 import re
+from collections import defaultdict
 
 from src.utils.get_data import get_openfe_data
 from src.utils.get_data import split_data, get_openml_dataset_split
@@ -15,59 +17,73 @@ def main():
 
     result_files = glob.glob("test_data/FE_*.parquet")
     result_files.sort()
-    for result_file in result_files:
-        print("Test Feature Engineering for " + str(result_file))
-        dataset_id = result_file.split('FE_')[-1].split('_')[0]
+
+    dataset_files = defaultdict(list)
+    for f in result_files:
+        dataset_id = f.split('FE_')[-1].split('_')[0]
+        dataset_files[dataset_id].append(f)
+
+    for dataset_id, files in dataset_files.items():
+        print(f"\nProcessing Dataset ID: {dataset_id}")
+
+        # Load dataset split once
         X_train, y_train, X_test, y_test = get_openml_dataset_split(int(dataset_id))
 
-        # Original
-        print("Original Dataset")
+        # === ORIGINAL RESULTS ===
+        original_path = f"test_results/Original_Result_{dataset_id}.parquet"
         try:
-            original_results = pd.read_parquet("test_results/Original_Result_" + str(dataset_id) + ".parquet")
+            original_results = pd.read_parquet(original_path)
         except FileNotFoundError:
             original_results = get_model_score_origin(X_train, y_train, X_test, y_test, dataset_id, "Original")
             original_results = original_results[original_results['model'] == "LightGBM_BAG_L1"]
-            original_results.to_parquet("test_results/Original_Result_" + str(dataset_id) + ".parquet")
-        print("Original Results: " + str(original_results))
+            original_results.to_parquet(original_path)
+        print("Original Results loaded.")
 
-        # Random and MFE Results
-        print("Random & My Dataset")
-        data = pd.read_parquet(result_file)
-        name = result_file.split('FE_' + str(dataset_id) + '_')[1]
-        if "fold" in name:
-            fold = name.split("fold_")[1].split(".")[0]
-            origin = name.split('_')[0]
-            origin = origin + "_" + str(fold)
-        else:
-            origin = name.split('_')[0]
+        # === OPENFE RESULTS ===
+        openfe_path = f"test_results/OpenFE_Result_{dataset_id}.parquet"
         try:
-            results = pd.read_parquet("test_results/" + str(origin) + "_Result_" + str(dataset_id) + ".parquet")
+            openfe_results = pd.read_parquet(openfe_path)
+            print("OpenFE Results loaded.")
         except FileNotFoundError:
-            X_train, y_train, X_test, y_test = split_data(data, target_label)
-            results = get_model_score_origin(X_train, y_train, X_test, y_test, dataset_id, origin)
-            results = results[results['model'] == "LightGBM_BAG_L1"]
-            if origin == "Random":
-                print("Random Results: " + str(results))
-            if origin == "pandas":
-                print("Pandas Results: " + str(results))
-            results.to_parquet("test_results/" + str(origin) + "_Result_" + str(dataset_id) + ".parquet")
-
-        # OpenFE
-        print("OpenFE Dataset")
-        try:
-            openfe_results = pd.read_parquet("test_results/OpenFE_Result_" + str(dataset_id) + ".parquet")
-        except FileNotFoundError:
-            X_train, y_train, X_test, y_test = get_openfe_data(X_train, y_train, X_test, y_test)
-            X_train = X_train.rename(columns=lambda x: re.sub('[^A-Za-z0-9_]+', '', x))
-            X_test = X_test.rename(columns=lambda x: re.sub('[^A-Za-z0-9_]+', '', x))
-            openfe_results = get_model_score_origin(X_train, y_train, X_test, y_test, dataset_id, "OpenFE")
+            X_openfe_train, y_openfe_train, X_openfe_test, y_openfe_test = get_openfe_data(X_train, y_train, X_test, y_test)
+            X_openfe_train = X_openfe_train.rename(columns=lambda x: re.sub('[^A-Za-z0-9_]+', '', x))
+            X_openfe_test = X_openfe_test.rename(columns=lambda x: re.sub('[^A-Za-z0-9_]+', '', x))
+            openfe_results = get_model_score_origin(X_openfe_train, y_openfe_train, X_openfe_test, y_openfe_test, dataset_id, "OpenFE")
             openfe_results = openfe_results[openfe_results['model'] == "LightGBM_BAG_L1"]
-            openfe_results.to_parquet("test_results/OpenFE_Result_" + str(dataset_id) + ".parquet")
-            print("OpenFE Results: " + str(openfe_results))
-        result = pd.concat([result, original_results], ignore_index=True)
-        result = pd.concat([result, results], ignore_index=True)
-        result = pd.concat([result, openfe_results], ignore_index=True)
-        result.to_parquet("test_results/Result_" + str(dataset_id) + ".parquet")
+            openfe_results.to_parquet(openfe_path)
+            print("OpenFE Results calculated.")
+
+        # === METHOD RESULTS (Random/pandas/folds) ===
+        combined_results = [original_results, openfe_results]
+
+
+        for result_file in files:
+            print(f"  Processing file: {result_file}")
+            name = result_file.split(f'FE_{dataset_id}_')[1]
+
+            # Determine method + fold
+            if "fold" in name:
+                fold = name.split("fold_")[1].split(".")[0]
+                method = name.split('_')[0] + f"_{fold}"
+            else:
+                method = name.split('_')[0]
+
+            result_path = f"test_results/{method}_Result_{dataset_id}.parquet"
+            try:
+                results = pd.read_parquet(result_path)
+            except FileNotFoundError:
+                df = pd.read_parquet(result_file)
+                Xf_train, yf_train, Xf_test, yf_test = split_data(df, target_label)
+                results = get_model_score_origin(Xf_train, yf_train, Xf_test, yf_test, dataset_id, method)
+                results = results[results['model'] == "LightGBM_BAG_L1"]
+                results.to_parquet(result_path)
+
+            combined_results.append(results)
+
+            # === FINAL CONCAT + SAVE ===
+        all_results = pd.concat(combined_results, ignore_index=True).drop_duplicates()
+        all_results.to_parquet(f"test_results/Result_{dataset_id}.parquet")
+        print(f"Saved combined results for dataset {dataset_id}.")
 
 
 if __name__ == "__main__":
