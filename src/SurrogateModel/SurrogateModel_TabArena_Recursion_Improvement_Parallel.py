@@ -226,7 +226,7 @@ def main_wrapper():
     # parser.add_argument('--mf_method', required=True, help='Metafeature Method')
     parser.add_argument('--dataset', required=True, help='Metafeature Method')
     args = parser.parse_args()
-    method = "pandas"
+    method = "d2v"
     wanted_min_relative_improvement = 0.1
     main(int(args.dataset), wanted_min_relative_improvement, method)
 
