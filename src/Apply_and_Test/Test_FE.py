@@ -21,6 +21,7 @@ def main():
         X_train, y_train, X_test, y_test = get_openml_dataset_split(int(dataset_id))
 
         # Original
+        print("Original Dataset")
         try:
             original_results = pd.read_parquet("test_results/Original_Result_" + str(dataset_id) + ".parquet")
         except FileNotFoundError:
@@ -30,6 +31,7 @@ def main():
         print("Original Results: " + str(original_results))
 
         # Random and MFE Results
+        print("Random & My Dataset")
         data = pd.read_parquet(result_file)
         name = result_file.split('FE_' + str(dataset_id) + '_')[1]
         if "fold" in name:
@@ -49,7 +51,9 @@ def main():
             if origin == "pandas":
                 print("Pandas Results: " + str(results))
             results.to_parquet("test_results/" + str(origin) + "_Result_" + str(dataset_id) + ".parquet")
+
         # OpenFE
+        print("OpenFE Dataset")
         try:
             openfe_results = pd.read_parquet("test_results/OpenFE_Result_" + str(dataset_id) + ".parquet")
         except FileNotFoundError:
