@@ -64,10 +64,10 @@ def main():
             openfe_results = openfe_results[openfe_results['model'] == "LightGBM_BAG_L1"]
             openfe_results.to_parquet("test_results/OpenFE_Result_" + str(dataset_id) + ".parquet")
             print("OpenFE Results: " + str(openfe_results))
-    result = pd.concat([result, original_results], ignore_index=True)
-    result = pd.concat([result, results], ignore_index=True)
-    result = pd.concat([result, openfe_results], ignore_index=True)
-    result.to_parquet("test_results/Result_" + str(dataset_id) + ".parquet")
+        result = pd.concat([result, original_results], ignore_index=True)
+        result = pd.concat([result, results], ignore_index=True)
+        result = pd.concat([result, openfe_results], ignore_index=True)
+        result.to_parquet("test_results/Result_" + str(dataset_id) + ".parquet")
 
 
 if __name__ == "__main__":
