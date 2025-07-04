@@ -27,10 +27,10 @@ def analyse_results():
     df_all = pd.concat(all_results, ignore_index=True)
     df_all = df_all.drop_duplicates()
     # Convert score to error (you can adjust this as needed)
-    df_all["error"] = 1 - df_all["score"]
+    df_all["error"] = - df_all["score"]
 
     # Pivot to have datasets on x, methods on lines
-    df_pivot = df_all.pivot(index="dataset", columns="origin", values="score")
+    df_pivot = df_all.pivot(index="dataset", columns="origin", values="error")
     df_pivot = df_pivot.sort_index()  # Sort by dataset ID
 
     datasets = df_pivot.index.astype(str)
@@ -55,6 +55,7 @@ def analyse_results():
     plt.xlabel("Dataset ID")
     plt.xticks(rotation=45)  # or 90
     plt.ylabel("Autogluon Score")
+    plt.yscale("log") # '', '', 'function', 'functionlog
     plt.title("Autogluon Score by FE Method per Dataset")
     plt.legend()
     plt.grid(True)
