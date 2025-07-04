@@ -4,6 +4,7 @@ import pandas as pd
 import re
 from collections import defaultdict
 
+from src.Apply_and_Test.analyse_results import analyse_results
 from src.utils.get_data import get_openfe_data
 from src.utils.get_data import split_data, get_openml_dataset_split
 from src.utils.run_models import get_model_score_origin
@@ -93,6 +94,8 @@ def main():
         all_results = pd.concat(combined_results, ignore_index=True).drop_duplicates()
         all_results.to_parquet(f"test_results/Result_{dataset_id}.parquet")
         print(f"Saved combined results for dataset {dataset_id}.")
+
+        analyse_results()
 
 
 if __name__ == "__main__":
