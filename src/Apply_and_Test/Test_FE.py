@@ -95,7 +95,7 @@ def main():
         all_results.to_parquet(f"test_results/Result_{dataset_id}.parquet")
         print(f"Saved combined results for dataset {dataset_id}.")
 
-        analyse_results()
+    analyse_results()
 
 
 if __name__ == "__main__":
