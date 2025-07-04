@@ -97,6 +97,8 @@ def get_mfe_category(category):
 def add_method_metadata(result_matrix, dataset_metadata, X_predict, y_predict, method):
     if method == "d2v":
         result_matrix = add_d2v_metadata_columns(dataset_metadata, X_predict, result_matrix)
+        print("add_method_metadata")
+        print(result_matrix)
     elif method == "pandas":
         result_matrix = add_pandas_metadata_columns(dataset_metadata, X_predict, result_matrix)
     elif method == "tabpfn":
@@ -124,6 +126,8 @@ def feature_addition(i, n_features_to_add, X_train, y_train, X_test, y_test, mod
     start = time.time()
     comparison_result_matrix = create_empty_core_matrix_for_dataset(X_train, model, dataset_id)
     comparison_result_matrix = add_method_metadata(comparison_result_matrix, dataset_metadata, X_train, y_train, method)
+    print("feature_addition, comparison_result_matrix: ")
+    print(comparison_result_matrix)
     end = time.time()
     print("Time for creating Comparison Result Matrix: " + str(end - start))
     comparison_result_matrix.to_parquet("Comparison_Result_Matrix.parquet")
