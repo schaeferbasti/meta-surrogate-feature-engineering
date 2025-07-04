@@ -1,6 +1,7 @@
 import glob
 
 import pandas as pd
+import re
 
 from src.utils.get_data import get_openfe_data
 from src.utils.get_data import split_data, get_openml_dataset_split
@@ -53,6 +54,8 @@ def main():
             openfe_results = pd.read_parquet("test_results/OpenFE_Result_" + str(dataset_id) + ".parquet")
         except FileNotFoundError:
             X_train, y_train, X_test, y_test = get_openfe_data(X_train, y_train, X_test, y_test)
+            X_train = X_train.rename(columns=lambda x: re.sub('[^A-Za-z0-9_]+', '', x))
+            X_test = X_test.rename(columns=lambda x: re.sub('[^A-Za-z0-9_]+', '', x))
             openfe_results = get_model_score_origin(X_train, y_train, X_test, y_test, dataset_id, "OpenFE")
             openfe_results = openfe_results[openfe_results['model'] == "LightGBM_BAG_L1"]
             openfe_results.to_parquet("test_results/OpenFE_Result_" + str(dataset_id) + ".parquet")
