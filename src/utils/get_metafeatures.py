@@ -176,5 +176,6 @@ def get_d2v_metafeatures(dataset_id):
         datasetmf.append(model(batch.input).numpy())
 
     metafeatures = pd.DataFrame(np.vstack(datasetmf).mean(axis=0)[None], index=[args.file])
+    print(metafeatures)
     return metafeatures
 
