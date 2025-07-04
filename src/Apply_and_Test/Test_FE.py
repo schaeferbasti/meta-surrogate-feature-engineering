@@ -38,18 +38,21 @@ def main():
         print("Original Results loaded.")
 
         # === OPENFE RESULTS ===
-        openfe_path = f"test_results/OpenFE_Result_{dataset_id}.parquet"
-        try:
-            openfe_results = pd.read_parquet(openfe_path)
-            print("OpenFE Results loaded.")
-        except FileNotFoundError:
-            X_openfe_train, y_openfe_train, X_openfe_test, y_openfe_test = get_openfe_data(X_train, y_train, X_test, y_test)
-            X_openfe_train = X_openfe_train.rename(columns=lambda x: re.sub('[^A-Za-z0-9_]+', '', x))
-            X_openfe_test = X_openfe_test.rename(columns=lambda x: re.sub('[^A-Za-z0-9_]+', '', x))
-            openfe_results = get_model_score_origin(X_openfe_train, y_openfe_train, X_openfe_test, y_openfe_test, dataset_id, "OpenFE")
-            openfe_results = openfe_results[openfe_results['model'] == "LightGBM_BAG_L1"]
-            openfe_results.to_parquet(openfe_path)
-            print("OpenFE Results calculated.")
+        if int(dataset_id) != 359983:
+            openfe_path = f"test_results/OpenFE_Result_{dataset_id}.parquet"
+            try:
+                openfe_results = pd.read_parquet(openfe_path)
+                print("OpenFE Results loaded.")
+            except FileNotFoundError:
+                X_openfe_train, y_openfe_train, X_openfe_test, y_openfe_test = get_openfe_data(X_train, y_train, X_test, y_test)
+                X_openfe_train = X_openfe_train.rename(columns=lambda x: re.sub('[^A-Za-z0-9_]+', '', x))
+                X_openfe_test = X_openfe_test.rename(columns=lambda x: re.sub('[^A-Za-z0-9_]+', '', x))
+                openfe_results = get_model_score_origin(X_openfe_train, y_openfe_train, X_openfe_test, y_openfe_test, dataset_id, "OpenFE")
+                openfe_results = openfe_results[openfe_results['model'] == "LightGBM_BAG_L1"]
+                openfe_results.to_parquet(openfe_path)
+                print("OpenFE Results calculated.")
+        else:
+            continue
 
         # === METHOD RESULTS (Random/pandas/folds) ===
         combined_results = [original_results, openfe_results]
