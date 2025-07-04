@@ -166,16 +166,19 @@ def feature_addition_mfe(i, n_features_to_add, X_train, y_train, X_test, y_test,
 
 
 def predict_improvement(result_matrix, comparison_result_matrix, category_or_method):
+    print("predict_improvement")
     y_result = result_matrix["improvement"]
+    print("y_result: ")
+    print(y_result)
     result_matrix = result_matrix.drop("improvement", axis=1)
+    print("result_matrix: ")
+    print(result_matrix)
     y_comparison = comparison_result_matrix["improvement"]
     comparison_result_matrix = comparison_result_matrix.drop("improvement", axis=1)
     # Train TabArena Model
     # clf = RealMLPModel()
     # clf = TabDPTModel()
     clf = CatBoostModel()
-    print(result_matrix)
-    print(y_result)
     clf.fit(X=result_matrix, y=y_result)
 
     # Predict and score
