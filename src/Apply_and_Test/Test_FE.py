@@ -55,18 +55,20 @@ def main():
 
         # === METHOD RESULTS (Random/pandas/folds) ===
         combined_results = [original_results, openfe_results]
-
+        best_random_result = None
+        best_score = float('-inf')
 
         for result_file in files:
             print(f"  Processing file: {result_file}")
             name = result_file.split(f'FE_{dataset_id}_')[1]
 
-            # Determine method + fold
             if "fold" in name:
                 fold = name.split("fold_")[1].split(".")[0]
                 method = name.split('_')[0] + f"_{fold}"
+                is_random = True
             else:
                 method = name.split('_')[0]
+                is_random = False  # e.g., pandas
 
             result_path = f"test_results/{method}_Result_{dataset_id}.parquet"
             try:
@@ -78,9 +80,18 @@ def main():
                 results = results[results['model'] == "LightGBM_BAG_L1"]
                 results.to_parquet(result_path)
 
-            combined_results.append(results)
+            if is_random:
+                score = results["score"].values[0]
+                if score > best_score:
+                    best_score = score
+                    best_random_result = results
+            else:
+                combined_results.append(results)  # Only non-random (e.g. pandas)
 
-            # === FINAL CONCAT + SAVE ===
+            # Append the best random result
+        if best_random_result is not None:
+            combined_results.append(best_random_result)
+
         all_results = pd.concat(combined_results, ignore_index=True).drop_duplicates()
         all_results.to_parquet(f"test_results/Result_{dataset_id}.parquet")
         print(f"Saved combined results for dataset {dataset_id}.")
