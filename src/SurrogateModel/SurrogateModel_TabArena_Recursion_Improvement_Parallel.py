@@ -185,10 +185,8 @@ def main(dataset_id, wanted_min_relative_improvement, method):
     start = time.time()
     X_train, y_train = recursive_feature_addition(X_train, y_train, X_test, y_test, model, method, dataset_metadata, None, wanted_min_relative_improvement, dataset_id)
     end = time.time()
-    y_list = y_train['target'].tolist()
-    y_series = pd.Series(y_list)
     print("Time for creating Comparison Result Matrix: " + str(end - start))
-    data = concat_data(X_train, y_series, X_test, y_test, "target")
+    data = concat_data(X_train, y_train, X_test, y_test, "target")
     data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_CatBoost_recursion.parquet")
 
 
