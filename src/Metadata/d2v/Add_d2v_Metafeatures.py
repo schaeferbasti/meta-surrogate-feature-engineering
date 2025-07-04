@@ -24,8 +24,6 @@ def get_d2v_metafeatures_safe(dataset_id):
     fake_args = [f'--split', '0', '--file', 'placeholder']
     with patched_argv(fake_args):
         result_matrix = get_d2v_metafeatures(dataset_id)
-        print("get_d2v_metafeatures_safe")
-        print(result_matrix)
         return result_matrix
 
 
@@ -33,20 +31,14 @@ def add_d2v_metadata_columns(dataset_metadata, X_train, result_matrix):
     columns = get_additional_d2v_columns()
     metafeatures = get_d2v_metafeatures_safe(dataset_metadata["task_id"])
     # metafeatures = get_d2v_metafeatures(dataset_metadata["task_id"])
-    print("add_d2v_metadata_columns")
-    print(metafeatures)
     new_columns = pd.DataFrame(index=result_matrix.index, columns=columns)
     for row in result_matrix.iterrows():
         featurename = row[1][1]
         matching_indices = result_matrix[result_matrix["feature - name"] == str(featurename)].index
         for idx in matching_indices:
             new_columns.loc[idx] = metafeatures.iloc[0]
-    print("New columns: ")
-    print(new_columns)
     insert_position = result_matrix.shape[1] - 2
     result_matrix = pd.concat([result_matrix.iloc[:, :insert_position], new_columns, result_matrix.iloc[:, insert_position:]], axis=1)
-    print("result_matrix")
-    print(result_matrix)
     return result_matrix
 
 
