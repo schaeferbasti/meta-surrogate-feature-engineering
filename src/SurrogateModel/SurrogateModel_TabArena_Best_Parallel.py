@@ -97,8 +97,6 @@ def get_mfe_category(category):
 def add_method_metadata(result_matrix, dataset_metadata, X_predict, y_predict, method):
     if method == "d2v":
         result_matrix = add_d2v_metadata_columns(dataset_metadata, X_predict, result_matrix)
-        print("add_method_metadata")
-        print(result_matrix)
     elif method == "pandas":
         result_matrix = add_pandas_metadata_columns(dataset_metadata, X_predict, result_matrix)
     elif method == "tabpfn":
@@ -126,10 +124,6 @@ def feature_addition(i, n_features_to_add, X_train, y_train, X_test, y_test, mod
     start = time.time()
     comparison_result_matrix = create_empty_core_matrix_for_dataset(X_train, model, dataset_id)
     comparison_result_matrix = add_method_metadata(comparison_result_matrix, dataset_metadata, X_train, y_train, method)
-    print("feature_addition, comparison_result_matrix: ")
-    print(comparison_result_matrix)
-    print("feature_addition, read result_matrix: ")
-    print(result_matrix)
     end = time.time()
     print("Time for creating Comparison Result Matrix: " + str(end - start))
     comparison_result_matrix.to_parquet("Comparison_Result_Matrix.parquet")
@@ -168,22 +162,19 @@ def feature_addition_mfe(i, n_features_to_add, X_train, y_train, X_test, y_test,
 
 
 def predict_improvement(result_matrix, comparison_result_matrix, category_or_method):
-    print("predict_improvement")
     y_result = result_matrix["improvement"]
-    print("y_result: ")
-    print(y_result)
     result_matrix = result_matrix.drop("improvement", axis=1)
-    print("result_matrix: ")
-    print(result_matrix)
     y_comparison = comparison_result_matrix["improvement"]
     comparison_result_matrix = comparison_result_matrix.drop("improvement", axis=1)
     # Train TabArena Model
     # clf = RealMLPModel()
     # clf = TabDPTModel()
     clf = CatBoostModel()
+    print(result_matrix.columns)
     clf.fit(X=result_matrix, y=y_result)
 
     # Predict and score
+    print(comparison_result_matrix.columns)
     prediction = clf.predict(X=comparison_result_matrix)
     prediction_df = pd.DataFrame(prediction, columns=["predicted_improvement"])
     prediction_concat_df = pd.concat([comparison_result_matrix[["dataset - id", "feature - name", "model"]], prediction_df], axis=1)
