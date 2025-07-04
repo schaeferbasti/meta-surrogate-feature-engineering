@@ -228,8 +228,10 @@ def main(dataset_id, method):
     start = time.time()
     X_train, y_train, X_test, y_test = feature_addition(j, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, None, dataset_id)
     end = time.time()
+    y_list = y_train['target'].tolist()
+    y_series = pd.Series(y_list)
     print("Time for creating Comparison Result Matrix: " + str(end - start))
-    data = concat_data(X_train, y_train, X_test, y_test, "target")
+    data = concat_data(X_train, y_series, X_test, y_test, "target")
     data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_CatBoost_best.parquet")
 
 
