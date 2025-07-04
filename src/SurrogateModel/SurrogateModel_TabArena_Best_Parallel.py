@@ -128,6 +128,8 @@ def feature_addition(i, n_features_to_add, X_train, y_train, X_test, y_test, mod
     comparison_result_matrix = add_method_metadata(comparison_result_matrix, dataset_metadata, X_train, y_train, method)
     print("feature_addition, comparison_result_matrix: ")
     print(comparison_result_matrix)
+    print("feature_addition, read result_matrix: ")
+    print(result_matrix)
     end = time.time()
     print("Time for creating Comparison Result Matrix: " + str(end - start))
     comparison_result_matrix.to_parquet("Comparison_Result_Matrix.parquet")
