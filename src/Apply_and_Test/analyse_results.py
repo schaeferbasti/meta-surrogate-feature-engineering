@@ -22,16 +22,15 @@ def analyse_results():
         df = pd.read_parquet(result_file)
         dataset_id = int(result_file.split("Result_")[1].split(".parquet")[0])
         df["origin"] = df["origin"].apply(lambda x: "Best Random" if str(x).startswith("Random") else x)
-        df["dataset_id"] = dataset_id
         all_results.append(df)
 
     df_all = pd.concat(all_results, ignore_index=True)
-
+    df_all = df_all.drop_duplicates()
     # Convert score to error (you can adjust this as needed)
     df_all["error"] = 1 - df_all["score"]
 
     # Pivot to have datasets on x, methods on lines
-    df_pivot = df_all.pivot(index="dataset_id", columns="origin", values="score")
+    df_pivot = df_all.pivot(index="dataset", columns="origin", values="score")
     df_pivot = df_pivot.sort_index()  # Sort by dataset ID
 
     datasets = df_pivot.index.astype(str)
