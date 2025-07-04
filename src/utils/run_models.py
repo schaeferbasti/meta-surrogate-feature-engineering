@@ -114,7 +114,7 @@ def run_autogluon_lgbm_ray(X_train, y_train, X_test, y_test, zeroshot=False):
     return lb
 
 
-def predict_autogluon_lgbm(train_data, X_test, dataset_metadata):
+def predict_autogluon_lgbm(train_data, test_data):
     # Prepare Data
     # X_test = add_new_featurenames(X_test)
     label = 'improvement'
@@ -158,6 +158,16 @@ def get_model_score(X_train, y_train, X_test, y_test, dataset_id):
     return new_results
 
 
+def get_model_score_origin(X_train, y_train, X_test, y_test, dataset_id, origin):
+    lb = run_autogluon_lgbm(X_train, y_train, X_test, y_test)
+    models = lb["model"]
+    new_results = pd.DataFrame(columns=['origin', 'dataset', 'model', 'score'])
+    for model in models:
+        score_val = lb.loc[lb['model'] == model, 'score_val'].values[0]
+        new_results.loc[len(new_results)] = [origin, dataset_id, model, score_val]
+    return new_results
+
+
 def get_model_score_regression(X_train, y_train, X_test, y_test, dataset_id):
     lb = run_autogluon_lgbm_regression(X_train, y_train, X_test, y_test)
     models = lb["model"]
@@ -169,35 +179,32 @@ def get_model_score_regression(X_train, y_train, X_test, y_test, dataset_id):
 
 
 def init_and_fit_predictor(label, train_data, zeroshot2024):
-    try:
-        predictor = TabularPredictor.load("/tmp/tmptoqq7td9")
-        print("Predictor read")
-        return predictor
-    except FileNotFoundError:
-        predictor = TabularPredictor(
-            label=label,
-            eval_metric="log_loss",  # roc_auc (binary), log_loss (multiclass)
-            problem_type="multiclass",  # binary, multiclass
-            verbosity=0,
-            path=tempfile.mkdtemp() + os.sep,
-        )
-        print("Predictor not found, train predictor now")
-        predictor.fit(
-            time_limit=int(60 * 60 * 1),
-            memory_limit=96,
-            num_cpus=8,
-            num_gpus=0,
-            train_data=train_data,
-            presets="medium_quality",
-            dynamic_stacking=False,
-            hyperparameters=zeroshot2024,
-            num_bag_folds=8,
-            num_bag_sets=1,
-            num_stack_levels=0,
-            fit_weighted_ensemble=False
-        )
-        predictor.save("/tmp/my_predictor")
-        return predictor
+    # try:
+    #    predictor = TabularPredictor.load("/tmp/my_predictor")
+    #    print("Predictor read")
+    #    return predictor
+    #except FileNotFoundError:
+    predictor = TabularPredictor(
+        label=label,
+        eval_metric="log_loss",  # roc_auc (binary), log_loss (multiclass) root_mean_squared_error (regression)
+        problem_type="multiclass",  # binary, multiclass, regression
+        verbosity=0,
+    )
+    predictor.fit(
+        time_limit=int(60 * 60* 10),
+        memory_limit=48,
+        num_cpus=8,
+        num_gpus=0,
+        train_data=train_data,
+        presets="high_quality",
+        dynamic_stacking=False,
+        hyperparameters=zeroshot2024,
+        num_bag_folds=8,
+        num_bag_sets=1,
+        num_stack_levels=0,
+        fit_weighted_ensemble=False
+    )
+    return predictor
 
 
 def init_and_fit_improvement_predictor_classification(label, train_data, zeroshot2024):
@@ -222,7 +229,6 @@ def init_and_fit_improvement_predictor_classification(label, train_data, zerosho
         num_stack_levels=0,
         fit_weighted_ensemble=False
     )
-    predictor.save("/tmp/improvement_classification_predictor")
     return predictor
 
 
@@ -248,7 +254,6 @@ def init_and_fit_improvement_predictor_regression(label, train_data, zeroshot202
         num_stack_levels=0,
         fit_weighted_ensemble=False
     )
-    predictor.save("/tmp/improvement_regression_predictor")
     return predictor
 
 
