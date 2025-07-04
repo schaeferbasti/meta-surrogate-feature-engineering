@@ -14,7 +14,7 @@ def insert_line_breaks(name, max_len=20):
         return name
 
 
-def main():
+def analyse_results():
     result_files = glob.glob("test_results/Result_*.parquet")
     all_results = []
 
@@ -65,4 +65,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    analyse_results()
