@@ -62,7 +62,24 @@ def main():
     plt.legend()
     plt.grid(True)
     plt.tight_layout()
-    plt.savefig("Time_for_FE.png")
+    plt.savefig("Time_for_FE_per_Dataset.png")
+    plt.show()
+
+    time_per_method = df.groupby("method")["value"].sum().sort_values(ascending=False)
+    average_time_per_method = df.groupby("method")["value"].mean().sort_values(ascending=False)
+
+    # Plot
+    plt.figure(figsize=(10, 6))
+    time_per_method.plot(kind='bar', color='skyblue', label='Total Time per Method')
+    average_time_per_method.plot(kind='bar', width=0.3, color='orange', label='Average Time per Method')
+    plt.legend()
+    plt.xlabel("Method")
+    plt.ylabel("Time in seconds")
+    plt.title("Time per Method")
+    plt.xticks(rotation=45, ha="right")
+    plt.yscale('log')
+    plt.tight_layout()
+    plt.savefig("Time_for_FE_per_Method.png")
     plt.show()
 
 
