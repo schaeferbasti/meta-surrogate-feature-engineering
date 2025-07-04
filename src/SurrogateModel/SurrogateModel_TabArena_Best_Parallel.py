@@ -170,6 +170,8 @@ def predict_improvement(result_matrix, comparison_result_matrix, category_or_met
     # clf = RealMLPModel()
     # clf = TabDPTModel()
     clf = CatBoostModel()
+    print(result_matrix)
+    print(y_result)
     clf.fit(X=result_matrix, y=y_result)
 
     # Predict and score
