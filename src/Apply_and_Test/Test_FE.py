@@ -64,7 +64,8 @@ def main():
                 method = name.split('_')[0] + f"_{fold}"
                 is_random = True
             else:
-                method = name.split('_')[0]
+                version = name.split('.parquet')[0].split("_")[-1]
+                method = name.split('_')[0] + "_" + version
                 is_random = False  # e.g., pandas
 
             result_path = f"test_results/{method}_Result_{dataset_id}.parquet"
