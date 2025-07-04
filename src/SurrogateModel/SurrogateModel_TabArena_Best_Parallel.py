@@ -133,7 +133,8 @@ def feature_addition(i, n_features_to_add, X_train, y_train, X_test, y_test, mod
     end = time.time()
     print("Time for Predicting Improvement using CatBoost: " + str(end - start))
     y_list = y_new['target'].tolist()
-    data = concat_data(X_new, y_list, X_test, y_test, "target")
+    y_series = pd.Series(y_list)
+    data = concat_data(X_new, y_series, X_test, y_test, "target")
     data.to_parquet("FE_" + str(dataset_metadata["dataset - id"]) + "_" + str(method) + "_CatBoost_best.parquet")
     return X_new, y_new, X_test, y_test
 
