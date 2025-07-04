@@ -23,7 +23,9 @@ def get_d2v_metafeatures_safe(dataset_id):
 
     fake_args = [f'--split', '0', '--file', 'placeholder']
     with patched_argv(fake_args):
-        return get_d2v_metafeatures(dataset_id)
+        result_matrix = get_d2v_metafeatures(dataset_id)
+        print(result_matrix)
+        return result_matrix
 
 
 def add_d2v_metadata_columns(dataset_metadata, X_train, result_matrix):
