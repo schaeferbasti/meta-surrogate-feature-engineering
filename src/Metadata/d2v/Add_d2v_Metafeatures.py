@@ -6,10 +6,30 @@ from src.utils.get_data import get_openml_dataset_split_and_metadata, get_name_a
 from src.utils.get_matrix import get_additional_d2v_columns
 from src.utils.get_metafeatures import get_d2v_metafeatures
 
+import sys
+
+def get_d2v_metafeatures_safe(dataset_id):
+    import sys
+    import contextlib
+
+    @contextlib.contextmanager
+    def patched_argv(new_args):
+        original = sys.argv.copy()
+        sys.argv = [original[0]] + new_args
+        try:
+            yield
+        finally:
+            sys.argv = original
+
+    fake_args = [f'--split', '0', '--file', 'placeholder']
+    with patched_argv(fake_args):
+        return get_d2v_metafeatures(dataset_id)
+
 
 def add_d2v_metadata_columns(dataset_metadata, X_train, result_matrix):
     columns = get_additional_d2v_columns()
-    metafeatures = get_d2v_metafeatures(dataset_metadata["task_id"])
+    metafeatures = get_d2v_metafeatures_safe(dataset_metadata["task_id"])
+    # metafeatures = get_d2v_metafeatures(dataset_metadata["task_id"])
     new_columns = pd.DataFrame(index=result_matrix.index, columns=columns)
     for row in result_matrix.iterrows():
         featurename = row[1][1]
