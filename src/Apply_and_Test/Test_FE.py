@@ -1,7 +1,6 @@
 import glob
 
 import pandas as pd
-import os
 import re
 from collections import defaultdict
 
@@ -12,8 +11,6 @@ from src.utils.run_models import get_model_score_origin
 
 def main():
     target_label = 'target'
-    dataset_id = 359963
-    result = pd.DataFrame(columns=['origin', 'dataset', 'model', 'score'])
 
     result_files = glob.glob("test_data/FE_*.parquet")
     result_files.sort()
