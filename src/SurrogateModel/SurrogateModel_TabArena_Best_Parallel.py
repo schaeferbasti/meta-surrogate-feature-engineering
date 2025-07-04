@@ -105,9 +105,6 @@ def add_method_metadata(result_matrix, dataset_metadata, X_predict, y_predict, m
 
 
 def feature_addition(i, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, category_to_drop, dataset_id):
-    if i >= n_features_to_add:
-        return X_train, y_train, X_test, y_test
-    # Reload base matrix
     if method == "pandas":
         result_matrix = pd.read_parquet("src/Metadata/pandas/Pandas_Matrix_Complete.parquet")
     elif method == "tabpfn":
@@ -164,9 +161,7 @@ def feature_addition_mfe(i, n_features_to_add, X_train, y_train, X_test, y_test,
 def predict_improvement(result_matrix, comparison_result_matrix, category_or_method):
     y_result = result_matrix["improvement"]
     result_matrix = result_matrix.drop("improvement", axis=1)
-    y_comparison = comparison_result_matrix["improvement"]
     comparison_result_matrix = comparison_result_matrix.drop("improvement", axis=1)
-    # Train TabArena Model
     # clf = RealMLPModel()
     # clf = TabDPTModel()
     clf = CatBoostModel()

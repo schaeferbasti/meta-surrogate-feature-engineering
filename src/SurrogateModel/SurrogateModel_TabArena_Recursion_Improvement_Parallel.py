@@ -95,14 +95,13 @@ def add_method_metadata(result_matrix, dataset_metadata, X_predict, y_predict, m
 
 
 def recursive_feature_addition(X, y, X_test, y_test, model, method, dataset_metadata, category_to_drop, wanted_min_relative_improvement, dataset_id):
-    # Reload base matrix
     if method == "pandas":
         result_matrix = pd.read_parquet("src/Metadata/pandas/Pandas_Matrix_Complete.parquet")
     elif method == "tabpfn":
         result_matrix = pd.read_parquet("src/Metadata/tabpfn/TabFPN_Matrix_Complete.parquet")
     else:
         result_matrix = pd.read_parquet("src/Metadata/d2v/D2V_Matrix_Complete.parquet")
-        method = "d2v"    # Create comparison matrix for new dataset
+        method = "d2v"
     datasets = pd.unique(result_matrix["dataset - id"]).tolist()
     print("Datasets in " + str(method) + " Matrix: " + str(datasets))
 
@@ -156,10 +155,8 @@ def recursive_feature_addition_mfe(X, y, X_test, y_test, model, method, dataset_
 def predict_improvement(result_matrix, comparison_result_matrix, category_or_method, X_train, y_train, wanted_min_relative_improvement):
     y_result = result_matrix["improvement"]
     result_matrix = result_matrix.drop("improvement", axis=1)
-    y_comparison = comparison_result_matrix["improvement"]
     comparison_result_matrix = comparison_result_matrix.drop("improvement", axis=1)
     print("Old columns: " + str(X_train.columns))
-    # Train TabArena Model
     # clf = RealMLPModel()
     # clf = TabDPTModel()
     clf = CatBoostModel()
@@ -188,8 +185,10 @@ def main(dataset_id, wanted_min_relative_improvement, method):
     start = time.time()
     X_train, y_train = recursive_feature_addition(X_train, y_train, X_test, y_test, model, method, dataset_metadata, None, wanted_min_relative_improvement, dataset_id)
     end = time.time()
+    y_list = y_train['target'].tolist()
+    y_series = pd.Series(y_list)
     print("Time for creating Comparison Result Matrix: " + str(end - start))
-    data = concat_data(X_train, y_train, X_test, y_test, "target")
+    data = concat_data(X_train, y_series, X_test, y_test, "target")
     data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_CatBoost_recursion.parquet")
 
 
@@ -227,7 +226,7 @@ def main_wrapper():
     # parser.add_argument('--mf_method', required=True, help='Metafeature Method')
     parser.add_argument('--dataset', required=True, help='Metafeature Method')
     args = parser.parse_args()
-    method = "d2v"
+    method = "pandas"
     wanted_min_relative_improvement = 0.1
     main(int(args.dataset), wanted_min_relative_improvement, method)
 

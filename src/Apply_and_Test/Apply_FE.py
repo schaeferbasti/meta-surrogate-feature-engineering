@@ -22,6 +22,18 @@ def get_additional_features(X, y, prediction_result):
         if feature is not None:
             feature = pd.Series(feature).to_frame(additional_feature)
             X = X.reset_index(drop=True)
+            feature = feature.reset_index(drop=True)
+            with pd.option_context('display.max_rows', None, 'display.max_columns', None):  # more options can be specified also
+                print("get_additional_features")
+                print("X")
+                print(X)
+                print(X.index)
+                print("y")
+                print(y)
+                print(y.index)
+                print("Feature")
+                print(feature)
+                print(feature.index)
             X = pd.concat([X, feature], axis=1)
         else:
             X = X.drop(featurename, axis=1)
@@ -34,12 +46,6 @@ def execute_feature_engineering(prediction_result):
     X, y = get_openml_dataset(dataset_id)
     target_label = "target"
     y = y.to_frame(target_label)
-    # data = pd.concat([X, y], axis=1)
-    """
-    try:
-        data = pd.read_parquet("FE_Dataset_" + str(dataset_id) + ".parquet")
-    except FileNotFoundError:
-    """
     X, y = get_additional_features(X, y, prediction_result)
     return X, y, dataset_id, model
 
@@ -47,11 +53,14 @@ def execute_feature_engineering(prediction_result):
 def execute_feature_engineering_recursive(prediction_result, X, y):
     dataset_id = int(prediction_result["dataset - id"].values[0])
     model = prediction_result["model"].values[0]
-    # target_label = "target"
-    # y = y.to_frame(target_label)
-    # try:
-    #     data = pd.read_parquet("FE_Dataset_" + str(dataset_id) + ".parquet")
-    # except FileNotFoundError:
+    print("execute_feature_engineering_recursive")
+    with pd.option_context('display.max_rows', None, 'display.max_columns', None):  # more options can be specified also
+        print("X")
+        print(X)
+        print(X.index)
+        print("y")
+        print(y)
+        print(y.index)
     X, y = get_additional_features(X, y, prediction_result)
     return X, y, dataset_id, model
 
