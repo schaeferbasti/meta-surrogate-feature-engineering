@@ -33,6 +33,7 @@ def analyse_results():
     df_pivot = df_all.pivot(index="dataset", columns="origin", values="error")
     df_pivot = df_pivot.sort_index()  # Sort by dataset ID
 
+
     datasets = df_pivot.index.astype(str)
     dataset_list = []
     for dataset in datasets.tolist():
@@ -95,7 +96,23 @@ def analyse_results():
     plt.title("Which method is the best?")
     plt.xticks(rotation=45, ha="right")
     plt.tight_layout()
-    plt.savefig("test_results/Random_vs_Me_bar.png")
+    plt.savefig("test_results/Count_Best_bar.png")
+    plt.show()
+
+
+    df_pivot.drop(columns=["OpenFE"], inplace=True)
+    minValueIndex = df_pivot.idxmin(axis=1).value_counts()
+
+    # Plot
+    plt.figure(figsize=(10, 6))
+    minValueIndex.plot(kind='bar', color='skyblue', label='Count of best result on number of datasets')
+    plt.legend()
+    plt.xlabel("Method")
+    plt.ylabel("Best result on number of datasets")
+    plt.title("Which method is the best?")
+    plt.xticks(rotation=45, ha="right")
+    plt.tight_layout()
+    plt.savefig("test_results/Count_Best_without_OpenFE_bar.png")
     plt.show()
 
 
