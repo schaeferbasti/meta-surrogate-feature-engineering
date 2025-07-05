@@ -23,18 +23,52 @@ def main():
                 method = "One-shot"
             dataset = log_file.split("_")[0].split("-")[-1]
 
+            comp_sentence = "Time for creating Comparison Result Matrix: "
+            pred_sentence = "Time for Predicting Improvement using CatBoost: "
+            timeout_sentence = "[Monitor] Time limit exceeded"
+
+            comp_times = []
+            pred_time = None
+            timeout = False
+
             for line in lines:
-                comp_sentence = "Time for creating Comparison Result Matrix: "
-                pred_sentence = "Time for Predicting Improvement using CatBoost: "
-                if line.startswith(comp_sentence):
-                    time = line.split(comp_sentence)[1]
-                    new_row = pd.DataFrame(columns=["Method", "Dataset", "Task", "Time"])
-                    new_row.loc[len(new_row)] = [method, dataset, "Calculate Comparison Matrix", float(time)]
-                    times = pd.concat([times, new_row], ignore_index=True)
+                if timeout_sentence in line:
+                    timeout = True
+                elif line.startswith(comp_sentence):
+                    time = float(line.split(comp_sentence)[1])
+                    comp_times.append(time)
                 elif line.startswith(pred_sentence):
-                    time = line.split(pred_sentence)[1]
-                    new_row = pd.DataFrame(columns=["Method", "Dataset", "Task", "Time"])
-                    new_row.loc[len(new_row)] = [method, dataset, "Predict Improvement", float(time)]
+                    pred_time = float(line.split(pred_sentence)[1])
+
+            # Handle timeout case
+            if timeout:
+                new_row = pd.DataFrame([{
+                    "Method": method,
+                    "Dataset": dataset,
+                    "Task": "Calculate Comparison Matrix",
+                    "Time": 3600.0
+                }])
+                times = pd.concat([times, new_row], ignore_index=True)
+
+            else:
+                # Use last occurrence for Comparison Matrix
+                if comp_times:
+                    new_row = pd.DataFrame([{
+                        "Method": method,
+                        "Dataset": dataset,
+                        "Task": "Calculate Comparison Matrix",
+                        "Time": comp_times[-1]
+                    }])
+                    times = pd.concat([times, new_row], ignore_index=True)
+
+                # Add Predict Improvement time
+                if pred_time is not None:
+                    new_row = pd.DataFrame([{
+                        "Method": method,
+                        "Dataset": dataset,
+                        "Task": "Predict Improvement",
+                        "Time": pred_time
+                    }])
                     times = pd.concat([times, new_row], ignore_index=True)
 
     time_per_method = times.groupby("Method")["Time"].sum().sort_values(ascending=False)
