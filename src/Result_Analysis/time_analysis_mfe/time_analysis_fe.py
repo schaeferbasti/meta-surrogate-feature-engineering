@@ -9,14 +9,42 @@ from src.Apply_and_Test.analyse_results import insert_line_breaks
 
 def main():
     times = {}
+    times_mfe = {}
 
     log_files = os.listdir()
-
+    log_files.sort()
     for log_file in log_files:
         if log_file.endswith('.out'):
             f = open(log_file, "r")
             lines = f.readlines()
             method = log_file.split("_")[0]
+            if method == "MFE":
+                category = log_file.split("_")[3].split(".")[0]
+                if int(category) == 0:
+                    category = "general"
+                elif int(category) == 1:
+                    category = "statistical"
+                elif int(category) == 2:
+                    category = "info-theory"
+                elif int(category) == 3:
+                    category = "landmarking"
+                elif int(category) == 4:
+                    category = "complexity"
+                elif int(category) == 5:
+                    category = "clustering"
+                elif int(category) == 6:
+                    category = "concept"
+                elif int(category) == 7:
+                    category = "itemset"
+                method_category = method + "_" + category
+                for line in lines:
+                    if line.__contains__("on") and line.__contains__("datasets"):
+                        continue
+                    elif line.startswith("Time for"):
+                        time = float(line.split(":")[-1])
+                        dataset = line.split(":")[0].split("Dataset ")[-1]
+                        method_and_category_and_dataset = str(method_category) + " - " + str(dataset)
+                        times_mfe.update({method_and_category_and_dataset: time})
 
             for line in lines:
                 if line.__contains__("on") and line.__contains__("datasets"):
@@ -26,6 +54,7 @@ def main():
                     dataset = line.split(":")[0].split("Dataset ")[-1]
                     method_and_dataset = str(method) + " - " + str(dataset)
                     times.update({method_and_dataset: time})
+
     print(times)
 
     df = pd.DataFrame(list(times.items()), columns=['method_dataset', 'value'])
@@ -53,7 +82,6 @@ def main():
     plt.figure(figsize=(12, 6))
     for method in df_pivot.columns:
         plt.plot(dataset_list_wrapped, df_pivot[method], marker='o', label=method)
-
     plt.xlabel("Dataset ID")
     plt.xticks(rotation=45)  # or 90
     plt.yscale('log')  # Optional: only if values vary a lot
@@ -80,6 +108,29 @@ def main():
     plt.yscale('log')
     plt.tight_layout()
     plt.savefig("Time_for_FE_per_Method.png")
+    plt.show()
+
+
+    df_mfe = pd.DataFrame(list(times_mfe.items()), columns=['method_category_dataset', 'value'])
+    df_mfe[['method_category', 'dataset']] = df_mfe['method_category_dataset'].str.split(' - ', expand=True)
+    df_mfe[['method', 'category']] = df_mfe['method_category'].str.split('_', expand=True)
+    df_mfe['dataset'] = df_mfe['dataset'].astype(int)
+
+    time_per_category = df_mfe.groupby("category")["value"].sum().sort_values(ascending=False)
+    average_time_per_category = df_mfe.groupby("category")["value"].mean().sort_values(ascending=False)
+
+    # Plot
+    plt.figure(figsize=(10, 6))
+    time_per_category.plot(kind='bar', color='skyblue', label='Total Time per Method')
+    average_time_per_category.plot(kind='bar', width=0.3, color='orange', label='Average Time per Category')
+    plt.legend()
+    plt.xlabel("Method")
+    plt.ylabel("Time in seconds")
+    plt.title("Time per MFE Category")
+    plt.xticks(rotation=45, ha="right")
+    plt.yscale('log')
+    plt.tight_layout()
+    plt.savefig("Time_for_MFE_per_Category.png")
     plt.show()
 
 
