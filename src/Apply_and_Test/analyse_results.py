@@ -63,6 +63,41 @@ def analyse_results():
     plt.savefig("test_results/Autogluon_Score_by_FE_Method.png")
     plt.show()
 
+    plt.figure(figsize=(12, 6))
+    for method in df_pivot.columns:
+        if method == "Best Random":
+            plt.plot(dataset_list_wrapped, df_pivot[method], marker='o', label=method)
+        elif method.startswith("pandas"):
+            plt.plot(dataset_list_wrapped, df_pivot[method], marker='o', label=method)
+        elif method.startswith("d2v"):
+            plt.plot(dataset_list_wrapped, df_pivot[method], marker='o', label=method)
+        elif method.startswith("mfe"):
+            plt.plot(dataset_list_wrapped, df_pivot[method], marker='o', label=method)
+
+    plt.xlabel("Dataset ID")
+    plt.xticks(rotation=45)  # or 90
+    plt.ylabel("Autogluon Score")
+    plt.title("Autogluon Score by FE Method per Dataset (Best random vs. our method)")
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig("test_results/Random_vs_Me_graph.png")
+    plt.show()
+
+    minValueIndex = df_pivot.idxmin(axis=1).value_counts()
+
+    # Plot
+    plt.figure(figsize=(10, 6))
+    minValueIndex.plot(kind='bar', color='skyblue', label='Count of best result on number of datasets')
+    plt.legend()
+    plt.xlabel("Method")
+    plt.ylabel("Best result on number of datasets")
+    plt.title("Which method is the best?")
+    plt.xticks(rotation=45, ha="right")
+    plt.tight_layout()
+    plt.savefig("test_results/Random_vs_Me_bar.png")
+    plt.show()
+
 
 if __name__ == "__main__":
     analyse_results()
