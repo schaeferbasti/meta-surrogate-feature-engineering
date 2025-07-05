@@ -22,6 +22,7 @@ def get_additional_features(X, y, prediction_result):
         if feature is not None:
             feature = pd.Series(feature).to_frame(additional_feature)
             X = X.reset_index(drop=True)
+            y = y.reset_index(drop=True)
             feature = feature.reset_index(drop=True)
             with pd.option_context('display.max_rows', None, 'display.max_columns', None):  # more options can be specified also
                 print("get_additional_features")
