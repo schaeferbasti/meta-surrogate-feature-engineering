@@ -62,6 +62,7 @@ def add_mfe_metadata_columns_group(X_train, y_train, result_matrix, group):
             new_feature_df = pd.DataFrame(new_feature, columns=[featurename])
             new_feature_df = new_feature_df.reset_index(drop=True)
             X_train_copy = pd.concat([X_train_copy, new_feature_df], axis=1)
+        X_train_copy = X_train_copy.apply(lambda col: col.astype(str) if isinstance(col.dtype, pd.CategoricalDtype) else col)
         X = X_train_copy.replace([np.inf, -np.inf], np.nan).fillna(0).to_numpy()
         y = y_train.to_numpy()
         dataset_metadata_mfe, dataset_metadata_names, dataset_metadata_groups = get_mfe_dataset_metadata(X, y, group)
