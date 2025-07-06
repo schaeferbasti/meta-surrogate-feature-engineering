@@ -13,7 +13,7 @@ from src.Apply_and_Test.Apply_FE import execute_feature_engineering_recursive
 from src.Metadata.d2v.Add_d2v_Metafeatures import add_d2v_metadata_columns
 from src.Metadata.pandas.Add_Pandas_Metafeatures import add_pandas_metadata_columns
 from src.Metadata.tabpfn.Add_TabPFN_Metafeatures import add_tabpfn_metadata_columns
-from src.Metadata.mfe.Add_MFE_Metafeatures import add_mfe_metadata_columns
+from src.Metadata.mfe.Add_MFE_Metafeatures import add_mfe_metadata_columns_groups, add_mfe_metadata_columns_group
 from autogluon.tabular.models import CatBoostModel
 
 from src.utils.create_feature_and_featurename import create_featurenames, extract_operation_and_original_features
@@ -129,19 +129,27 @@ def recursive_feature_addition(X, y, X_test, y_test, model, method, dataset_meta
         return recursive_feature_addition(X_new, y_new, X_test, y_test, model, method, dataset_metadata, category_to_drop, wanted_min_relative_improvement, dataset_id)
 
 
-def recursive_feature_addition_mfe(X, y, X_test, y_test, model, method, dataset_metadata, category_to_drop, wanted_min_relative_improvement, dataset_id):
+def recursive_feature_addition_mfe_group(X, y, X_test, y_test, model, method, dataset_id, group, wanted_min_relative_improvement):
     # Reload base matrix
-    result_matrix = pd.read_parquet("src/Metadata/mfe/MFE_Matrix_Complete.parquet")
+    result_matrix = pd.read_parquet("src/Metadata/mfe/MFE_" + str(group).title() + "_Matrix_Complete.parquet")
+    datasets = pd.unique(result_matrix["dataset - id"]).tolist()
+    datasets = [int(x) for x in datasets]
+    print("Datasets in MFE_" + str(group).title() + "_Matrix_Complete.parquet: " + str(datasets))
+
+    if dataset_id in datasets:
+        result_matrix = result_matrix[result_matrix["dataset - id"] != dataset_id]
     # Create comparison matrix for new dataset
+    start = time.time()
     comparison_result_matrix = create_empty_core_matrix_for_dataset(X, model, dataset_id)
-    comparison_result_matrix, _, _, _, _, _, _, _, _ = add_mfe_metadata_columns(X, y, comparison_result_matrix)
-    comparison_result_matrix, general, statistical, info_theory, landmarking, complexity, clustering, concept, itemset = add_mfe_metadata_columns(X, y, comparison_result_matrix)
-    # Drop no category, single category or all categories but one
-    comparison_result_matrix_copy = comparison_result_matrix.drop(columns=category_to_drop, errors='ignore')
-    result_matrix_copy = result_matrix.drop(columns=category_to_drop, errors='ignore')
+    comparison_result_matrix = add_mfe_metadata_columns_group(X, y, comparison_result_matrix, group)
+    end = time.time()
+    print("Time for creating Comparison Result Matrix: " + str(end - start))
+    comparison_result_matrix.to_parquet("Comparison_Result_Matrix.parquet")
     # Predict and split again
-    X_new, y_new = predict_improvement(result_matrix_copy, comparison_result_matrix_copy, "all", X, y, wanted_min_relative_improvement)
-    # Recurse
+    start = time.time()
+    X_new, y_new = predict_improvement(result_matrix, comparison_result_matrix, "all", X, y, wanted_min_relative_improvement)
+    end = time.time()
+    print("Time for Predicting Improvement using CatBoost: " + str(end - start))
     if X_new.equals(X):  # if X_new.shape == X.shape
         data = concat_data(X, y, X_test, y_test, "target")
         data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_CatBoost_recursion.parquet")
@@ -149,7 +157,37 @@ def recursive_feature_addition_mfe(X, y, X_test, y_test, model, method, dataset_
     else:
         data = concat_data(X_new, y_new, X_test, y_test, "target")
         data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_CatBoost_recursion.parquet")
-        return recursive_feature_addition(X_new, y_new, X_test, y_test, model, method, dataset_metadata, category_to_drop, wanted_min_relative_improvement, dataset_id)
+        return recursive_feature_addition_mfe_group(X_new, y_new, X_test, y_test, model, method, dataset_id, group, wanted_min_relative_improvement)
+
+def recursive_feature_addition_mfe_groups(X, y, X_test, y_test, model, method, dataset_id, groups, wanted_min_relative_improvement):
+    # Reload base matrix
+    result_matrix = pd.read_parquet("src/Metadata/core/Core_Matrix_Complete.parquet")
+    datasets = pd.unique(result_matrix["dataset - id"]).tolist()
+    print("Datasets in " + str(method) + " Matrix: " + str(datasets))
+
+    if dataset_id in datasets:
+        result_matrix = result_matrix[result_matrix["dataset - id"] != dataset_id]
+    # Create comparison matrix for new dataset
+    start = time.time()
+    comparison_result_matrix = create_empty_core_matrix_for_dataset(X, model, dataset_id)
+    comparison_result_matrix = add_mfe_metadata_columns_groups(X, y, comparison_result_matrix, groups)
+    end = time.time()
+    print("Time for creating Comparison Result Matrix: " + str(end - start))
+    # comparison_result_matrix.to_parquet("Comparison_Result_Matrix.parquet")
+    # Predict and split again
+    start = time.time()
+    X_new, y_new = predict_improvement(result_matrix, comparison_result_matrix, "all", X, y, wanted_min_relative_improvement)
+    # Recurse
+    end = time.time()
+    print("Time for Predicting Improvement using CatBoost: " + str(end - start))
+    if X_new.equals(X):  # if X_new.shape == X.shape
+        data = concat_data(X, y, X_test, y_test, "target")
+        data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_CatBoost_recursion.parquet")
+        return X, y
+    else:
+        data = concat_data(X_new, y_new, X_test, y_test, "target")
+        data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_CatBoost_recursion.parquet")
+        return recursive_feature_addition_mfe_groups(X_new, y_new, X_test, y_test, model, method, dataset_id, groups, wanted_min_relative_improvement)
 
 
 def predict_improvement(result_matrix, comparison_result_matrix, category_or_method, X_train, y_train, wanted_min_relative_improvement):
@@ -180,14 +218,57 @@ def predict_improvement(result_matrix, comparison_result_matrix, category_or_met
 
 
 def main(dataset_id, wanted_min_relative_improvement, method):
+    print("Method: " + str(method) + ", Dataset: " + str(dataset_id) + ", Model: " + str("CatBoost"))
     model = "LightGBM_BAG_L1"
-    X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
-    start = time.time()
-    X_train, y_train = recursive_feature_addition(X_train, y_train, X_test, y_test, model, method, dataset_metadata, None, wanted_min_relative_improvement, dataset_id)
-    end = time.time()
-    print("Time for creating Comparison Result Matrix: " + str(end - start))
-    data = concat_data(X_train, y_train, X_test, y_test, "target")
-    data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_CatBoost_recursion.parquet")
+    n_features_to_add = 10
+    j = 0
+
+    if method.startswith("mfe"):
+        groups = ["general", "statistical", "info-theory"]
+        for i in range(len(groups)):
+            print(groups[i])
+            X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
+            X_train, y_train, X_test, y_test = recursive_feature_addition_mfe_group(X_train, y_train, X_test, y_test, model,
+                                                                          method, dataset_id, groups[i])
+            data = concat_data(X_train, y_train, X_test, y_test, "target")
+            data.to_parquet(
+                "FE_" + str(dataset_id) + "_" + str(method) + "_only_" + str(groups[i]) + "_CatBoost_best.parquet")
+        groups = groups[1] + groups[2]
+        print(groups)
+        X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
+        X_train, y_train, X_test, y_test = recursive_feature_addition_mfe_groups(X_train, y_train, X_test, y_test, model, method,
+                                                                       dataset_id, groups)
+        data = concat_data(X_train, y_train, X_test, y_test, "target")
+        data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_without_info_theory_CatBoost_best.parquet")
+        groups = groups[2] + groups[3]
+        print(groups)
+        X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
+        X_train, y_train, X_test, y_test = recursive_feature_addition_mfe_groups(X_train, y_train, X_test, y_test, model, method,
+                                                                       dataset_id, groups)
+        data = concat_data(X_train, y_train, X_test, y_test, "target")
+        data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_without_general_CatBoost_best.parquet")
+        groups = groups[1] + groups[3]
+        print(groups)
+        X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
+        X_train, y_train, X_test, y_test = recursive_feature_addition_mfe_groups(X_train, y_train, X_test, y_test, model, method,
+                                                                       dataset_id, groups)
+        data = concat_data(X_train, y_train, X_test, y_test, "target")
+        data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_without_statistical_CatBoost_best.parquet")
+        groups = groups[1] + groups[2] + groups[3]
+        print(groups)
+        X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
+        X_train, y_train, X_test, y_test = recursive_feature_addition_mfe_groups(X_train, y_train, X_test, y_test, model, method,
+                                                                       dataset_id, groups)
+        data = concat_data(X_train, y_train, X_test, y_test, "target")
+        data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_all_CatBoost_best.parquet")
+    else:
+        X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
+        start = time.time()
+        X_train, y_train = recursive_feature_addition(X_train, y_train, X_test, y_test, model, method, dataset_metadata, None, wanted_min_relative_improvement, dataset_id)
+        end = time.time()
+        print("Time for creating Comparison Result Matrix: " + str(end - start))
+        data = concat_data(X_train, y_train, X_test, y_test, "target")
+        data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_CatBoost_recursion.parquet")
 
 
 def run_with_resource_limits(target_func, mem_limit_mb, time_limit_sec, check_interval=5):
