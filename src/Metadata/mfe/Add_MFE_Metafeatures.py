@@ -3,18 +3,23 @@ import time
 import numpy as np
 import pandas as pd
 
+from src.Metadata.pandas.Add_Pandas_Metafeatures import get_operator_count, split_top_level_args
 from src.utils.create_feature_and_featurename import create_feature
 from src.utils.get_data import get_openml_dataset_split_and_metadata
 from src.utils.get_matrix import get_additional_mfe_columns, get_additional_mfe_columns_group
 from src.utils.get_metafeatures import get_mfe_dataset_metadata
+from src.utils.get_operators import get_operators
 
 
 def add_mfe_metadata_columns_group(X_train, y_train, result_matrix, group):
     columns = get_additional_mfe_columns_group(group)
     new_columns = pd.DataFrame(index=result_matrix.index, columns=columns)
+    unary_operators, binary_operators = get_operators()
+    operators = unary_operators + binary_operators + ["without"]
     for row in result_matrix.iterrows():
         featurename = row[1][1]
         X_train_copy = X_train.copy()
+        operator_count = get_operator_count(featurename, operators)
         if featurename.startswith("without"):
             feature_to_delete = featurename.split(" - ")[1]
             X_train_copy = X_train_copy.drop(feature_to_delete, axis=1)
@@ -72,12 +77,15 @@ def add_mfe_metadata_columns_group(X_train, y_train, result_matrix, group):
 
 def add_mfe_metadata_columns_groups(X_train, y_train, result_matrix, groups):
     columns_list = []
+    unary_operators, binary_operators = get_operators()
+    operators = unary_operators + binary_operators + ["without"]
     for group in groups:
         columns_list.extend(group)
     new_columns = pd.DataFrame(index=result_matrix.index, columns=columns_list)
     for row in result_matrix.iterrows():
         featurename = row[1][1]
         X_train_copy = X_train.copy()
+        operator_count = get_operator_count(featurename, operators)
         if featurename.startswith("without"):
             feature_to_delete = featurename.split(" - ")[1]
             X_train_copy = X_train_copy.drop(feature_to_delete, axis=1)
@@ -140,9 +148,12 @@ def add_mfe_metadata_columns(X_train, y_train, result_matrix):
     columns = get_additional_mfe_columns()
     new_columns = pd.DataFrame(index=result_matrix.index, columns=columns)
     dataset_metadata_general_names = dataset_metadata_statistical_names = dataset_metadata_info_theory_names = dataset_metadata_landmarking_names = dataset_metadata_complexity_names = dataset_metadata_clustering_names = dataset_metadata_concept_names = dataset_metadata_itemset_names = None
+    unary_operators, binary_operators = get_operators()
+    operators = unary_operators + binary_operators + ["without"]
     for row in result_matrix.iterrows():
         featurename = row[1][1]
         X_train_copy = X_train.copy()
+        operator_count = get_operator_count(featurename, operators)
         if featurename.startswith("without"):
             feature_to_delete = featurename.split(" - ")[1]
             X_train_copy = X_train_copy.drop(feature_to_delete, axis=1)
