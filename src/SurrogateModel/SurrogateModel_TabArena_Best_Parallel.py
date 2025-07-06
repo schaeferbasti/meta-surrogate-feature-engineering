@@ -19,7 +19,7 @@ from src.Metadata.tabpfn.Add_TabPFN_Metafeatures import add_tabpfn_metadata_colu
 from src.utils.create_feature_and_featurename import create_featurenames, extract_operation_and_original_features
 from src.utils.get_data import get_openml_dataset_split_and_metadata, concat_data
 from src.utils.get_matrix import get_matrix_core_columns
-from src.Metadata.mfe.Add_MFE_Metafeatures import add_mfe_metadata_columns
+from src.Metadata.mfe.Add_MFE_Metafeatures import add_mfe_metadata_columns_groups, add_mfe_metadata_columns_group
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -104,7 +104,7 @@ def add_method_metadata(result_matrix, dataset_metadata, X_predict, y_predict, m
     return result_matrix
 
 
-def feature_addition(i, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, category_to_drop, dataset_id):
+def feature_addition(X_train, y_train, X_test, y_test, model, method, dataset_metadata, dataset_id):
     if method == "pandas":
         result_matrix = pd.read_parquet("src/Metadata/pandas/Pandas_Matrix_Complete.parquet")
     elif method == "tabpfn":
@@ -136,16 +136,22 @@ def feature_addition(i, n_features_to_add, X_train, y_train, X_test, y_test, mod
     return X_new, y_new, X_test, y_test
 
 
-def feature_addition_mfe(i, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, category_to_drop, dataset_id):
-    if i >= n_features_to_add:
-        return X_train, y_train, X_test, y_test
+def feature_addition_mfe_group(X_train, y_train, X_test, y_test, model, method, dataset_id, group):
     # Reload base matrix
-    result_matrix = pd.read_parquet("src/Metadata/core/Core_Matrix_Complete.parquet")
+    result_matrix = pd.read_parquet("src/Metadata/mfe/MFE_" + str(group).title() + "_Matrix_Complete.parquet")
+    datasets = pd.unique(result_matrix["dataset - id"]).tolist()
+    datasets = [int(x) for x in datasets]
+    print("Datasets in MFE_" + str(group).title() + "_Matrix_Complete.parquet: " + str(datasets))
+
+    if dataset_id in datasets:
+        result_matrix = result_matrix[result_matrix["dataset - id"] != dataset_id]
     # Create comparison matrix for new dataset
+    start = time.time()
     comparison_result_matrix = create_empty_core_matrix_for_dataset(X_train, model, dataset_id)
-    comparison_result_matrix, _, _, _, _, _, _, _, _ = add_mfe_metadata_columns(X_train, y_train, comparison_result_matrix)
-    comparison_result_matrix, general, statistical, info_theory, landmarking, complexity, clustering, concept, itemset = add_mfe_metadata_columns(X_train, y_train, comparison_result_matrix)
-    # Drop no category, single category or all categories but one
+    comparison_result_matrix = add_mfe_metadata_columns_group(X_train, y_train, comparison_result_matrix, group)
+    end = time.time()
+    print("Time for creating Comparison Result Matrix: " + str(end - start))
+    comparison_result_matrix.to_parquet("Comparison_Result_Matrix.parquet")
     # Predict and split again
     start = time.time()
     X_new, y_new = predict_improvement(result_matrix, comparison_result_matrix, "all")
@@ -157,6 +163,29 @@ def feature_addition_mfe(i, n_features_to_add, X_train, y_train, X_test, y_test,
     data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_CatBoost_best.parquet")
     return X_new, y_new, X_test, y_test
 
+def feature_addition_mfe_groups(X_train, y_train, X_test, y_test, model, method, dataset_id, groups):
+    # Reload base matrix
+    result_matrix = pd.read_parquet("src/Metadata/core/Core_Matrix_Complete.parquet")
+    datasets = pd.unique(result_matrix["dataset - id"]).tolist()
+    print("Datasets in " + str(method) + " Matrix: " + str(datasets))
+
+    if dataset_id in datasets:
+        result_matrix = result_matrix[result_matrix["dataset - id"] != dataset_id]
+    # Create comparison matrix for new dataset
+    start = time.time()
+    comparison_result_matrix = create_empty_core_matrix_for_dataset(X_train, model, dataset_id)
+    comparison_result_matrix = add_mfe_metadata_columns_groups(X_train, y_train, comparison_result_matrix, groups)
+    end = time.time()
+    print("Time for creating Comparison Result Matrix: " + str(end - start))
+    # comparison_result_matrix.to_parquet("Comparison_Result_Matrix.parquet")
+    # Predict and split again
+    start = time.time()
+    X_new, y_new = predict_improvement(result_matrix, comparison_result_matrix, "all")
+    end = time.time()
+    print("Time for Predicting Improvement using CatBoost: " + str(end - start))
+    data = concat_data(X_new, y_new, X_test, y_test, "target")
+    data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_CatBoost_best.parquet")
+    return X_new, y_new, X_test, y_test
 
 def predict_improvement(result_matrix, comparison_result_matrix, category_or_method):
     y_result = result_matrix["improvement"]
@@ -168,7 +197,7 @@ def predict_improvement(result_matrix, comparison_result_matrix, category_or_met
     clf.fit(X=result_matrix, y=y_result)
 
     # Predict and score
-    comparison_result_matrix.columns = result_matrix.columns
+    comparison_result_matrix = comparison_result_matrix[result_matrix.columns]
     prediction = clf.predict(X=comparison_result_matrix)
     prediction_df = pd.DataFrame(prediction, columns=["predicted_improvement"])
     prediction_concat_df = pd.concat([comparison_result_matrix[["dataset - id", "feature - name", "model"]], prediction_df], axis=1)
@@ -183,52 +212,50 @@ def main(dataset_id, method):
     model = "LightGBM_BAG_L1"
     n_features_to_add = 10
     j = 0
-    """
-    category = "No_Category"
+
     if method.startswith("mfe"):
-        # Keep all categories
-        if "all" in method:
+        groups = ["general", "statistical", "info-theory"]
+        for i in range(len(groups)):
+            print(groups[i])
             X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
-            X_train, y_train, X_test, y_test = feature_addition_mfe(j, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, None)
+            X_train, y_train, X_test, y_test = feature_addition_mfe_group(X_train, y_train, X_test, y_test, model, method, dataset_id, groups[i])
             data = concat_data(X_train, y_train, X_test, y_test, "target")
-            data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_" + category + "_CatBoost_best.parquet")
+            data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_only_" + str(groups[i]) + "_CatBoost_best.parquet")
+        groups = groups[1] + groups[2]
+        print(groups)
+        X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
+        X_train, y_train, X_test, y_test = feature_addition_mfe_groups(X_train, y_train, X_test, y_test, model, method, dataset_id, groups)
+        data = concat_data(X_train, y_train, X_test, y_test, "target")
+        data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_without_info_theory_CatBoost_best.parquet")
+        groups = groups[2] + groups[3]
+        print(groups)
+        X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
+        X_train, y_train, X_test, y_test = feature_addition_mfe_groups(X_train, y_train, X_test, y_test, model, method, dataset_id, groups)
+        data = concat_data(X_train, y_train, X_test, y_test, "target")
+        data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_without_general_CatBoost_best.parquet")
+        groups = groups[1] + groups[3]
+        print(groups)
+        X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
+        X_train, y_train, X_test, y_test = feature_addition_mfe_groups(X_train, y_train, X_test, y_test, model, method, dataset_id, groups)
+        data = concat_data(X_train, y_train, X_test, y_test, "target")
+        data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_without_statistical_CatBoost_best.parquet")
+        groups = groups[1] + groups[2] + groups[3]
+        print(groups)
+        X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
+        X_train, y_train, X_test, y_test = feature_addition_mfe_groups(X_train, y_train, X_test, y_test, model, method, dataset_id, groups)
+        data = concat_data(X_train, y_train, X_test, y_test, "target")
+        data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_all_CatBoost_best.parquet")
 
-        # Remove one category completely
-        if "without" in method:
-            X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
-            category = method.split("mfe_")[1]
-            category_name = category.split("_")[1]
-            if category_name == "info":
-                category_name = "info-theory"
-            category_to_remove = get_mfe_category(category_name)
-            X_train, y_train, X_test, y_test = feature_addition_mfe(j, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, category_to_remove)
-            data = concat_data(X_train, y_train, X_test, y_test, "target")
-            data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_" + category + "_CatBoost_best.parquet")
-
-        # Remove all categories completely but one
-        if "only" in method:
-            X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata( dataset_id)
-            category = method.split("mfe_")[1]
-            category_name = category.split("_")[1]
-            if category_name == "info":
-                category_name = "info-theory"
-            category_to_keep = get_mfe_category(category_name)
-            categories = get_mfe_categories()
-            categories.remove(category_to_keep)
-            X_train, y_train, X_test, y_test = feature_addition_mfe(j, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, categories)
-            data = concat_data(X_train, y_train, X_test, y_test, "target")
-            data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_" + category + "_CatBoost_best.parquet")
     else:
-    """
-    X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
-    start = time.time()
-    X_train, y_train, X_test, y_test = feature_addition(j, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, None, dataset_id)
-    end = time.time()
-    y_list = y_train['target'].tolist()
-    y_series = pd.Series(y_list)
-    print("Time for creating Comparison Result Matrix: " + str(end - start))
-    data = concat_data(X_train, y_series, X_test, y_test, "target")
-    data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_CatBoost_best.parquet")
+        X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
+        start = time.time()
+        X_train, y_train, X_test, y_test = feature_addition(j, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, None, dataset_id)
+        end = time.time()
+        y_list = y_train['target'].tolist()
+        y_series = pd.Series(y_list)
+        print("Time for creating Comparison Result Matrix: " + str(end - start))
+        data = concat_data(X_train, y_series, X_test, y_test, "target")
+        data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_CatBoost_best.parquet")
 
 
 def run_with_resource_limits(target_func, mem_limit_mb, time_limit_sec, check_interval=5):
@@ -265,8 +292,9 @@ def main_wrapper():
     # parser.add_argument('--mf_method', required=True, help='Metafeature Method')
     parser.add_argument('--dataset', required=True, help='Dataset')
     args = parser.parse_args()
-    method = "d2v"
+    method = "mfe"
     main(int(args.dataset), method)
+    # main(2073, method)
 
 
 if __name__ == '__main__':
