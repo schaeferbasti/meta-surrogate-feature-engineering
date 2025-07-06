@@ -18,6 +18,29 @@ def add_mfe_metadata_columns_group(X_train, y_train, result_matrix, group):
         if featurename.startswith("without"):
             feature_to_delete = featurename.split(" - ")[1]
             X_train_copy = X_train_copy.drop(feature_to_delete, axis=1)
+        elif operator_count > 1:
+            features = featurename.split("(")[1].replace(")", "").replace(" ", "")
+            inner = featurename.split("(", 1)[1].rsplit(")", 1)[0]
+            args = split_top_level_args(inner)
+            featurename1 = args[0]
+            featurename2 = args[1] if len(args) > 1 else None
+            if "(" in featurename1:
+                feature1 = X_train_copy[featurename1]
+            else:
+                featurename1 = features.split(",")[0]
+                feature1 = X_train_copy[featurename1]
+            if featurename2 is not None:
+                if "(" in featurename2:
+                    feature2 = X_train_copy[featurename2]
+                else:
+                    feature2 = X_train_copy[featurename2]
+            else:
+                feature2 = None
+            new_feature = create_feature(feature1, feature2, featurename)
+            X_train_copy = X_train_copy.reset_index(drop=True)
+            new_feature_df = pd.DataFrame(new_feature, columns=[featurename])
+            new_feature_df = new_feature_df.reset_index(drop=True)
+            X_train_copy = pd.concat([X_train_copy, new_feature_df], axis=1, ignore_index=False)
         else:
             features = featurename.split("(")[1].replace(")", "").replace(" ", "")
             if "," in features:
@@ -30,8 +53,9 @@ def add_mfe_metadata_columns_group(X_train, y_train, result_matrix, group):
                 feature1 = X_train_copy[featurename1]
                 feature2 = None
             new_feature = create_feature(feature1, feature2, featurename)
+            X_train_copy = X_train_copy.reset_index(drop=True)
             new_feature_df = pd.DataFrame(new_feature, columns=[featurename])
-            new_feature_df.index = X_train_copy.index
+            new_feature_df = new_feature_df.reset_index(drop=True)
             X_train_copy = pd.concat([X_train_copy, new_feature_df], axis=1)
         X = X_train_copy.replace([np.inf, -np.inf], np.nan).fillna(0).to_numpy()
         y = y_train.to_numpy()
@@ -57,6 +81,29 @@ def add_mfe_metadata_columns_groups(X_train, y_train, result_matrix, groups):
         if featurename.startswith("without"):
             feature_to_delete = featurename.split(" - ")[1]
             X_train_copy = X_train_copy.drop(feature_to_delete, axis=1)
+        elif operator_count > 1:
+            features = featurename.split("(")[1].replace(")", "").replace(" ", "")
+            inner = featurename.split("(", 1)[1].rsplit(")", 1)[0]
+            args = split_top_level_args(inner)
+            featurename1 = args[0]
+            featurename2 = args[1] if len(args) > 1 else None
+            if "(" in featurename1:
+                feature1 = X_train_copy[featurename1]
+            else:
+                featurename1 = features.split(",")[0]
+                feature1 = X_train_copy[featurename1]
+            if featurename2 is not None:
+                if "(" in featurename2:
+                    feature2 = X_train_copy[featurename2]
+                else:
+                    feature2 = X_train_copy[featurename2]
+            else:
+                feature2 = None
+            new_feature = create_feature(feature1, feature2, featurename)
+            X_train_copy = X_train_copy.reset_index(drop=True)
+            new_feature_df = pd.DataFrame(new_feature, columns=[featurename])
+            new_feature_df = new_feature_df.reset_index(drop=True)
+            X_train_copy = pd.concat([X_train_copy, new_feature_df], axis=1, ignore_index=False)
         else:
             features = featurename.split("(")[1].replace(")", "").replace(" ", "")
             if "," in features:
@@ -69,8 +116,9 @@ def add_mfe_metadata_columns_groups(X_train, y_train, result_matrix, groups):
                 feature1 = X_train_copy[featurename1]
                 feature2 = None
             new_feature = create_feature(feature1, feature2, featurename)
+            X_train_copy = X_train_copy.reset_index(drop=True)
             new_feature_df = pd.DataFrame(new_feature, columns=[featurename])
-            new_feature_df.index = X_train_copy.index
+            new_feature_df = new_feature_df.reset_index(drop=True)
             X_train_copy = pd.concat([X_train_copy, new_feature_df], axis=1)
         X = X_train_copy.replace([np.inf, -np.inf], np.nan).fillna(0).to_numpy()
         y = y_train.to_numpy()
@@ -98,6 +146,29 @@ def add_mfe_metadata_columns(X_train, y_train, result_matrix):
         if featurename.startswith("without"):
             feature_to_delete = featurename.split(" - ")[1]
             X_train_copy = X_train_copy.drop(feature_to_delete, axis=1)
+        elif operator_count > 1:
+            features = featurename.split("(")[1].replace(")", "").replace(" ", "")
+            inner = featurename.split("(", 1)[1].rsplit(")", 1)[0]
+            args = split_top_level_args(inner)
+            featurename1 = args[0]
+            featurename2 = args[1] if len(args) > 1 else None
+            if "(" in featurename1:
+                feature1 = X_train_copy[featurename1]
+            else:
+                featurename1 = features.split(",")[0]
+                feature1 = X_train_copy[featurename1]
+            if featurename2 is not None:
+                if "(" in featurename2:
+                    feature2 = X_train_copy[featurename2]
+                else:
+                    feature2 = X_train_copy[featurename2]
+            else:
+                feature2 = None
+            new_feature = create_feature(feature1, feature2, featurename)
+            X_train_copy = X_train_copy.reset_index(drop=True)
+            new_feature_df = pd.DataFrame(new_feature, columns=[featurename])
+            new_feature_df = new_feature_df.reset_index(drop=True)
+            X_train_copy = pd.concat([X_train_copy, new_feature_df], axis=1, ignore_index=False)
         else:
             features = featurename.split("(")[1].replace(")", "").replace(" ", "")
             if "," in features:
@@ -110,8 +181,9 @@ def add_mfe_metadata_columns(X_train, y_train, result_matrix):
                 feature1 = X_train_copy[featurename1]
                 feature2 = None
             new_feature = create_feature(feature1, feature2, featurename)
+            X_train_copy = X_train_copy.reset_index(drop=True)
             new_feature_df = pd.DataFrame(new_feature, columns=[featurename])
-            new_feature_df.index = X_train_copy.index
+            new_feature_df = new_feature_df.reset_index(drop=True)
             X_train_copy = pd.concat([X_train_copy, new_feature_df], axis=1)
         X = X_train_copy.replace([np.inf, -np.inf], np.nan).fillna(0).to_numpy()
         y = y_train.to_numpy()
