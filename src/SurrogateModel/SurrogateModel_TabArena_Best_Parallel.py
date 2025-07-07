@@ -28,6 +28,11 @@ warnings.filterwarnings('ignore')
 
 last_reset_time = Value(ctypes.c_double, time.time())
 
+merge_keys = ["dataset - id", "feature - name", "operator", "model", "improvement"]
+
+def safe_merge(left, right):
+    return pd.merge(left, right, on=merge_keys, how="inner")
+
 
 def create_empty_core_matrix_for_dataset(X_train, model, dataset_id) -> pd.DataFrame:
     columns = get_matrix_core_columns()
@@ -143,6 +148,10 @@ def feature_addition(X_train, y_train, X_test, y_test, model, method, dataset_me
 def feature_addition_mfe_group(X_train, y_train, X_test, y_test, model, method, dataset_id, group):
     # Reload base matrix
     result_matrix = pd.read_parquet("src/Metadata/mfe/MFE_" + str(group).title() + "_Matrix_Complete.parquet")
+    if group == "info_theory":
+        groupname = "info-theory"
+    else:
+        groupname = group
     datasets = pd.unique(result_matrix["dataset - id"]).tolist()
     datasets = [int(x) for x in datasets]
     print("Datasets in MFE_" + str(group).title() + "_Matrix_Complete.parquet: " + str(datasets))
@@ -155,7 +164,6 @@ def feature_addition_mfe_group(X_train, y_train, X_test, y_test, model, method, 
     comparison_result_matrix = add_mfe_metadata_columns_group(X_train, y_train, comparison_result_matrix, group)
     end = time.time()
     print("Time for creating Comparison Result Matrix: " + str(end - start))
-    comparison_result_matrix.to_parquet("Comparison_Result_Matrix.parquet")
     # Predict and split again
     start = time.time()
     X_new, y_new = predict_improvement(result_matrix, comparison_result_matrix, "all")
@@ -164,20 +172,32 @@ def feature_addition_mfe_group(X_train, y_train, X_test, y_test, model, method, 
     y_list = y_new['target'].tolist()
     y_series = pd.Series(y_list)
     data = concat_data(X_new, y_series, X_test, y_test, "target")
-    data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_CatBoost_best.parquet")
+    data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_" + str(groupname) + "_CatBoost_best.parquet")
     return X_new, y_new, X_test, y_test
 
 def feature_addition_mfe_groups(X_train, y_train, X_test, y_test, model, method, dataset_id, groups):
     # Reload base matrix
     if str(groups) == "generalstatistical":
-        groups = "Without_Info_Theory"
+        groupname = "Without_Info_Theory"
+        groupname1 = "general"
+        groupname2 = "statistical"
+        groupname3 = None
     elif str(groups) == "generalinfo_theory":
-        groups = "Without_Statistical"
+        groupname = "Without_Statistical"
+        groupname1 = "general"
+        groupname2 = "info-theory"
+        groupname3 = None
     elif str(groups) == "statisticalinfo_theory":
-        groups = "Without_General"
+        groupname = "Without_General"
+        groupname1 = "statistical"
+        groupname2 = "info-theory"
+        groupname3 = None
     elif str(groups) == "generalstatisticalinfo_theory']":
-        groups = "All"
-    result_matrix = pd.read_parquet("src/Metadata/mfe/MFE_" + str(groups) + "_Matrix_Complete.parquet")
+        groupname = "All"
+        groupname1 = "general"
+        groupname2 = "statistical"
+        groupname3 = "info-theory"
+    result_matrix = pd.read_parquet("src/Metadata/mfe/MFE_" + str(groupname) + "_Matrix_Complete.parquet")
     datasets = pd.unique(result_matrix["dataset - id"]).tolist()
     print("Datasets in " + str(method) + " Matrix: " + str(datasets))
 
@@ -185,8 +205,14 @@ def feature_addition_mfe_groups(X_train, y_train, X_test, y_test, model, method,
         result_matrix = result_matrix[result_matrix["dataset - id"] != dataset_id]
     # Create comparison matrix for new dataset
     start = time.time()
-    comparison_result_matrix = create_empty_core_matrix_for_dataset(X_train, model, dataset_id)
-    comparison_result_matrix = add_mfe_metadata_columns_groups(X_train, y_train, comparison_result_matrix, groups)
+    empty_comparison_result_matrix = create_empty_core_matrix_for_dataset(X_train, model, dataset_id)
+    comparison_result_matrix_1 = add_mfe_metadata_columns_groups(X_train, y_train, empty_comparison_result_matrix, groupname1)
+    comparison_result_matrix_2 = add_mfe_metadata_columns_groups(X_train, y_train, empty_comparison_result_matrix, groupname2)
+    if groupname3 is None:
+        comparison_result_matrix = safe_merge(comparison_result_matrix_1, comparison_result_matrix_2)
+    else:
+        comparison_result_matrix_3 = add_mfe_metadata_columns_groups(X_train, y_train, empty_comparison_result_matrix, groupname3)
+        comparison_result_matrix = safe_merge(safe_merge(comparison_result_matrix_1, comparison_result_matrix_2), comparison_result_matrix_3)
     end = time.time()
     print("Time for creating Comparison Result Matrix: " + str(end - start))
     # comparison_result_matrix.to_parquet("Comparison_Result_Matrix.parquet")
@@ -222,12 +248,8 @@ def predict_improvement(result_matrix, comparison_result_matrix, category_or_met
 def process_group(dataset_id, method, group, model, last_reset_time):
     last_reset_time.value = time.time()
     print(f"[Processing Group] {group}")
-    if group == "info_theory":
-        groupname = "info-theory"
-    else:
-        groupname = group
     X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
-    X_train, y_train, X_test, y_test = feature_addition_mfe_group(X_train, y_train, X_test, y_test, model, method, dataset_id, groupname)
+    X_train, y_train, X_test, y_test = feature_addition_mfe_group(X_train, y_train, X_test, y_test, model, method, dataset_id, group)
     y_series = pd.Series(y_train['target'].tolist())
     data = concat_data(X_train, y_series, X_test, y_test, "target")
     data.to_parquet(f"FE_{dataset_id}_{method}_{group}_CatBoost_best.parquet")
