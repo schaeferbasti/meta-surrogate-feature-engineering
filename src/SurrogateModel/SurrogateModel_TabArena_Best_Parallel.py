@@ -175,7 +175,7 @@ def feature_addition_mfe_groups(X_train, y_train, X_test, y_test, model, method,
         groups = "Without_Statistical"
     elif str(groups) == "statisticalinfo_theory":
         groups = "Without_General"
-    elif str(groups) == "generalstatisticalgeneral']":
+    elif str(groups) == "generalstatisticalinfo_theory']":
         groups = "All"
     result_matrix = pd.read_parquet("src/Metadata/mfe/MFE_" + str(groups) + "_Matrix_Complete.parquet")
     datasets = pd.unique(result_matrix["dataset - id"]).tolist()
