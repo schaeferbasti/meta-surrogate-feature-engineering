@@ -65,6 +65,7 @@ def main():
     average_recursion = time_per_method.values[0] / 12
     average_best = time_per_method.values[1] / 12
     average_time_per_method = pd.Series([average_recursion, average_best], index=["Recursion", "Best"])
+
     # Plot
     plt.figure(figsize=(10, 6))
     time_per_method.plot(kind='bar', color='skyblue', label='Total Time for 12 Datasets per Surrogate Model')
