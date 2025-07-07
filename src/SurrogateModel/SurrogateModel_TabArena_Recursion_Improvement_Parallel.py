@@ -176,7 +176,7 @@ def recursive_feature_addition_mfe_groups(X, y, X_test, y_test, model, method, d
     # comparison_result_matrix.to_parquet("Comparison_Result_Matrix.parquet")
     # Predict and split again
     start = time.time()
-    X_new, y_new = predict_improvement(result_matrix, comparison_result_matrix, "all", X, y, wanted_min_relative_improvement)
+    X_new, y_new = predict_improvement(result_matrix, comparison_result_matrix, method, X, y, wanted_min_relative_improvement)
     # Recurse
     end = time.time()
     print("Time for Predicting Improvement using CatBoost: " + str(end - start))
@@ -231,31 +231,31 @@ def main(dataset_id, wanted_min_relative_improvement, method):
             X_train, y_train, X_test, y_test = recursive_feature_addition_mfe_group(X_train, y_train, X_test, y_test, model, method, dataset_id, groups[i], wanted_min_relative_improvement)
             data = concat_data(X_train, y_train, X_test, y_test, "target")
             data.to_parquet(
-                "FE_" + str(dataset_id) + "_" + str(method) + "_only_" + str(groups[i]) + "_CatBoost_best.parquet")
+                "FE_" + str(dataset_id) + "_" + str(method) + "_only_" + str(groups[i]) + "_CatBoost_recursion.parquet")
         groups = groups[1] + groups[2]
         print(groups)
         X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
         X_train, y_train, X_test, y_test = recursive_feature_addition_mfe_groups(X_train, y_train, X_test, y_test, model, method, dataset_id, groups, wanted_min_relative_improvement)
         data = concat_data(X_train, y_train, X_test, y_test, "target")
-        data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_without_info_theory_CatBoost_best.parquet")
+        data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_without_info_theory_CatBoost_recursion.parquet")
         groups = groups[2] + groups[3]
         print(groups)
         X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
         X_train, y_train, X_test, y_test = recursive_feature_addition_mfe_groups(X_train, y_train, X_test, y_test, model, method, dataset_id, groups, wanted_min_relative_improvement)
         data = concat_data(X_train, y_train, X_test, y_test, "target")
-        data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_without_general_CatBoost_best.parquet")
+        data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_without_general_CatBoost_recursion.parquet")
         groups = groups[1] + groups[3]
         print(groups)
         X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
         X_train, y_train, X_test, y_test = recursive_feature_addition_mfe_groups(X_train, y_train, X_test, y_test, model, method, dataset_id, groups, wanted_min_relative_improvement)
         data = concat_data(X_train, y_train, X_test, y_test, "target")
-        data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_without_statistical_CatBoost_best.parquet")
+        data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_without_statistical_CatBoost_recursion.parquet")
         groups = groups[1] + groups[2] + groups[3]
         print(groups)
         X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
         X_train, y_train, X_test, y_test = recursive_feature_addition_mfe_groups(X_train, y_train, X_test, y_test, model, method, dataset_id, groups, wanted_min_relative_improvement)
         data = concat_data(X_train, y_train, X_test, y_test, "target")
-        data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_all_CatBoost_best.parquet")
+        data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_all_CatBoost_recursion.parquet")
     else:
         X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
         start = time.time()
@@ -300,7 +300,7 @@ def main_wrapper():
     # parser.add_argument('--mf_method', required=True, help='Metafeature Method')
     parser.add_argument('--dataset', required=True, help='Metafeature Method')
     args = parser.parse_args()
-    method = "pandas"
+    method = "mfe"
     wanted_min_relative_improvement = 0.1
     main(int(args.dataset), wanted_min_relative_improvement, method)
 
