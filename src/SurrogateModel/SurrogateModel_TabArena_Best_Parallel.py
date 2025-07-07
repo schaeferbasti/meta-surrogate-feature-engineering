@@ -20,9 +20,13 @@ from src.utils.create_feature_and_featurename import create_featurenames, extrac
 from src.utils.get_data import get_openml_dataset_split_and_metadata, concat_data
 from src.utils.get_matrix import get_matrix_core_columns
 from src.Metadata.mfe.Add_MFE_Metafeatures import add_mfe_metadata_columns_groups, add_mfe_metadata_columns_group
+from multiprocessing import Value
+import ctypes
 
 import warnings
 warnings.filterwarnings('ignore')
+
+last_reset_time = Value(ctypes.c_double, time.time())
 
 
 def create_empty_core_matrix_for_dataset(X_train, model, dataset_id) -> pd.DataFrame:
@@ -207,58 +211,81 @@ def predict_improvement(result_matrix, comparison_result_matrix, category_or_met
     return X, y
 
 
-def main(dataset_id, method):
+def process_group(dataset_id, method, group, model, last_reset_time):
+    last_reset_time.value = time.time()
+    print(f"[Processing Group] {group}")
+    X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
+    X_train, y_train, X_test, y_test = feature_addition_mfe_group(
+        X_train, y_train, X_test, y_test, model, method, dataset_id, group
+    )
+    y_series = pd.Series(y_train['target'].tolist())
+    data = concat_data(X_train, y_series, X_test, y_test, "target")
+    data.to_parquet(f"FE_{dataset_id}_{method}_{group}_CatBoost_best.parquet")
+
+
+def process_groups(dataset_id, method, groups, model, last_reset_time):
+    X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
+    X_train, y_train, X_test, y_test = feature_addition_mfe_groups(X_train, y_train, X_test, y_test, model, method,
+                                                                   dataset_id, groups)
+    y_list = y_train['target'].tolist()
+    y_series = pd.Series(y_list)
+    data = concat_data(X_train, y_series, X_test, y_test, "target")
+    data.to_parquet(f"FE_{dataset_id}_{method}_{str(groups)}_CatBoost_best.parquet")
+
+
+
+def main(dataset_id, method, last_reset_time):
     print("Method: " + str(method) + ", Dataset: " + str(dataset_id) + ", Model: " + str("CatBoost"))
     model = "LightGBM_BAG_L1"
-    n_features_to_add = 10
-    j = 0
+    if method.startswith("MFE"):
 
-    if method.startswith("mfe"):
         groups = ["general", "statistical", "info-theory"]
-        for i in range(len(groups)):
-            print(groups[i])
-            X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
-            X_train, y_train, X_test, y_test = feature_addition_mfe_group(X_train, y_train, X_test, y_test, model, method, dataset_id, groups[i])
-            y_list = y_train['target'].tolist()
-            y_series = pd.Series(y_list)
-            data = concat_data(X_train, y_series, X_test, y_test, "target")
-            data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_only_" + str(groups[i]) + "_CatBoost_best.parquet")
+        for group in groups:
+            print(f"\n=== Starting group: {group} ===")
+            process_func = lambda: process_group(dataset_id, method, group, model, last_reset_time)
+            exit_code = run_with_resource_limits(process_func, mem_limit_mb=2048, time_limit_sec=3600,
+                                                 last_reset_time=last_reset_time)
+            if exit_code != 0:
+                print(f"[Warning] Group {group} failed or was terminated. Skipping.\n")
+                continue
+
         groups = groups[1] + groups[2]
-        print(groups)
-        X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
-        X_train, y_train, X_test, y_test = feature_addition_mfe_groups(X_train, y_train, X_test, y_test, model, method, dataset_id, groups)
-        y_list = y_train['target'].tolist()
-        y_series = pd.Series(y_list)
-        data = concat_data(X_train, y_series, X_test, y_test, "target")
-        data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_without_info_theory_CatBoost_best.parquet")
+        last_reset_time.value = time.time()
+        print(f"\n=== Starting groups: {groups} ===")
+        process_func = lambda: process_groups(dataset_id, method, group, model, last_reset_time)
+        exit_code = run_with_resource_limits(process_func, mem_limit_mb=2048, time_limit_sec=3600, last_reset_time=last_reset_time)
+        if exit_code != 0:
+            print(f"[Warning] Groups {groups} failed or was terminated. Skipping.\n")
+
         groups = groups[2] + groups[3]
-        print(groups)
-        X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
-        X_train, y_train, X_test, y_test = feature_addition_mfe_groups(X_train, y_train, X_test, y_test, model, method, dataset_id, groups)
-        y_list = y_train['target'].tolist()
-        y_series = pd.Series(y_list)
-        data = concat_data(X_train, y_series, X_test, y_test, "target")
-        data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_without_general_CatBoost_best.parquet")
+        last_reset_time.value = time.time()
+        print(f"\n=== Starting groups: {groups} ===")
+        process_func = lambda: process_groups(dataset_id, method, group, model, last_reset_time)
+        exit_code = run_with_resource_limits(process_func, mem_limit_mb=2048, time_limit_sec=3600,
+                                             last_reset_time=last_reset_time)
+        if exit_code != 0:
+            print(f"[Warning] Groups {groups} failed or was terminated. Skipping.\n")
+
         groups = groups[1] + groups[3]
-        print(groups)
-        X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
-        X_train, y_train, X_test, y_test = feature_addition_mfe_groups(X_train, y_train, X_test, y_test, model, method, dataset_id, groups)
-        y_list = y_train['target'].tolist()
-        y_series = pd.Series(y_list)
-        data = concat_data(X_train, y_series, X_test, y_test, "target")
-        data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_without_statistical_CatBoost_best.parquet")
+        last_reset_time.value = time.time()
+        print(f"\n=== Starting groups: {groups} ===")
+        process_func = lambda: process_groups(dataset_id, method, group, model, last_reset_time)
+        exit_code = run_with_resource_limits(process_func, mem_limit_mb=2048, time_limit_sec=3600, last_reset_time=last_reset_time)
+        if exit_code != 0:
+            print(f"[Warning] Groups {groups} failed or was terminated. Skipping.\n")
+
         groups = groups[1] + groups[2] + groups[3]
-        print(groups)
-        X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
-        X_train, y_train, X_test, y_test = feature_addition_mfe_groups(X_train, y_train, X_test, y_test, model, method, dataset_id, groups)
-        y_list = y_train['target'].tolist()
-        y_series = pd.Series(y_list)
-        data = concat_data(X_train, y_series, X_test, y_test, "target")
-        data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_all_CatBoost_best.parquet")
+        last_reset_time.value = time.time()
+        print(f"\n=== Starting groups: {groups} ===")
+        process_func = lambda: process_groups(dataset_id, method, group, model, last_reset_time)
+        exit_code = run_with_resource_limits(process_func, mem_limit_mb=2048, time_limit_sec=3600, last_reset_time=last_reset_time)
+        if exit_code != 0:
+            print(f"[Warning] Groups {groups} failed or was terminated. Skipping.\n")
     else:
+        last_reset_time.value = time.time()
         X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
         start = time.time()
-        X_train, y_train, X_test, y_test = feature_addition(j, n_features_to_add, X_train, y_train, X_test, y_test, model, method, dataset_metadata, None, dataset_id)
+        X_train, y_train, X_test, y_test = feature_addition(X_train, y_train, X_test, y_test, model, method, dataset_metadata, dataset_id)
         end = time.time()
         y_list = y_train['target'].tolist()
         y_series = pd.Series(y_list)
@@ -267,16 +294,15 @@ def main(dataset_id, method):
         data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_CatBoost_best.parquet")
 
 
-def run_with_resource_limits(target_func, mem_limit_mb, time_limit_sec, check_interval=5):
+def run_with_resource_limits(target_func, mem_limit_mb, time_limit_sec, last_reset_time, check_interval=5):
     process = multiprocessing.Process(target=target_func)
     process.start()
     pid = process.pid
-    start_time = time.time()
 
     while process.is_alive():
         try:
             mem = psutil.Process(pid).memory_info().rss / (1024 * 1024)  # MB
-            elapsed_time = time.time() - start_time
+            elapsed_time = time.time() - last_reset_time.value
 
             if mem > mem_limit_mb:
                 print(f"[Monitor] Memory exceeded: {mem:.2f} MB > {mem_limit_mb} MB. Terminating.")
@@ -296,20 +322,21 @@ def run_with_resource_limits(target_func, mem_limit_mb, time_limit_sec, check_in
     return process.exitcode
 
 
-def main_wrapper():
+def main_wrapper(last_reset_time):
     parser = argparse.ArgumentParser(description='Run Surrogate Model with Metadata from Method')
     # parser.add_argument('--mf_method', required=True, help='Metafeature Method')
     parser.add_argument('--dataset', required=True, help='Dataset')
     args = parser.parse_args()
-    method = "mfe"
-    main(int(args.dataset), method)
+    method = "MFE"
+    main(int(args.dataset), method, last_reset_time)
     # main(2073, method)
 
 
 if __name__ == '__main__':
-    memory_limit_mb = 64000  # 64 GB
-    time_limit_sec = 10800  # 1h
-    exit_code = run_with_resource_limits(main_wrapper, memory_limit_mb, time_limit_sec)
+    memory_limit_mb = 64000     # 64 GB
+    time_limit_sec = 3600       # 1h
+    last_reset_time = Value(ctypes.c_double, time.time())
+    exit_code = run_with_resource_limits(main_wrapper(last_reset_time), memory_limit_mb, time_limit_sec, last_reset_time, check_interval=5)
     if exit_code != 0:
         print(f"Process exited with code {exit_code}")
         sys.exit(exit_code)
