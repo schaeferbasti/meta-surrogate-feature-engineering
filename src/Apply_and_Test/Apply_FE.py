@@ -3,8 +3,7 @@ import os
 import pandas as pd
 
 from src.utils.create_feature_and_featurename import create_feature_and_featurename
-from src.utils.get_data import get_openml_dataset, split_data, concat_data
-from src.utils.preprocess_data import factorize_dataset
+from src.utils.get_data import get_openml_dataset
 from src.utils.create_feature_and_featurename import extract_operation_and_original_features
 
 import warnings
@@ -24,17 +23,6 @@ def get_additional_features(X, y, prediction_result):
             X = X.reset_index(drop=True)
             y = y.reset_index(drop=True)
             feature = feature.reset_index(drop=True)
-            with pd.option_context('display.max_rows', None, 'display.max_columns', None):  # more options can be specified also
-                print("get_additional_features")
-                print("X")
-                print(X)
-                print(X.index)
-                print("y")
-                print(y)
-                print(y.index)
-                print("Feature")
-                print(feature)
-                print(feature.index)
             X = pd.concat([X, feature], axis=1)
         else:
             X = X.drop(featurename, axis=1)
@@ -55,13 +43,6 @@ def execute_feature_engineering_recursive(prediction_result, X, y):
     dataset_id = int(prediction_result["dataset - id"].values[0])
     model = prediction_result["model"].values[0]
     print("execute_feature_engineering_recursive")
-    with pd.option_context('display.max_rows', None, 'display.max_columns', None):  # more options can be specified also
-        print("X")
-        print(X)
-        print(X.index)
-        print("y")
-        print(y)
-        print(y.index)
     X, y = get_additional_features(X, y, prediction_result)
     return X, y, dataset_id, model
 
