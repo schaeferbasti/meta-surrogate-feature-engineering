@@ -169,13 +169,13 @@ def feature_addition_mfe_group(X_train, y_train, X_test, y_test, model, method, 
 
 def feature_addition_mfe_groups(X_train, y_train, X_test, y_test, model, method, dataset_id, groups):
     # Reload base matrix
-    if str(groups) == "['general', 'statistical']":
+    if str(groups) == "generalstatistical":
         groups = "Without_Info_Theory"
-    elif str(groups) == "['general', 'info_theory']":
+    elif str(groups) == "generalinfo_theory":
         groups = "Without_Statistical"
-    elif str(groups) == "['statistical', 'info_theory']":
+    elif str(groups) == "statisticalinfo_theory":
         groups = "Without_General"
-    elif str(groups) == "['general', 'statistical', 'general']":
+    elif str(groups) == "generalstatisticalgeneral']":
         groups = "All"
     result_matrix = pd.read_parquet("src/Metadata/mfe/MFE_" + str(groups) + "_Matrix_Complete.parquet")
     datasets = pd.unique(result_matrix["dataset - id"]).tolist()
@@ -222,8 +222,12 @@ def predict_improvement(result_matrix, comparison_result_matrix, category_or_met
 def process_group(dataset_id, method, group, model, last_reset_time):
     last_reset_time.value = time.time()
     print(f"[Processing Group] {group}")
+    if group == "info_theory":
+        groupname = "info-theory"
+    else:
+        groupname = group
     X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
-    X_train, y_train, X_test, y_test = feature_addition_mfe_group(X_train, y_train, X_test, y_test, model, method, dataset_id, group)
+    X_train, y_train, X_test, y_test = feature_addition_mfe_group(X_train, y_train, X_test, y_test, model, method, dataset_id, groupname)
     y_series = pd.Series(y_train['target'].tolist())
     data = concat_data(X_train, y_series, X_test, y_test, "target")
     data.to_parquet(f"FE_{dataset_id}_{method}_{group}_CatBoost_best.parquet")
@@ -254,7 +258,7 @@ def main(dataset_id, method, last_reset_time):
                 print(f"[Warning] Group {group} failed or was terminated. Skipping.\n")
                 continue
 
-        groups = groups[1] + groups[2]
+        groups = groups[0] + groups[1]
         last_reset_time.value = time.time()
         print(f"\n=== Starting groups: {groups} ===")
         process_func = lambda: process_groups(dataset_id, method, groups, model, last_reset_time)
@@ -262,7 +266,7 @@ def main(dataset_id, method, last_reset_time):
         if exit_code != 0:
             print(f"[Warning] Groups {groups} failed or was terminated. Skipping.\n")
 
-        groups = groups[2] + groups[3]
+        groups = groups[1] + groups[2]
         last_reset_time.value = time.time()
         print(f"\n=== Starting groups: {groups} ===")
         process_func = lambda: process_groups(dataset_id, method, groups, model, last_reset_time)
@@ -271,7 +275,7 @@ def main(dataset_id, method, last_reset_time):
         if exit_code != 0:
             print(f"[Warning] Groups {groups} failed or was terminated. Skipping.\n")
 
-        groups = groups[1] + groups[3]
+        groups = groups[0] + groups[2]
         last_reset_time.value = time.time()
         print(f"\n=== Starting groups: {groups} ===")
         process_func = lambda: process_groups(dataset_id, method, groups, model, last_reset_time)
@@ -279,7 +283,7 @@ def main(dataset_id, method, last_reset_time):
         if exit_code != 0:
             print(f"[Warning] Groups {groups} failed or was terminated. Skipping.\n")
 
-        groups = groups[1] + groups[2] + groups[3]
+        groups = groups[0] + groups[1] + groups[2]
         last_reset_time.value = time.time()
         print(f"\n=== Starting groups: {groups} ===")
         process_func = lambda: process_groups(dataset_id, method, groups, model, last_reset_time)
