@@ -1,0 +1,14 @@
+OpenFE Times
+
+OpenFE on dataset 359963: 270.2420997619629 seconds.
+OpenFE on dataset 359968: 113.1450560092926 seconds.
+OpenFE on dataset 359971: 235.25767874717712 seconds.
+OpenFE on dataset 359972: 263.2364981174469 seconds.
+OpenFE on dataset 359974: 519.0832278728485 seconds.
+OpenFE on dataset 359975: 543.8154578208923 seconds.
+OpenFE on dataset 359979: 77.65611815452576 seconds.
+OpenFE on dataset 359981: 553.696389913559 seconds.
+OpenFE on dataset 359982: 389.4768738746643 seconds.
+OpenFE on dataset 359987: 1452.2935192584991 seconds.
+OpenFE on dataset 359992: 295.2924048900604 seconds.
+OpenFE on dataset 359993: 969.1653082370758 seconds.
