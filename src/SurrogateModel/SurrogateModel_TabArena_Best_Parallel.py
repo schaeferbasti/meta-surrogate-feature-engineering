@@ -169,7 +169,15 @@ def feature_addition_mfe_group(X_train, y_train, X_test, y_test, model, method, 
 
 def feature_addition_mfe_groups(X_train, y_train, X_test, y_test, model, method, dataset_id, groups):
     # Reload base matrix
-    result_matrix = pd.read_parquet("src/Metadata/core/Core_Matrix_Complete.parquet")
+    if str(groups) == "['general', 'statistical']":
+        groups = "Without_Info_Theory"
+    elif str(groups) == "['general', 'info_theory']":
+        groups = "Without_Statistical"
+    elif str(groups) == "['statistical', 'info_theory']":
+        groups = "Without_General"
+    elif str(groups) == "['general', 'statistical', 'general']":
+        groups = "All"
+    result_matrix = pd.read_parquet("src/Metadata/mfe/MFE_" + str(groups) + "_Matrix_Complete.parquet")
     datasets = pd.unique(result_matrix["dataset - id"]).tolist()
     print("Datasets in " + str(method) + " Matrix: " + str(datasets))
 
@@ -215,18 +223,16 @@ def process_group(dataset_id, method, group, model, last_reset_time):
     last_reset_time.value = time.time()
     print(f"[Processing Group] {group}")
     X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
-    X_train, y_train, X_test, y_test = feature_addition_mfe_group(
-        X_train, y_train, X_test, y_test, model, method, dataset_id, group
-    )
+    X_train, y_train, X_test, y_test = feature_addition_mfe_group(X_train, y_train, X_test, y_test, model, method, dataset_id, group)
     y_series = pd.Series(y_train['target'].tolist())
     data = concat_data(X_train, y_series, X_test, y_test, "target")
     data.to_parquet(f"FE_{dataset_id}_{method}_{group}_CatBoost_best.parquet")
 
 
 def process_groups(dataset_id, method, groups, model, last_reset_time):
+    last_reset_time.value = time.time()
     X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
-    X_train, y_train, X_test, y_test = feature_addition_mfe_groups(X_train, y_train, X_test, y_test, model, method,
-                                                                   dataset_id, groups)
+    X_train, y_train, X_test, y_test = feature_addition_mfe_groups(X_train, y_train, X_test, y_test, model, method, dataset_id, groups)
     y_list = y_train['target'].tolist()
     y_series = pd.Series(y_list)
     data = concat_data(X_train, y_series, X_test, y_test, "target")
@@ -239,12 +245,11 @@ def main(dataset_id, method, last_reset_time):
     model = "LightGBM_BAG_L1"
     if method.startswith("MFE"):
 
-        groups = ["general", "statistical", "info-theory"]
+        groups = ["general", "statistical", "info_theory"]
         for group in groups:
             print(f"\n=== Starting group: {group} ===")
             process_func = lambda: process_group(dataset_id, method, group, model, last_reset_time)
-            exit_code = run_with_resource_limits(process_func, mem_limit_mb=2048, time_limit_sec=3600,
-                                                 last_reset_time=last_reset_time)
+            exit_code = run_with_resource_limits(process_func, mem_limit_mb=64000, time_limit_sec=3600, last_reset_time=last_reset_time)
             if exit_code != 0:
                 print(f"[Warning] Group {group} failed or was terminated. Skipping.\n")
                 continue
@@ -252,16 +257,16 @@ def main(dataset_id, method, last_reset_time):
         groups = groups[1] + groups[2]
         last_reset_time.value = time.time()
         print(f"\n=== Starting groups: {groups} ===")
-        process_func = lambda: process_groups(dataset_id, method, group, model, last_reset_time)
-        exit_code = run_with_resource_limits(process_func, mem_limit_mb=2048, time_limit_sec=3600, last_reset_time=last_reset_time)
+        process_func = lambda: process_groups(dataset_id, method, groups, model, last_reset_time)
+        exit_code = run_with_resource_limits(process_func, mem_limit_mb=64000, time_limit_sec=3600, last_reset_time=last_reset_time)
         if exit_code != 0:
             print(f"[Warning] Groups {groups} failed or was terminated. Skipping.\n")
 
         groups = groups[2] + groups[3]
         last_reset_time.value = time.time()
         print(f"\n=== Starting groups: {groups} ===")
-        process_func = lambda: process_groups(dataset_id, method, group, model, last_reset_time)
-        exit_code = run_with_resource_limits(process_func, mem_limit_mb=2048, time_limit_sec=3600,
+        process_func = lambda: process_groups(dataset_id, method, groups, model, last_reset_time)
+        exit_code = run_with_resource_limits(process_func, mem_limit_mb=64000, time_limit_sec=3600,
                                              last_reset_time=last_reset_time)
         if exit_code != 0:
             print(f"[Warning] Groups {groups} failed or was terminated. Skipping.\n")
@@ -269,16 +274,16 @@ def main(dataset_id, method, last_reset_time):
         groups = groups[1] + groups[3]
         last_reset_time.value = time.time()
         print(f"\n=== Starting groups: {groups} ===")
-        process_func = lambda: process_groups(dataset_id, method, group, model, last_reset_time)
-        exit_code = run_with_resource_limits(process_func, mem_limit_mb=2048, time_limit_sec=3600, last_reset_time=last_reset_time)
+        process_func = lambda: process_groups(dataset_id, method, groups, model, last_reset_time)
+        exit_code = run_with_resource_limits(process_func, mem_limit_mb=64000, time_limit_sec=3600, last_reset_time=last_reset_time)
         if exit_code != 0:
             print(f"[Warning] Groups {groups} failed or was terminated. Skipping.\n")
 
         groups = groups[1] + groups[2] + groups[3]
         last_reset_time.value = time.time()
         print(f"\n=== Starting groups: {groups} ===")
-        process_func = lambda: process_groups(dataset_id, method, group, model, last_reset_time)
-        exit_code = run_with_resource_limits(process_func, mem_limit_mb=2048, time_limit_sec=3600, last_reset_time=last_reset_time)
+        process_func = lambda: process_groups(dataset_id, method, groups, model, last_reset_time)
+        exit_code = run_with_resource_limits(process_func, mem_limit_mb=64000, time_limit_sec=3600, last_reset_time=last_reset_time)
         if exit_code != 0:
             print(f"[Warning] Groups {groups} failed or was terminated. Skipping.\n")
     else:
@@ -333,10 +338,5 @@ def main_wrapper(last_reset_time):
 
 
 if __name__ == '__main__':
-    memory_limit_mb = 64000     # 64 GB
-    time_limit_sec = 3600       # 1h
     last_reset_time = Value(ctypes.c_double, time.time())
-    exit_code = run_with_resource_limits(main_wrapper(last_reset_time), memory_limit_mb, time_limit_sec, last_reset_time, check_interval=5)
-    if exit_code != 0:
-        print(f"Process exited with code {exit_code}")
-        sys.exit(exit_code)
+    main_wrapper(last_reset_time)
