@@ -17,7 +17,7 @@ from src.Metadata.d2v.Add_d2v_Metafeatures import add_d2v_metadata_columns
 from src.Metadata.pandas.Add_Pandas_Metafeatures import add_pandas_metadata_columns
 from src.Metadata.tabpfn.Add_TabPFN_Metafeatures import add_tabpfn_metadata_columns
 from src.utils.create_feature_and_featurename import create_featurenames, extract_operation_and_original_features
-from src.utils.get_data import get_openml_dataset_split_and_metadata, concat_data
+from src.utils.get_data import get_openml_dataset_split_and_metadata, concat_data, split_data
 from src.utils.get_matrix import get_matrix_core_columns
 from src.Metadata.mfe.Add_MFE_Metafeatures import add_mfe_metadata_columns_groups, add_mfe_metadata_columns_group
 from multiprocessing import Value
@@ -163,21 +163,26 @@ def feature_addition_mfe_group(X_train, y_train, X_test, y_test, model, method, 
     if dataset_id in datasets:
         result_matrix = result_matrix[result_matrix["dataset - id"] != dataset_id]
     # Create comparison matrix for new dataset
-    start = time.time()
-    comparison_result_matrix = create_empty_core_matrix_for_dataset(X_train, model, dataset_id)
-    comparison_result_matrix = add_mfe_metadata_columns_group(X_train, y_train, comparison_result_matrix, group)
-    end = time.time()
-    print("Time for creating Comparison Result Matrix: " + str(end - start))
-    # Predict and split again
-    start = time.time()
-    X_new, y_new = predict_improvement(result_matrix, comparison_result_matrix, "all")
-    end = time.time()
-    print("Time for Predicting Improvement using CatBoost: " + str(end - start))
-    y_list = y_new['target'].tolist()
-    y_series = pd.Series(y_list)
-    data = concat_data(X_new, y_series, X_test, y_test, "target")
-    data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_" + str(groupname) + "_CatBoost_best.parquet")
-    return X_new, y_new, X_test, y_test
+    try:
+        data = pd.read_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_" + str(groupname) + "_CatBoost_best.parquet")
+        X_train, y_train, X_test, y_test = split_data(data, "target")
+        return X_train, y_train, X_test, y_test
+    except FileNotFoundError:
+        start = time.time()
+        comparison_result_matrix = create_empty_core_matrix_for_dataset(X_train, model, dataset_id)
+        comparison_result_matrix = add_mfe_metadata_columns_group(X_train, y_train, comparison_result_matrix, group)
+        end = time.time()
+        print("Time for creating Comparison Result Matrix: " + str(end - start))
+        # Predict and split again
+        start = time.time()
+        X_new, y_new = predict_improvement(result_matrix, comparison_result_matrix, "all")
+        end = time.time()
+        print("Time for Predicting Improvement using CatBoost: " + str(end - start))
+        y_list = y_new['target'].tolist()
+        y_series = pd.Series(y_list)
+        data = concat_data(X_new, y_series, X_test, y_test, "target")
+        data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_" + str(groupname) + "_CatBoost_best.parquet")
+        return X_new, y_new, X_test, y_test
 
 def feature_addition_mfe_groups(X_train, y_train, X_test, y_test, model, method, dataset_id, groups):
     # Reload base matrix
@@ -206,26 +211,31 @@ def feature_addition_mfe_groups(X_train, y_train, X_test, y_test, model, method,
     if dataset_id in datasets:
         result_matrix = result_matrix[result_matrix["dataset - id"] != dataset_id]
     # Create comparison matrix for new dataset
-    start = time.time()
-    empty_comparison_result_matrix = create_empty_core_matrix_for_dataset(X_train, model, dataset_id)
-    comparison_result_matrix_1 = add_mfe_metadata_columns_group(X_train, y_train, empty_comparison_result_matrix, groupname1)
-    comparison_result_matrix_2 = add_mfe_metadata_columns_group(X_train, y_train, empty_comparison_result_matrix, groupname2)
-    if groupname3 is None:
-        comparison_result_matrix = safe_merge(comparison_result_matrix_1, comparison_result_matrix_2)
-    else:
-        comparison_result_matrix_3 = add_mfe_metadata_columns_group(X_train, y_train, empty_comparison_result_matrix, groupname3)
-        comparison_result_matrix = safe_merge(safe_merge(comparison_result_matrix_1, comparison_result_matrix_2), comparison_result_matrix_3)
-    end = time.time()
-    print("Time for creating Comparison Result Matrix: " + str(end - start))
-    # comparison_result_matrix.to_parquet("Comparison_Result_Matrix.parquet")
-    # Predict and split again
-    start = time.time()
-    X_new, y_new = predict_improvement(result_matrix, comparison_result_matrix, "all")
-    end = time.time()
-    print("Time for Predicting Improvement using CatBoost: " + str(end - start))
-    data = concat_data(X_new, y_new, X_test, y_test, "target")
-    data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_CatBoost_best.parquet")
-    return X_new, y_new, X_test, y_test
+    try:
+        data = pd.read_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_" + str(groupname) + "_CatBoost_best.parquet")
+        X_train, y_train, X_test, y_test = split_data(data, "target")
+        return X_train, y_train, X_test, y_test
+    except FileNotFoundError:
+        start = time.time()
+        empty_comparison_result_matrix = create_empty_core_matrix_for_dataset(X_train, model, dataset_id)
+        comparison_result_matrix_1 = add_mfe_metadata_columns_group(X_train, y_train, empty_comparison_result_matrix, groupname1)
+        comparison_result_matrix_2 = add_mfe_metadata_columns_group(X_train, y_train, empty_comparison_result_matrix, groupname2)
+        if groupname3 is None:
+            comparison_result_matrix = safe_merge(comparison_result_matrix_1, comparison_result_matrix_2)
+        else:
+            comparison_result_matrix_3 = add_mfe_metadata_columns_group(X_train, y_train, empty_comparison_result_matrix, groupname3)
+            comparison_result_matrix = safe_merge(safe_merge(comparison_result_matrix_1, comparison_result_matrix_2), comparison_result_matrix_3)
+        end = time.time()
+        print("Time for creating Comparison Result Matrix: " + str(end - start))
+        # comparison_result_matrix.to_parquet("Comparison_Result_Matrix.parquet")
+        # Predict and split again
+        start = time.time()
+        X_new, y_new = predict_improvement(result_matrix, comparison_result_matrix, "all")
+        end = time.time()
+        print("Time for Predicting Improvement using CatBoost: " + str(end - start))
+        data = concat_data(X_new, y_new, X_test, y_test, "target")
+        data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_CatBoost_best.parquet")
+        return X_new, y_new, X_test, y_test
 
 def predict_improvement(result_matrix, comparison_result_matrix, category_or_method):
     y_result = result_matrix["improvement"]
