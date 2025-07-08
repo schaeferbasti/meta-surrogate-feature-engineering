@@ -158,13 +158,25 @@ def get_model_score(X_train, y_train, X_test, y_test, dataset_id):
     return new_results
 
 
-def get_model_score_origin(X_train, y_train, X_test, y_test, dataset_id, origin):
-    lb = run_autogluon_lgbm(X_train, y_train, X_test, y_test)
+def get_model_score_origin_classification(X_train, y_train, X_test, y_test, dataset_id, origin):
+    lb = run_autogluon_lgbm_classification(X_train, y_train, X_test, y_test)
     models = lb["model"]
-    new_results = pd.DataFrame(columns=['origin', 'dataset', 'model', 'score'])
+    new_results = pd.DataFrame(columns=['origin', 'dataset', 'model', 'score_val', 'score_test'])
     for model in models:
         score_val = lb.loc[lb['model'] == model, 'score_val'].values[0]
-        new_results.loc[len(new_results)] = [origin, dataset_id, model, score_val]
+        score_test = lb.loc[lb['model'] == model, 'score_test'].values[0]
+        new_results.loc[len(new_results)] = [origin, dataset_id, model, score_val, score_test]
+    return new_results
+
+
+def get_model_score_origin_regression(X_train, y_train, X_test, y_test, dataset_id, origin):
+    lb = run_autogluon_lgbm_regression(X_train, y_train, X_test, y_test)
+    models = lb["model"]
+    new_results = pd.DataFrame(columns=['origin', 'dataset', 'model', 'score_val', 'score_test'])
+    for model in models:
+        score_val = lb.loc[lb['model'] == model, 'score_val'].values[0]
+        score_test = lb.loc[lb['model'] == model, 'score_test'].values[0]
+        new_results.loc[len(new_results)] = [origin, dataset_id, model, score_val, score_test]
     return new_results
 
 
@@ -267,3 +279,5 @@ def get_zeroshot_models(allowed_models, zeroshot):
             else:
                 zeroshot2024[k] = zeroshot2024[k][1:]
     return zeroshot2024
+
+
