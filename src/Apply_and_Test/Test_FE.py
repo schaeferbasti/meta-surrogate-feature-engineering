@@ -7,6 +7,7 @@ from collections import defaultdict
 
 import pyarrow
 
+from src.Apply_and_Test.Random_Model import run_random_surrogate_model
 from src.Apply_and_Test.analyse_results import analyse_results
 from src.utils.get_data import get_openfe_data
 from src.utils.get_data import split_data, get_openml_dataset_split_and_metadata
@@ -100,7 +101,7 @@ def main():
                 results.to_parquet(result_path)
 
             if is_random:
-                score = results["score"].values[0]
+                score = results["score_test"].values[0]
                 if score > best_score:
                     best_score = score
                     best_random_result = results
