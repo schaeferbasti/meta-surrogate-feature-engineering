@@ -156,7 +156,7 @@ def recursive_feature_addition_mfe_group(X_train, y_train, X_test, y_test, model
         result_matrix = result_matrix[result_matrix["dataset - id"] != dataset_id]
     # Create comparison matrix for new dataset
     try:
-        data = pd.read_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_" + str(groupname) + "_CatBoost_best.parquet")
+        data = pd.read_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_" + str(groupname) + "_CatBoost_recursion.parquet")
         X_train, y_train, X_test, y_test = split_data(data, "target")
         return X_train, y_train, X_test, y_test
     except FileNotFoundError:
