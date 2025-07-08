@@ -208,12 +208,12 @@ def feature_addition_mfe_groups(X_train, y_train, X_test, y_test, model, method,
     # Create comparison matrix for new dataset
     start = time.time()
     empty_comparison_result_matrix = create_empty_core_matrix_for_dataset(X_train, model, dataset_id)
-    comparison_result_matrix_1 = add_mfe_metadata_columns_groups(X_train, y_train, empty_comparison_result_matrix, groupname1)
-    comparison_result_matrix_2 = add_mfe_metadata_columns_groups(X_train, y_train, empty_comparison_result_matrix, groupname2)
+    comparison_result_matrix_1 = add_mfe_metadata_columns_group(X_train, y_train, empty_comparison_result_matrix, groupname1)
+    comparison_result_matrix_2 = add_mfe_metadata_columns_group(X_train, y_train, empty_comparison_result_matrix, groupname2)
     if groupname3 is None:
         comparison_result_matrix = safe_merge(comparison_result_matrix_1, comparison_result_matrix_2)
     else:
-        comparison_result_matrix_3 = add_mfe_metadata_columns_groups(X_train, y_train, empty_comparison_result_matrix, groupname3)
+        comparison_result_matrix_3 = add_mfe_metadata_columns_group(X_train, y_train, empty_comparison_result_matrix, groupname3)
         comparison_result_matrix = safe_merge(safe_merge(comparison_result_matrix_1, comparison_result_matrix_2), comparison_result_matrix_3)
     end = time.time()
     print("Time for creating Comparison Result Matrix: " + str(end - start))
