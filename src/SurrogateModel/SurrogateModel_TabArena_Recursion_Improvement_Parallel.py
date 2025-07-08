@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import argparse
 import multiprocessing
-import sys
 import time
 import numpy as np
 import pandas as pd
@@ -13,15 +12,24 @@ from src.Apply_and_Test.Apply_FE import execute_feature_engineering_recursive
 from src.Metadata.d2v.Add_d2v_Metafeatures import add_d2v_metadata_columns
 from src.Metadata.pandas.Add_Pandas_Metafeatures import add_pandas_metadata_columns
 from src.Metadata.tabpfn.Add_TabPFN_Metafeatures import add_tabpfn_metadata_columns
-from src.Metadata.mfe.Add_MFE_Metafeatures import add_mfe_metadata_columns_groups, add_mfe_metadata_columns_group
+from src.Metadata.mfe.Add_MFE_Metafeatures import add_mfe_metadata_columns_group
 from autogluon.tabular.models import CatBoostModel
 
 from src.utils.create_feature_and_featurename import create_featurenames, extract_operation_and_original_features
-from src.utils.get_data import get_openml_dataset_split_and_metadata, concat_data
+from src.utils.get_data import get_openml_dataset_split_and_metadata, concat_data, split_data
 from src.utils.get_matrix import get_matrix_core_columns
+from multiprocessing import Value
+import ctypes
 
 import warnings
 warnings.filterwarnings('ignore')
+
+last_reset_time = Value(ctypes.c_double, time.time())
+
+merge_keys = ["dataset - id", "feature - name", "operator", "model", "improvement"]
+
+def safe_merge(left, right):
+    return pd.merge(left, right, on=merge_keys, how="inner")
 
 
 def create_empty_core_matrix_for_dataset(X_train, model, dataset_id) -> pd.DataFrame:
@@ -129,9 +137,17 @@ def recursive_feature_addition(X, y, X_test, y_test, model, method, dataset_meta
         return recursive_feature_addition(X_new, y_new, X_test, y_test, model, method, dataset_metadata, category_to_drop, wanted_min_relative_improvement, dataset_id)
 
 
-def recursive_feature_addition_mfe_group(X, y, X_test, y_test, model, method, dataset_id, group, wanted_min_relative_improvement):
+def recursive_feature_addition_mfe_group(X_train, y_train, X_test, y_test, model, method, dataset_id, group, wanted_min_relative_improvement):
     # Reload base matrix
-    result_matrix = pd.read_parquet("src/Metadata/mfe/MFE_" + str(group).title() + "_Matrix_Complete.parquet")
+    if group == "info-theory":
+        filename = "info_theory"
+    else:
+        filename = group
+    result_matrix = pd.read_parquet("src/Metadata/mfe/MFE_" + str(filename).title() + "_Matrix_Complete.parquet")
+    if group == "info_theory":
+        groupname = "info-theory"
+    else:
+        groupname = group
     datasets = pd.unique(result_matrix["dataset - id"]).tolist()
     datasets = [int(x) for x in datasets]
     print("Datasets in MFE_" + str(group).title() + "_Matrix_Complete.parquet: " + str(datasets))
@@ -139,62 +155,98 @@ def recursive_feature_addition_mfe_group(X, y, X_test, y_test, model, method, da
     if dataset_id in datasets:
         result_matrix = result_matrix[result_matrix["dataset - id"] != dataset_id]
     # Create comparison matrix for new dataset
-    start = time.time()
-    comparison_result_matrix = create_empty_core_matrix_for_dataset(X, model, dataset_id)
-    comparison_result_matrix = add_mfe_metadata_columns_group(X, y, comparison_result_matrix, group)
-    end = time.time()
-    print("Time for creating Comparison Result Matrix: " + str(end - start))
-    comparison_result_matrix.to_parquet("Comparison_Result_Matrix.parquet")
-    # Predict and split again
-    start = time.time()
-    X_new, y_new = predict_improvement(result_matrix, comparison_result_matrix, "all", X, y, wanted_min_relative_improvement)
-    end = time.time()
-    print("Time for Predicting Improvement using CatBoost: " + str(end - start))
-    if X_new.equals(X):  # if X_new.shape == X.shape
-        data = concat_data(X, y, X_test, y_test, "target")
-        data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_CatBoost_recursion.parquet")
-        return X, y
-    else:
-        data = concat_data(X_new, y_new, X_test, y_test, "target")
-        data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_CatBoost_recursion.parquet")
-        return recursive_feature_addition_mfe_group(X_new, y_new, X_test, y_test, model, method, dataset_id, group, wanted_min_relative_improvement)
+    try:
+        data = pd.read_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_" + str(groupname) + "_CatBoost_best.parquet")
+        X_train, y_train, X_test, y_test = split_data(data, "target")
+        return X_train, y_train, X_test, y_test
+    except FileNotFoundError:
+        start = time.time()
+        comparison_result_matrix = create_empty_core_matrix_for_dataset(X_train, model, dataset_id)
+        comparison_result_matrix = add_mfe_metadata_columns_group(X_train, y_train, comparison_result_matrix, group)
+        end = time.time()
+        print("Time for creating Comparison Result Matrix: " + str(end - start))
+        # Predict and split again
+        start = time.time()
+        X_new, y_new = predict_improvement(result_matrix, comparison_result_matrix, method, X_train, y_train, wanted_min_relative_improvement)
+        end = time.time()
+        print("Time for Predicting Improvement using CatBoost: " + str(end - start))
+        if X_new.equals(X_train):  # if X_new.shape == X.shape
+            y_list = y_new['target'].tolist()
+            y_series = pd.Series(y_list)
+            data = concat_data(X_train, y_series, X_test, y_test, "target")
+            data.to_parquet(f"FE_{dataset_id}_{method}_{groupname}_CatBoost_recursion.parquet")
+            return X_train, y_train
+        else:
+            data = concat_data(X_new, y_new, X_test, y_test, "target")
+            data.to_parquet(f"FE_{dataset_id}_{method}_{groupname}_CatBoost_recursion.parquet")
+            return recursive_feature_addition_mfe_group(X_new, y_new, X_test, y_test, model, method, dataset_id, group, wanted_min_relative_improvement)
 
-def recursive_feature_addition_mfe_groups(X, y, X_test, y_test, model, method, dataset_id, groups, wanted_min_relative_improvement):
+
+def recursive_feature_addition_mfe_groups(X_train, y_train, X_test, y_test, model, method, dataset_id, groups, wanted_min_relative_improvement):
     # Reload base matrix
-    result_matrix = pd.read_parquet("src/Metadata/core/Core_Matrix_Complete.parquet")
+    group_set = set(groups)
+    if group_set == {"general", "statistical"}:
+        groupname = "Without_Info_Theory"
+        groupname1, groupname2 = "general", "statistical"
+        groupname3 = None
+    elif group_set == {"general", "info_theory"}:
+        groupname = "Without_Statistical"
+        groupname1, groupname2 = "general", "info-theory"
+        groupname3 = None
+    elif group_set == {"statistical", "info_theory"}:
+        groupname = "Without_General"
+        groupname1, groupname2 = "statistical", "info-theory"
+        groupname3 = None
+    elif group_set == {"general", "statistical", "info_theory"}:
+        groupname = "All"
+        groupname1, groupname2, groupname3 = "general", "statistical", "info-theory"
+    else:
+        raise ValueError(f"Unknown group combination: {groups}")
+    result_matrix = pd.read_parquet("src/Metadata/mfe/MFE_" + str(groupname) + "_Matrix_Complete.parquet")
     datasets = pd.unique(result_matrix["dataset - id"]).tolist()
     print("Datasets in " + str(method) + " Matrix: " + str(datasets))
 
     if dataset_id in datasets:
         result_matrix = result_matrix[result_matrix["dataset - id"] != dataset_id]
     # Create comparison matrix for new dataset
-    start = time.time()
-    comparison_result_matrix = create_empty_core_matrix_for_dataset(X, model, dataset_id)
-    comparison_result_matrix = add_mfe_metadata_columns_groups(X, y, comparison_result_matrix, groups)
-    end = time.time()
-    print("Time for creating Comparison Result Matrix: " + str(end - start))
-    # comparison_result_matrix.to_parquet("Comparison_Result_Matrix.parquet")
-    # Predict and split again
-    start = time.time()
-    X_new, y_new = predict_improvement(result_matrix, comparison_result_matrix, method, X, y, wanted_min_relative_improvement)
-    # Recurse
-    end = time.time()
-    print("Time for Predicting Improvement using CatBoost: " + str(end - start))
-    if X_new.equals(X):  # if X_new.shape == X.shape
-        data = concat_data(X, y, X_test, y_test, "target")
-        data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_CatBoost_recursion.parquet")
-        return X, y
-    else:
-        data = concat_data(X_new, y_new, X_test, y_test, "target")
-        data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_CatBoost_recursion.parquet")
-        return recursive_feature_addition_mfe_groups(X_new, y_new, X_test, y_test, model, method, dataset_id, groups, wanted_min_relative_improvement)
+    try:
+        data = pd.read_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_" + str(groupname) + "_CatBoost_recursion.parquet")
+        X_train, y_train, X_test, y_test = split_data(data, "target")
+        return X_train, y_train, X_test, y_test
+    except FileNotFoundError:
+        start = time.time()
+        empty_comparison_result_matrix = create_empty_core_matrix_for_dataset(X_train, model, dataset_id)
+        comparison_result_matrix_1 = add_mfe_metadata_columns_group(X_train, y_train, empty_comparison_result_matrix, groupname1)
+        comparison_result_matrix_2 = add_mfe_metadata_columns_group(X_train, y_train, empty_comparison_result_matrix, groupname2)
+        if groupname3 is None:
+            comparison_result_matrix = safe_merge(comparison_result_matrix_1, comparison_result_matrix_2)
+        else:
+            comparison_result_matrix_3 = add_mfe_metadata_columns_group(X_train, y_train, empty_comparison_result_matrix, groupname3)
+            comparison_result_matrix = safe_merge(safe_merge(comparison_result_matrix_1, comparison_result_matrix_2), comparison_result_matrix_3)
+        end = time.time()
+        print("Time for creating Comparison Result Matrix: " + str(end - start))
+        # comparison_result_matrix.to_parquet("Comparison_Result_Matrix.parquet")
+        # Predict and split again
+        start = time.time()
+        X_new, y_new = predict_improvement(result_matrix, comparison_result_matrix, method, X_train, y_train, wanted_min_relative_improvement)
+        end = time.time()
+        print("Time for Predicting Improvement using CatBoost: " + str(end - start))
+        if X_new.equals(X_train):  # if X_new.shape == X.shape
+            y_list = y_new['target'].tolist()
+            y_series = pd.Series(y_list)
+            data = concat_data(X_train, y_series, X_test, y_test, "target")
+            data.to_parquet(f"FE_{dataset_id}_{method}_{str(groups)}_CatBoost_recursion.parquet")
+            return X_train, y_train
+        else:
+            data = concat_data(X_new, y_new, X_test, y_test, "target")
+            data.to_parquet(f"FE_{dataset_id}_{method}_{str(groups)}_CatBoost_recursion.parquet")
+            return recursive_feature_addition_mfe_group(X_new, y_new, X_test, y_test, model, method, dataset_id, groups, wanted_min_relative_improvement)
 
 
 def predict_improvement(result_matrix, comparison_result_matrix, category_or_method, X_train, y_train, wanted_min_relative_improvement):
     y_result = result_matrix["improvement"]
     result_matrix = result_matrix.drop("improvement", axis=1)
     comparison_result_matrix = comparison_result_matrix.drop("improvement", axis=1)
-    print("Old columns: " + str(X_train.columns))
     # clf = RealMLPModel()
     # clf = TabDPTModel()
     clf = CatBoostModel()
@@ -213,69 +265,111 @@ def predict_improvement(result_matrix, comparison_result_matrix, category_or_met
     else:
         print("Predicted improvement of best operation: " + str(best_operation["predicted_improvement"].values[0]) + " - execute feature engineering")
         X, y, _, _ = execute_feature_engineering_recursive(best_operation, X_train, y_train)
-        print("New columns: " + str(X.columns))
     return X, y
 
 
-def main(dataset_id, wanted_min_relative_improvement, method):
+def process_group(dataset_id, method, group, model, wanted_min_relative_improvement, last_reset_time):
+    last_reset_time.value = time.time()
+    if group == "info_theory":
+        groupname = "info-theory"
+    else:
+        groupname = group
+    print(f"[Processing Group] {groupname}")
+    X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
+    X_train, y_train, X_test, y_test = recursive_feature_addition_mfe_group(X_train, y_train, X_test, y_test, model, method, dataset_id, groupname, wanted_min_relative_improvement)
+    y_series = pd.Series(y_train['target'].tolist())
+    data = concat_data(X_train, y_series, X_test, y_test, "target")
+    data.to_parquet(f"FE_{dataset_id}_{method}_{groupname}_CatBoost_recursion.parquet")
+
+
+def process_groups(dataset_id, method, groups, model, wanted_min_relative_improvement, last_reset_time):
+    last_reset_time.value = time.time()
+    X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
+    X_train, y_train, X_test, y_test = recursive_feature_addition_mfe_groups(X_train, y_train, X_test, y_test, model, method, dataset_id, groups, wanted_min_relative_improvement)
+    y_list = y_train['target'].tolist()
+    y_series = pd.Series(y_list)
+    data = concat_data(X_train, y_series, X_test, y_test, "target")
+    data.to_parquet(f"FE_{dataset_id}_{method}_{str(groups)}_CatBoost_recursion.parquet")
+
+
+def process_method(dataset_id, method, model, wanted_min_relative_improvement, last_reset_time):
+    last_reset_time.value = time.time()
+    X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
+    start = time.time()
+    X_train, y_train = recursive_feature_addition(X_train, y_train, X_test, y_test, model, method, dataset_metadata, None, wanted_min_relative_improvement, dataset_id)
+    end = time.time()
+    print("Time for creating Comparison Result Matrix: " + str(end - start))
+    data = concat_data(X_train, y_train, X_test, y_test, "target")
+    data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_CatBoost_recursion.parquet")
+
+
+def main(dataset_id, method, wanted_min_relative_improvement, last_reset_time):
     print("Method: " + str(method) + ", Dataset: " + str(dataset_id) + ", Model: " + str("CatBoost"))
     model = "LightGBM_BAG_L1"
-    n_features_to_add = 10
-    j = 0
+    if method.startswith("MFE"):
 
-    if method.startswith("mfe"):
-        groups = ["general", "statistical", "info-theory"]
-        for i in range(len(groups)):
-            print(groups[i])
-            X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
-            X_train, y_train, X_test, y_test = recursive_feature_addition_mfe_group(X_train, y_train, X_test, y_test, model, method, dataset_id, groups[i], wanted_min_relative_improvement)
-            data = concat_data(X_train, y_train, X_test, y_test, "target")
-            data.to_parquet(
-                "FE_" + str(dataset_id) + "_" + str(method) + "_only_" + str(groups[i]) + "_CatBoost_recursion.parquet")
-        groups = groups[1] + groups[2]
-        print(groups)
-        X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
-        X_train, y_train, X_test, y_test = recursive_feature_addition_mfe_groups(X_train, y_train, X_test, y_test, model, method, dataset_id, groups, wanted_min_relative_improvement)
-        data = concat_data(X_train, y_train, X_test, y_test, "target")
-        data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_without_info_theory_CatBoost_recursion.parquet")
-        groups = groups[2] + groups[3]
-        print(groups)
-        X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
-        X_train, y_train, X_test, y_test = recursive_feature_addition_mfe_groups(X_train, y_train, X_test, y_test, model, method, dataset_id, groups, wanted_min_relative_improvement)
-        data = concat_data(X_train, y_train, X_test, y_test, "target")
-        data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_without_general_CatBoost_recursion.parquet")
-        groups = groups[1] + groups[3]
-        print(groups)
-        X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
-        X_train, y_train, X_test, y_test = recursive_feature_addition_mfe_groups(X_train, y_train, X_test, y_test, model, method, dataset_id, groups, wanted_min_relative_improvement)
-        data = concat_data(X_train, y_train, X_test, y_test, "target")
-        data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_without_statistical_CatBoost_recursion.parquet")
-        groups = groups[1] + groups[2] + groups[3]
-        print(groups)
-        X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
-        X_train, y_train, X_test, y_test = recursive_feature_addition_mfe_groups(X_train, y_train, X_test, y_test, model, method, dataset_id, groups, wanted_min_relative_improvement)
-        data = concat_data(X_train, y_train, X_test, y_test, "target")
-        data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_all_CatBoost_recursion.parquet")
+        groups = ["general", "statistical", "info_theory"]
+        for group in groups:
+            print(f"\n=== Starting group: {group} ===")
+            process_func = lambda: process_group(dataset_id, method, group, model, wanted_min_relative_improvement, last_reset_time)
+            exit_code = run_with_resource_limits(process_func, mem_limit_mb=64000, time_limit_sec=3600,
+                                                 last_reset_time=last_reset_time)
+            if exit_code != 0:
+                print(f"[Warning] Group {group} failed or was terminated. Skipping.\n")
+                continue
+
+        groupnames = {groups[0], groups[1]}
+        last_reset_time.value = time.time()
+        print(f"\n=== Starting groups: {groupnames} ===")
+        process_func = lambda: process_groups(dataset_id, method, groupnames, model, wanted_min_relative_improvement, last_reset_time)
+        exit_code = run_with_resource_limits(process_func, mem_limit_mb=64000, time_limit_sec=3600,
+                                             last_reset_time=last_reset_time)
+        if exit_code != 0:
+            print(f"[Warning] Groups {groupnames} failed or was terminated. Skipping.\n")
+
+        groupnames = {groups[1], groups[2]}
+        last_reset_time.value = time.time()
+        print(f"\n=== Starting groups: {groupnames} ===")
+        process_func = lambda: process_groups(dataset_id, method, groupnames, model, wanted_min_relative_improvement, last_reset_time)
+        exit_code = run_with_resource_limits(process_func, mem_limit_mb=64000, time_limit_sec=3600,
+                                             last_reset_time=last_reset_time)
+        if exit_code != 0:
+            print(f"[Warning] Groups {groupnames} failed or was terminated. Skipping.\n")
+
+        groupnames = {groups[0], groups[2]}
+        last_reset_time.value = time.time()
+        print(f"\n=== Starting groups: {groupnames} ===")
+        process_func = lambda: process_groups(dataset_id, method, groupnames, model, wanted_min_relative_improvement, last_reset_time)
+        exit_code = run_with_resource_limits(process_func, mem_limit_mb=64000, time_limit_sec=3600,
+                                             last_reset_time=last_reset_time)
+        if exit_code != 0:
+            print(f"[Warning] Groups {groupnames} failed or was terminated. Skipping.\n")
+
+        groupnames = {groups[0], groups[1], groups[2]}
+        last_reset_time.value = time.time()
+        print(f"\n=== Starting groups: {groupnames} ===")
+        process_func = lambda: process_groups(dataset_id, method, groupnames, model, wanted_min_relative_improvement, last_reset_time)
+        exit_code = run_with_resource_limits(process_func, mem_limit_mb=64000, time_limit_sec=3600,
+                                             last_reset_time=last_reset_time)
+        if exit_code != 0:
+            print(f"[Warning] Groups {groupnames} failed or was terminated. Skipping.\n")
     else:
-        X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
-        start = time.time()
-        X_train, y_train = recursive_feature_addition(X_train, y_train, X_test, y_test, model, method, dataset_metadata, None, wanted_min_relative_improvement, dataset_id)
-        end = time.time()
-        print("Time for creating Comparison Result Matrix: " + str(end - start))
-        data = concat_data(X_train, y_train, X_test, y_test, "target")
-        data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_CatBoost_recursion.parquet")
+        print(f"\n=== Starting Method: {method} ===")
+        process_func = lambda: process_method(dataset_id, method, model, wanted_min_relative_improvement, last_reset_time)
+        exit_code = run_with_resource_limits(process_func, mem_limit_mb=64000, time_limit_sec=3600, last_reset_time=last_reset_time)
+        if exit_code != 0:
+            print(f"[Warning] Method {method} failed or was terminated. Skipping.\n")
 
 
-def run_with_resource_limits(target_func, mem_limit_mb, time_limit_sec, check_interval=5):
+def run_with_resource_limits(target_func, mem_limit_mb, time_limit_sec, last_reset_time, check_interval=5):
     process = multiprocessing.Process(target=target_func)
     process.start()
     pid = process.pid
-    start_time = time.time()
 
     while process.is_alive():
         try:
             mem = psutil.Process(pid).memory_info().rss / (1024 * 1024)  # MB
-            elapsed_time = time.time() - start_time
+            elapsed_time = time.time() - last_reset_time.value
 
             if mem > mem_limit_mb:
                 print(f"[Monitor] Memory exceeded: {mem:.2f} MB > {mem_limit_mb} MB. Terminating.")
@@ -295,20 +389,16 @@ def run_with_resource_limits(target_func, mem_limit_mb, time_limit_sec, check_in
     return process.exitcode
 
 
-def main_wrapper():
+def main_wrapper(last_reset_time):
     parser = argparse.ArgumentParser(description='Run CatBoost Surrogate Model with Metadata from Method')
     # parser.add_argument('--mf_method', required=True, help='Metafeature Method')
     parser.add_argument('--dataset', required=True, help='Metafeature Method')
     args = parser.parse_args()
-    method = "mfe"
+    method = "MFE"
     wanted_min_relative_improvement = 0.1
-    main(int(args.dataset), wanted_min_relative_improvement, method)
+    main(int(args.dataset), method, wanted_min_relative_improvement, last_reset_time)
 
 
 if __name__ == '__main__':
-    memory_limit_mb = 64000     # 64 GB
-    time_limit_sec = 3600       # 1h
-    exit_code = run_with_resource_limits(main_wrapper, memory_limit_mb, time_limit_sec)
-    if exit_code != 0:
-        print(f"Process exited with code {exit_code}")
-        sys.exit(exit_code)
+    last_reset_time = Value(ctypes.c_double, time.time())
+    main_wrapper(last_reset_time)
