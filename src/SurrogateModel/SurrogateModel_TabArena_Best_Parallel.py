@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import argparse
 import multiprocessing
-import sys
 import time
 import psutil
 
@@ -19,7 +18,7 @@ from src.Metadata.tabpfn.Add_TabPFN_Metafeatures import add_tabpfn_metadata_colu
 from src.utils.create_feature_and_featurename import create_featurenames, extract_operation_and_original_features
 from src.utils.get_data import get_openml_dataset_split_and_metadata, concat_data, split_data
 from src.utils.get_matrix import get_matrix_core_columns
-from src.Metadata.mfe.Add_MFE_Metafeatures import add_mfe_metadata_columns_groups, add_mfe_metadata_columns_group
+from src.Metadata.mfe.Add_MFE_Metafeatures import add_mfe_metadata_columns_group
 from multiprocessing import Value
 import ctypes
 
@@ -181,7 +180,7 @@ def feature_addition_mfe_group(X_train, y_train, X_test, y_test, model, method, 
         y_list = y_new['target'].tolist()
         y_series = pd.Series(y_list)
         data = concat_data(X_new, y_series, X_test, y_test, "target")
-        data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_" + str(groupname) + "_CatBoost_best.parquet")
+        data.to_parquet(f"FE_{dataset_id}_{method}_{groupname}_CatBoost_best.parquet")
         return X_new, y_new, X_test, y_test
 
 def feature_addition_mfe_groups(X_train, y_train, X_test, y_test, model, method, dataset_id, groups):
@@ -234,7 +233,7 @@ def feature_addition_mfe_groups(X_train, y_train, X_test, y_test, model, method,
         end = time.time()
         print("Time for Predicting Improvement using CatBoost: " + str(end - start))
         data = concat_data(X_new, y_new, X_test, y_test, "target")
-        data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_CatBoost_best.parquet")
+        data.to_parquet(f"FE_{dataset_id}_{method}_{str(groups)}_CatBoost_best.parquet")
         return X_new, y_new, X_test, y_test
 
 def predict_improvement(result_matrix, comparison_result_matrix, category_or_method):
@@ -292,7 +291,6 @@ def process_method(dataset_id, method, groups, model, last_reset_time):
     print("Time for creating Comparison Result Matrix: " + str(end - start))
     data = concat_data(X_train, y_series, X_test, y_test, "target")
     data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_CatBoost_best.parquet")
-
 
 
 def main(dataset_id, method, last_reset_time):
