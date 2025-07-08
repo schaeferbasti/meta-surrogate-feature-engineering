@@ -281,6 +281,19 @@ def process_groups(dataset_id, method, groups, model, last_reset_time):
     data.to_parquet(f"FE_{dataset_id}_{method}_{str(groups)}_CatBoost_best.parquet")
 
 
+def process_method(dataset_id, method, groups, model, last_reset_time):
+    last_reset_time.value = time.time()
+    X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
+    start = time.time()
+    X_train, y_train, X_test, y_test = feature_addition(X_train, y_train, X_test, y_test, model, method, dataset_metadata, dataset_id)
+    end = time.time()
+    y_list = y_train['target'].tolist()
+    y_series = pd.Series(y_list)
+    print("Time for creating Comparison Result Matrix: " + str(end - start))
+    data = concat_data(X_train, y_series, X_test, y_test, "target")
+    data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_CatBoost_best.parquet")
+
+
 
 def main(dataset_id, method, last_reset_time):
     print("Method: " + str(method) + ", Dataset: " + str(dataset_id) + ", Model: " + str("CatBoost"))
@@ -329,16 +342,12 @@ def main(dataset_id, method, last_reset_time):
         if exit_code != 0:
             print(f"[Warning] Groups {groupnames} failed or was terminated. Skipping.\n")
     else:
-        last_reset_time.value = time.time()
-        X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
-        start = time.time()
-        X_train, y_train, X_test, y_test = feature_addition(X_train, y_train, X_test, y_test, model, method, dataset_metadata, dataset_id)
-        end = time.time()
-        y_list = y_train['target'].tolist()
-        y_series = pd.Series(y_list)
-        print("Time for creating Comparison Result Matrix: " + str(end - start))
-        data = concat_data(X_train, y_series, X_test, y_test, "target")
-        data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_CatBoost_best.parquet")
+        print(f"\n=== Starting Method: {method} ===")
+        process_func = lambda: process_method(dataset_id, method, groupnames, model, last_reset_time)
+        exit_code = run_with_resource_limits(process_func, mem_limit_mb=64000, time_limit_sec=3600, last_reset_time=last_reset_time)
+        if exit_code != 0:
+            print(f"[Warning] Method {method} failed or was terminated. Skipping.\n")
+
 
 
 def run_with_resource_limits(target_func, mem_limit_mb, time_limit_sec, last_reset_time, check_interval=5):
