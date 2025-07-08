@@ -249,12 +249,16 @@ def predict_improvement(result_matrix, comparison_result_matrix, category_or_met
 
 def process_group(dataset_id, method, group, model, last_reset_time):
     last_reset_time.value = time.time()
-    print(f"[Processing Group] {group}")
+    if group == "info_theory":
+        groupname = "info-theory"
+    else:
+        groupname = group
+    print(f"[Processing Group] {groupname}")
     X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
-    X_train, y_train, X_test, y_test = feature_addition_mfe_group(X_train, y_train, X_test, y_test, model, method, dataset_id, group)
+    X_train, y_train, X_test, y_test = feature_addition_mfe_group(X_train, y_train, X_test, y_test, model, method, dataset_id, groupname)
     y_series = pd.Series(y_train['target'].tolist())
     data = concat_data(X_train, y_series, X_test, y_test, "target")
-    data.to_parquet(f"FE_{dataset_id}_{method}_{group}_CatBoost_best.parquet")
+    data.to_parquet(f"FE_{dataset_id}_{method}_{groupname}_CatBoost_best.parquet")
 
 
 def process_groups(dataset_id, method, groups, model, last_reset_time):
@@ -282,7 +286,7 @@ def main(dataset_id, method, last_reset_time):
                 print(f"[Warning] Group {group} failed or was terminated. Skipping.\n")
                 continue
 
-        groupnames = groups[0] + groups[1]
+        groupnames = {groups[0], groups[1]}
         last_reset_time.value = time.time()
         print(f"\n=== Starting groups: {groupnames} ===")
         process_func = lambda: process_groups(dataset_id, method, groupnames, model, last_reset_time)
@@ -290,7 +294,7 @@ def main(dataset_id, method, last_reset_time):
         if exit_code != 0:
             print(f"[Warning] Groups {groupnames} failed or was terminated. Skipping.\n")
 
-        groupnames = groups[1] + groups[2]
+        groupnames = {groups[1], groups[2]}
         last_reset_time.value = time.time()
         print(f"\n=== Starting groups: {groupnames} ===")
         process_func = lambda: process_groups(dataset_id, method, groupnames, model, last_reset_time)
@@ -299,7 +303,7 @@ def main(dataset_id, method, last_reset_time):
         if exit_code != 0:
             print(f"[Warning] Groups {groupnames} failed or was terminated. Skipping.\n")
 
-        groupnames = groups[0] + groups[2]
+        groupnames = {groups[0], groups[2]}
         last_reset_time.value = time.time()
         print(f"\n=== Starting groups: {groupnames} ===")
         process_func = lambda: process_groups(dataset_id, method, groupnames, model, last_reset_time)
@@ -307,7 +311,7 @@ def main(dataset_id, method, last_reset_time):
         if exit_code != 0:
             print(f"[Warning] Groups {groupnames} failed or was terminated. Skipping.\n")
 
-        groupnames = groups[0] + groups[1] + groups[2]
+        groupnames = {groups[0], groups[1], groups[2]}
         last_reset_time.value = time.time()
         print(f"\n=== Starting groups: {groupnames} ===")
         process_func = lambda: process_groups(dataset_id, method, groupnames, model, last_reset_time)
