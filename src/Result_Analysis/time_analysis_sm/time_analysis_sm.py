@@ -68,10 +68,16 @@ def main():
                     "Time": comp_time
                 }])
                 times = pd.concat([times, new_row], ignore_index=True)
+    times = times.drop_duplicates()
+    times_filtered = (
+        times.sort_values("Time")  # sort ascending by Time
+        .groupby("Method", group_keys=False)
+        .head(7)
+    )
 
-    time_per_method = times.groupby("Method")["Time"].sum().sort_values(ascending=False)
-    average_recursion = time_per_method.values[0] / 12
-    average_best = time_per_method.values[1] / 12
+    time_per_method = times_filtered.groupby("Method")["Time"].sum().sort_values(ascending=False)
+    average_recursion = time_per_method.values[0] / 7
+    average_best = time_per_method.values[1] / 7
     average_time_per_method = pd.Series([average_recursion, average_best], index=["Recursion", "Best"])
 
     # Plot
@@ -109,16 +115,22 @@ def main():
             times = pd.concat([times, new_row], ignore_index=True)
 
     times = times.drop_duplicates()
-    time_per_method = times.groupby("Method")["Time"].sum().sort_values(ascending=False)
-    average_openfe = time_per_method.values[0] / 12
-    average_recursion = time_per_method.values[1] / 10
+    times_filtered = (
+        times.sort_values("Time")  # sort ascending by Time
+        .groupby("Method", group_keys=False)
+        .head(7)
+    )
+
+    time_per_method = times_filtered.groupby("Method")["Time"].sum().sort_values(ascending=False)
+    average_openfe = time_per_method.values[0] / 7
+    average_recursion = time_per_method.values[1] / 7
     average_best = time_per_method.values[2] / 7
     average_time_per_method = pd.Series([average_openfe, average_recursion, average_best], index=["OpenFE", "Recursion", "Best"])
 
     # Plot
     plt.figure(figsize=(10, 6))
-    time_per_method.plot(kind='bar', color='skyblue', label='Total Time for 12 Datasets per FE Method')
-    average_time_per_method.plot(kind='bar', width=0.3, color='orange', label='Average Time over 12 Datasets per FE Method')
+    time_per_method.plot(kind='bar', color='skyblue', label='Total Time for 7 Datasets per FE Method')
+    average_time_per_method.plot(kind='bar', width=0.3, color='orange', label='Average Time over 7 Datasets per FE Method')
     plt.legend()
     plt.xlabel("Method")
     plt.ylabel("Time in seconds")
