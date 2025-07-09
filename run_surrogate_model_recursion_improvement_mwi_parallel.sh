@@ -4,7 +4,7 @@
 #SBATCH --partition mlhiwidlc_gpu-rtx2080 # bosch_cpu-cascadelake  #
 
 # Define a name for your job
-#SBATCH --job-name Impr_Rec_Surrogate_Model_Parallel
+#SBATCH --job-name MWI_Impr_Rec_Surrogate_Model_Parallel
 
 # Define the files to write the outputs of the job to.
 #SBATCH --output logs/%x-%A_%a.out   # STDOUT  %x and %A will be replaced by the job name and job id, respectively. short: -o logs/%x-%A.out
