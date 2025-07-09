@@ -1,13 +1,11 @@
 import glob
 
-import openml
 import pandas as pd
 import re
 from collections import defaultdict
 
 import pyarrow
 
-from src.Apply_and_Test.Random_Model import run_random_surrogate_model
 from src.Apply_and_Test.analyse_results import analyse_results
 from src.utils.get_data import get_openfe_data
 from src.utils.get_data import split_data, get_openml_dataset_split_and_metadata
@@ -54,6 +52,7 @@ def main():
                 X_openfe_train, y_openfe_train, X_openfe_test, y_openfe_test = get_openfe_data(X_train, y_train, X_test, y_test)
                 X_openfe_train = X_openfe_train.rename(columns=lambda x: re.sub('[^A-Za-z0-9_]+', '', x))
                 X_openfe_test = X_openfe_test.rename(columns=lambda x: re.sub('[^A-Za-z0-9_]+', '', x))
+
                 if task_type == "Supervised Classification":
                     openfe_results = get_model_score_origin_classification(X_openfe_train, y_openfe_train, X_openfe_test, y_openfe_test, dataset_id, "OpenFE")
                 else:
@@ -80,9 +79,9 @@ def main():
                 result_path = f"test_results/{method}_Result_{dataset_id}.parquet"
             elif "MFE" in name:
                 category = name.split("MFE_")[1].split("_")[0]
-                method = name.split('_')[0]
+                method = name.split('_')[0] + f"_{category}"
                 is_random = False  # e.g., pandas
-                result_path = f"test_results/{method}_{category}_Result_{dataset_id}.parquet"
+                result_path = f"test_results/{method}_Result_{dataset_id}.parquet"
             else:
                 version = name.split('.parquet')[0].split("_")[-1]
                 method = name.split('_')[0] + "_" + version
