@@ -3,12 +3,8 @@ import os
 import numpy as np
 import pandas as pd
 import openml
-import requests
-import yaml
-from openfe import OpenFE
+from openfe import OpenFE, transform
 from sklearn.model_selection import train_test_split
-
-from src.Motivation.OpenFE.utils import transform
 
 
 def get_all_amlb_dataset_ids():
