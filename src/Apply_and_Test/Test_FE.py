@@ -34,8 +34,12 @@ def main():
         try:
             original_results = pd.read_parquet(original_path)
         except FileNotFoundError:
+            X_train_copy = X_train.copy()
+            y_train_copy = y_train.copy()
+            X_test_copy = X_test.copy()
+            y_test_copy = y_test.copy()
             if task_type == "Supervised Classification":
-                original_results = get_model_score_origin_classification(X_train, y_train, X_test, y_test, dataset_id, "Original")
+                original_results = get_model_score_origin_classification(X_train_copy, y_train_copy, X_test_copy, y_test_copy, dataset_id, "Original")
             else:
                 original_results = get_model_score_origin_regression(X_train, y_train, X_test, y_test, dataset_id, "Original")
             original_results = original_results[original_results['model'] == "LightGBM_BAG_L1"]
