@@ -80,6 +80,54 @@ def analyse_results():
     plt.savefig("test_results/Autogluon_Test_Score_by_FE_Method.png")
     plt.show()
 
+
+    # ----- Compute percentage improvement over baseline -----
+    baseline_col = "Original"
+    improvement_val = pd.DataFrame()
+    for method in df_pivot_val.columns:
+        if method == baseline_col:
+            continue
+        improvement = (df_pivot_val[baseline_col] - df_pivot_val[method]) / df_pivot_val[baseline_col] * 100
+        improvement_val[method] = improvement
+
+    avg_improvement_val = improvement_val.mean().sort_values(ascending=False)
+
+    # ----- Plot average improvement -----
+    plt.figure(figsize=(10, 6))
+    avg_improvement_val.plot(kind="bar", color="skyblue")
+    plt.axhline(0, color="black", linewidth=0.8)
+    plt.title("Average % Improvement Val over original Dataset')")
+    plt.xlabel("Method")
+    plt.ylabel("Average Improvement (%)")
+    plt.xticks(rotation=45, ha="right")
+    plt.grid(True, linestyle="--", alpha=0.6)
+    plt.tight_layout()
+    plt.savefig("test_results/Average_Percentage_Improvement_Val.png")
+    plt.show()
+
+    improvement_test = pd.DataFrame()
+    for method in df_pivot_test.columns:
+        if method == baseline_col:
+            continue
+        improvement = (df_pivot_test[baseline_col] - df_pivot_test[method]) / df_pivot_test[baseline_col] * 100
+        df_pivot_test[method] = improvement
+
+    avg_improvement_test = improvement_val.mean().sort_values(ascending=False)
+
+    # ----- Plot average improvement -----
+    plt.figure(figsize=(10, 6))
+    avg_improvement_test.plot(kind="bar", color="skyblue")
+    plt.axhline(0, color="black", linewidth=0.8)
+    plt.title("Average % Improvement Test over original Dataset")
+    plt.xlabel("Method")
+    plt.ylabel("Average Improvement (%)")
+    plt.xticks(rotation=45, ha="right")
+    plt.grid(True, linestyle="--", alpha=0.6)
+    plt.tight_layout()
+    plt.savefig("test_results/Average_Percentage_Improvement_Test.png")
+    plt.show()
+
+
     plt.figure(figsize=(12, 6))
     for method in df_pivot_val.columns:
         if method == "Best Random":
