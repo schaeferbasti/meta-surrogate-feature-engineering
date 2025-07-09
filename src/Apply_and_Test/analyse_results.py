@@ -106,15 +106,14 @@ def analyse_results():
     plt.show()
 
     improvement_test = pd.DataFrame()
-    for method in df_pivot_test.columns:
+    for method in df_pivot_val.columns:
         if method == baseline_col:
             continue
         improvement = (df_pivot_test[baseline_col] - df_pivot_test[method]) / df_pivot_test[baseline_col] * 100
-        df_pivot_test[method] = improvement
+        improvement_test[method] = improvement
 
-    avg_improvement_test = improvement_val.mean().sort_values(ascending=False)
+    avg_improvement_test = improvement_test.mean().sort_values(ascending=False)
 
-    # ----- Plot average improvement -----
     plt.figure(figsize=(10, 6))
     avg_improvement_test.plot(kind="bar", color="skyblue")
     plt.axhline(0, color="black", linewidth=0.8)
