@@ -121,7 +121,6 @@ def recursive_feature_addition(X, y, X_test, y_test, model, method, dataset_meta
     comparison_result_matrix = add_method_metadata(comparison_result_matrix, dataset_metadata, X, y, method)
     end = time.time()
     print("Time for creating Comparison Result Matrix: " + str(end - start))
-    comparison_result_matrix.to_parquet("Comparison_Result_Matrix.parquet")
     # Predict and split again
     start = time.time()
     X_new, y_new = predict_improvement(result_matrix, comparison_result_matrix, method, X, y, wanted_min_relative_improvement)
@@ -129,11 +128,11 @@ def recursive_feature_addition(X, y, X_test, y_test, model, method, dataset_meta
     print("Time for Predicting Improvement using CatBoost: " + str(end - start))
     if X_new.equals(X):  # if X_new.shape == X.shape
         data = concat_data(X, y, X_test, y_test, "target")
-        data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_CatBoost_recursion.parquet")
+        data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + f"_MWI_{wanted_min_relative_improvement}_CatBoost_recursion.parquet")
         return X, y
     else:
         data = concat_data(X_new, y_new, X_test, y_test, "target")
-        data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_CatBoost_recursion.parquet")
+        data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + f"_MWI_{wanted_min_relative_improvement}_CatBoost_recursion.parquet")
         return recursive_feature_addition(X_new, y_new, X_test, y_test, model, method, dataset_metadata, category_to_drop, wanted_min_relative_improvement, dataset_id)
 
 
@@ -280,7 +279,7 @@ def process_group(dataset_id, method, group, model, wanted_min_relative_improvem
     y_list = y_train['target'].tolist()
     y_series = pd.Series(y_list)
     data = concat_data(X_train, y_series, X_test, y_test, "target")
-    data.to_parquet(f"FE_{dataset_id}_{method}_{groupname}_CatBoost_recursion.parquet")
+    data.to_parquet(f"FE_{dataset_id}_{method}_{groupname}_MWI_{wanted_min_relative_improvement}_CatBoost_recursion.parquet")
 
 
 def process_groups(dataset_id, method, groups, model, wanted_min_relative_improvement, last_reset_time):
@@ -290,7 +289,7 @@ def process_groups(dataset_id, method, groups, model, wanted_min_relative_improv
     y_list = y_train['target'].tolist()
     y_series = pd.Series(y_list)
     data = concat_data(X_train, y_series, X_test, y_test, "target")
-    data.to_parquet(f"FE_{dataset_id}_{method}_{str(groups)}_CatBoost_recursion.parquet")
+    data.to_parquet(f"FE_{dataset_id}_{method}_{str(groups)}_MWI_{wanted_min_relative_improvement}_CatBoost_recursion.parquet")
 
 
 def process_method(dataset_id, method, model, wanted_min_relative_improvement, last_reset_time):
@@ -301,7 +300,7 @@ def process_method(dataset_id, method, model, wanted_min_relative_improvement, l
     end = time.time()
     print("Time for creating Comparison Result Matrix: " + str(end - start))
     data = concat_data(X_train, y_train, X_test, y_test, "target")
-    data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_CatBoost_recursion.parquet")
+    data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + f"_MWI_{wanted_min_relative_improvement}_CatBoost_recursion.parquet")
 
 
 def main(dataset_id, method, wanted_min_relative_improvement):
