@@ -54,42 +54,72 @@ def analyse_results():
     plt.figure(figsize=(12, 6))
     for method in df_pivot_val.columns:
         plt.plot(dataset_list_wrapped, df_pivot_val[method], marker='o', label=method)
-        plt.plot(dataset_list_wrapped, df_pivot_test[method], marker='o', label=method)
-
     plt.xlabel("Dataset ID")
     plt.xticks(rotation=45)  # or 90
-    plt.ylabel("Autogluon Score")
-    plt.yscale("log") # '', '', 'function', 'functionlog
-    plt.title("Autogluon Score by FE Method per Dataset")
+    plt.ylabel("Autogluon Val Score (flipped)")
+    # plt.yscale("log") # '', '', 'function', 'functionlog
+    plt.title("Autogluon Val Score by FE Method per Dataset")
     plt.legend()
     plt.grid(True)
     plt.tight_layout()
-    plt.savefig("test_results/Autogluon_Score_by_FE_Method.png")
+    plt.savefig("test_results/Autogluon_Val_Score_by_FE_Method.png")
+    plt.show()
+
+    # Plot
+    plt.figure(figsize=(12, 6))
+    for method in df_pivot_val.columns:
+        plt.plot(dataset_list_wrapped, df_pivot_test[method], marker='o', label=method)
+    plt.xlabel("Dataset ID")
+    plt.xticks(rotation=45)  # or 90
+    plt.ylabel("Autogluon Test Score (flipped)")
+    # plt.yscale("log")  # '', '', 'function', 'functionlog
+    plt.title("Autogluon Test Score by FE Method per Dataset")
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig("test_results/Autogluon_Test_Score_by_FE_Method.png")
     plt.show()
 
     plt.figure(figsize=(12, 6))
     for method in df_pivot_val.columns:
         if method == "Best Random":
             plt.plot(dataset_list_wrapped, df_pivot_val[method], marker='o', label=method)
-            plt.plot(dataset_list_wrapped, df_pivot_test[method], marker='o', label=method)
         elif method.startswith("pandas"):
             plt.plot(dataset_list_wrapped, df_pivot_val[method], marker='o', label=method)
-            plt.plot(dataset_list_wrapped, df_pivot_test[method], marker='o', label=method)
         elif method.startswith("d2v"):
             plt.plot(dataset_list_wrapped, df_pivot_val[method], marker='o', label=method)
-            plt.plot(dataset_list_wrapped, df_pivot_test[method], marker='o', label=method)
-        elif method.startswith("mfe"):
+        elif method.startswith("MFE"):
             plt.plot(dataset_list_wrapped, df_pivot_val[method], marker='o', label=method)
+
+    plt.xlabel("Dataset ID")
+    plt.xticks(rotation=45)  # or 90
+    plt.ylabel("Autogluon Val Score (flipped)")
+    plt.title("Autogluon Val Score by FE Method per Dataset (Best random vs. our method)")
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig("test_results/Random_vs_Me_Val_graph.png")
+    plt.show()
+
+    plt.figure(figsize=(12, 6))
+    for method in df_pivot_val.columns:
+        if method == "Best Random":
+            plt.plot(dataset_list_wrapped, df_pivot_test[method], marker='o', label=method)
+        elif method.startswith("pandas"):
+            plt.plot(dataset_list_wrapped, df_pivot_test[method], marker='o', label=method)
+        elif method.startswith("d2v"):
+            plt.plot(dataset_list_wrapped, df_pivot_test[method], marker='o', label=method)
+        elif method.startswith("MFE"):
             plt.plot(dataset_list_wrapped, df_pivot_test[method], marker='o', label=method)
 
     plt.xlabel("Dataset ID")
     plt.xticks(rotation=45)  # or 90
-    plt.ylabel("Autogluon Score")
-    plt.title("Autogluon Score by FE Method per Dataset (Best random vs. our method)")
+    plt.ylabel("Autogluon Test Score (flipped)")
+    plt.title("Autogluon Test Score by FE Method per Dataset (Best random vs. our method)")
     plt.legend()
     plt.grid(True)
     plt.tight_layout()
-    plt.savefig("test_results/Random_vs_Me_graph.png")
+    plt.savefig("test_results/Random_vs_Me_Test_graph.png")
     plt.show()
 
     minValueIndex_val = df_pivot_val.idxmin(axis=1).value_counts()
@@ -98,7 +128,7 @@ def analyse_results():
     # Plot
     plt.figure(figsize=(10, 6))
     minValueIndex_val.plot(kind='bar', color='skyblue', label='Count of best val result on number of datasets')
-    minValueIndex_test.plot(kind='bar', color='darkblue', label='Count of best test result on number of datasets')
+    minValueIndex_test.plot(kind='bar',  width=0.3, color='darkblue', label='Count of best test result on number of datasets')
     plt.legend()
     plt.xlabel("Method")
     plt.ylabel("Best result on number of datasets")
@@ -117,7 +147,7 @@ def analyse_results():
     # Plot
     plt.figure(figsize=(10, 6))
     minValueIndex_val.plot(kind='bar', color='skyblue', label='Count of best val result on number of datasets')
-    minValueIndex_test.plot(kind='bar', color='darkblue', label='Count of best test result on number of datasets')
+    minValueIndex_test.plot(kind='bar', width=0.3, color='darkblue', label='Count of best test result on number of datasets')
     plt.legend()
     plt.xlabel("Method")
     plt.ylabel("Best result on number of datasets")
