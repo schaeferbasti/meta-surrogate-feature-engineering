@@ -39,7 +39,7 @@ def feature_addition_random(X_train, n_features_to_add, model, dataset_id):
     return X_train, y_train, X_test, y_test
 
 
-def main(dataset_id):
+def run_random_surrogate_model(dataset_id):
     method = "Random"
     print("Method: " + str(method) + ", Dataset: " + str(dataset_id))
     model = "LightGBM_BAG_L1"
@@ -53,5 +53,6 @@ def main(dataset_id):
 
 
 if __name__ == '__main__':
-    dataset_id = 359979
-    main(dataset_id)
+    dataset_ids = [359983, 359987, 359992, 359993]
+    for dataset_id in dataset_ids:
+        run_random_surrogate_model(dataset_id)
