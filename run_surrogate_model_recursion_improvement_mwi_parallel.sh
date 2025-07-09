@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define the partition on which the job shall run.
-#SBATCH --partition mlhiwidlc_gpu-rtx2080 # bosch_cpu-cascadelake  #
+#SBATCH --partition bosch_cpu-cascadelake # mlhiwidlc_gpu-rtx2080 #
 
 # Define a name for your job
 #SBATCH --job-name MWI_Impr_Rec_Surrogate_Model_Parallel
@@ -15,7 +15,7 @@
 #SBATCH --gres=localtmp:100
 
 #Time Format = days-hours:minutes:seconds
-#SBATCH --time=1-00:00:00
+#SBATCH --time=4-00:00:00
 
 #SBATCH --propagate=NONE
 
