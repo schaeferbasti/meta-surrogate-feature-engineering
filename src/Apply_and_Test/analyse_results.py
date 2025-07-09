@@ -27,14 +27,16 @@ def analyse_results():
     df_all = pd.concat(all_results, ignore_index=True)
     df_all = df_all.drop_duplicates()
     # Convert score to error (you can adjust this as needed)
-    df_all["error"] = - df_all["score"]
+    df_all["error_val"] = - df_all["score_val"]
+    df_all["error_test"] = - df_all["score_test"]
 
     # Pivot to have datasets on x, methods on lines
-    df_pivot = df_all.pivot(index="dataset", columns="origin", values="error")
-    df_pivot = df_pivot.sort_index()  # Sort by dataset ID
+    df_pivot_val = df_all.pivot(index="dataset", columns="origin", values="error_val")
+    df_pivot_val = df_pivot_val.sort_index()  # Sort by dataset ID
+    df_pivot_test = df_all.pivot(index="dataset", columns="origin", values="error_test")
+    df_pivot_test = df_pivot_test.sort_index()  # Sort by dataset ID
 
-
-    datasets = df_pivot.index.astype(str)
+    datasets = df_pivot_val.index.astype(str)
     dataset_list = []
     for dataset in datasets.tolist():
         task = openml.tasks.get_task(
@@ -50,8 +52,9 @@ def analyse_results():
 
     # Plot
     plt.figure(figsize=(12, 6))
-    for method in df_pivot.columns:
-        plt.plot(dataset_list_wrapped, df_pivot[method], marker='o', label=method)
+    for method in df_pivot_val.columns:
+        plt.plot(dataset_list_wrapped, df_pivot_val[method], marker='o', label=method)
+        plt.plot(dataset_list_wrapped, df_pivot_test[method], marker='o', label=method)
 
     plt.xlabel("Dataset ID")
     plt.xticks(rotation=45)  # or 90
@@ -65,15 +68,19 @@ def analyse_results():
     plt.show()
 
     plt.figure(figsize=(12, 6))
-    for method in df_pivot.columns:
+    for method in df_pivot_val.columns:
         if method == "Best Random":
-            plt.plot(dataset_list_wrapped, df_pivot[method], marker='o', label=method)
+            plt.plot(dataset_list_wrapped, df_pivot_val[method], marker='o', label=method)
+            plt.plot(dataset_list_wrapped, df_pivot_test[method], marker='o', label=method)
         elif method.startswith("pandas"):
-            plt.plot(dataset_list_wrapped, df_pivot[method], marker='o', label=method)
+            plt.plot(dataset_list_wrapped, df_pivot_val[method], marker='o', label=method)
+            plt.plot(dataset_list_wrapped, df_pivot_test[method], marker='o', label=method)
         elif method.startswith("d2v"):
-            plt.plot(dataset_list_wrapped, df_pivot[method], marker='o', label=method)
+            plt.plot(dataset_list_wrapped, df_pivot_val[method], marker='o', label=method)
+            plt.plot(dataset_list_wrapped, df_pivot_test[method], marker='o', label=method)
         elif method.startswith("mfe"):
-            plt.plot(dataset_list_wrapped, df_pivot[method], marker='o', label=method)
+            plt.plot(dataset_list_wrapped, df_pivot_val[method], marker='o', label=method)
+            plt.plot(dataset_list_wrapped, df_pivot_test[method], marker='o', label=method)
 
     plt.xlabel("Dataset ID")
     plt.xticks(rotation=45)  # or 90
@@ -85,11 +92,13 @@ def analyse_results():
     plt.savefig("test_results/Random_vs_Me_graph.png")
     plt.show()
 
-    minValueIndex = df_pivot.idxmin(axis=1).value_counts()
+    minValueIndex_val = df_pivot_val.idxmin(axis=1).value_counts()
+    minValueIndex_test = df_pivot_val.idxmin(axis=1).value_counts()
 
     # Plot
     plt.figure(figsize=(10, 6))
-    minValueIndex.plot(kind='bar', color='skyblue', label='Count of best result on number of datasets')
+    minValueIndex_val.plot(kind='bar', color='skyblue', label='Count of best val result on number of datasets')
+    minValueIndex_test.plot(kind='bar', color='darkblue', label='Count of best test result on number of datasets')
     plt.legend()
     plt.xlabel("Method")
     plt.ylabel("Best result on number of datasets")
@@ -100,12 +109,15 @@ def analyse_results():
     plt.show()
 
 
-    df_pivot.drop(columns=["OpenFE"], inplace=True)
-    minValueIndex = df_pivot.idxmin(axis=1).value_counts()
+    df_pivot_val.drop(columns=["OpenFE"], inplace=True)
+    df_pivot_test.drop(columns=["OpenFE"], inplace=True)
+    minValueIndex_val = df_pivot_val.idxmin(axis=1).value_counts()
+    minValueIndex_test = df_pivot_test.idxmin(axis=1).value_counts()
 
     # Plot
     plt.figure(figsize=(10, 6))
-    minValueIndex.plot(kind='bar', color='skyblue', label='Count of best result on number of datasets')
+    minValueIndex_val.plot(kind='bar', color='skyblue', label='Count of best val result on number of datasets')
+    minValueIndex_test.plot(kind='bar', color='darkblue', label='Count of best test result on number of datasets')
     plt.legend()
     plt.xlabel("Method")
     plt.ylabel("Best result on number of datasets")
