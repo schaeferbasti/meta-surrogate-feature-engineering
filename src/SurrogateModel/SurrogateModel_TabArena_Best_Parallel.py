@@ -356,6 +356,7 @@ def run_with_resource_limits(target_func, mem_limit_mb, time_limit_sec, last_res
         try:
             mem = psutil.Process(pid).memory_info().rss / (1024 * 1024)  # MB
             elapsed_time = time.time() - last_reset_time.value
+            print("Elapsed Time: " + str(elapsed_time))
 
             if mem > mem_limit_mb:
                 print(f"[Monitor] Memory exceeded: {mem:.2f} MB > {mem_limit_mb} MB. Terminating.")
