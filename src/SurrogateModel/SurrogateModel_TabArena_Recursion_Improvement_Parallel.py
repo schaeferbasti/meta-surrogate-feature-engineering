@@ -277,7 +277,8 @@ def process_group(dataset_id, method, group, model, wanted_min_relative_improvem
     print(f"[Processing Group] {groupname}")
     X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
     X_train, y_train, X_test, y_test = recursive_feature_addition_mfe_group(X_train, y_train, X_test, y_test, model, method, dataset_id, groupname, wanted_min_relative_improvement)
-    y_series = pd.Series(y_train['target'].tolist())
+    y_list = y_train['target'].tolist()
+    y_series = pd.Series(y_list)
     data = concat_data(X_train, y_series, X_test, y_test, "target")
     data.to_parquet(f"FE_{dataset_id}_{method}_{groupname}_CatBoost_recursion.parquet")
 
@@ -303,7 +304,7 @@ def process_method(dataset_id, method, model, wanted_min_relative_improvement, l
     data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_CatBoost_recursion.parquet")
 
 
-def main(dataset_id, method, wanted_min_relative_improvement, last_reset_time):
+def main(dataset_id, method, wanted_min_relative_improvement):
     print("Method: " + str(method) + ", Dataset: " + str(dataset_id) + ", Model: " + str("CatBoost"))
     model = "LightGBM_BAG_L1"
     if method.startswith("MFE"):
@@ -312,8 +313,7 @@ def main(dataset_id, method, wanted_min_relative_improvement, last_reset_time):
         for group in groups:
             print(f"\n=== Starting group: {group} ===")
             process_func = lambda: process_group(dataset_id, method, group, model, wanted_min_relative_improvement, last_reset_time)
-            exit_code = run_with_resource_limits(process_func, mem_limit_mb=64000, time_limit_sec=3600,
-                                                 last_reset_time=last_reset_time)
+            exit_code = run_with_resource_limits(process_func, mem_limit_mb=64000, time_limit_sec=7200)
             if exit_code != 0:
                 print(f"[Warning] Group {group} failed or was terminated. Skipping.\n")
                 continue
@@ -322,8 +322,7 @@ def main(dataset_id, method, wanted_min_relative_improvement, last_reset_time):
         last_reset_time.value = time.time()
         print(f"\n=== Starting groups: {groupnames} ===")
         process_func = lambda: process_groups(dataset_id, method, groupnames, model, wanted_min_relative_improvement, last_reset_time)
-        exit_code = run_with_resource_limits(process_func, mem_limit_mb=64000, time_limit_sec=3600,
-                                             last_reset_time=last_reset_time)
+        exit_code = run_with_resource_limits(process_func, mem_limit_mb=64000, time_limit_sec=7200)
         if exit_code != 0:
             print(f"[Warning] Groups {groupnames} failed or was terminated. Skipping.\n")
 
@@ -331,8 +330,7 @@ def main(dataset_id, method, wanted_min_relative_improvement, last_reset_time):
         last_reset_time.value = time.time()
         print(f"\n=== Starting groups: {groupnames} ===")
         process_func = lambda: process_groups(dataset_id, method, groupnames, model, wanted_min_relative_improvement, last_reset_time)
-        exit_code = run_with_resource_limits(process_func, mem_limit_mb=64000, time_limit_sec=3600,
-                                             last_reset_time=last_reset_time)
+        exit_code = run_with_resource_limits(process_func, mem_limit_mb=64000, time_limit_sec=7200)
         if exit_code != 0:
             print(f"[Warning] Groups {groupnames} failed or was terminated. Skipping.\n")
 
@@ -340,8 +338,7 @@ def main(dataset_id, method, wanted_min_relative_improvement, last_reset_time):
         last_reset_time.value = time.time()
         print(f"\n=== Starting groups: {groupnames} ===")
         process_func = lambda: process_groups(dataset_id, method, groupnames, model, wanted_min_relative_improvement, last_reset_time)
-        exit_code = run_with_resource_limits(process_func, mem_limit_mb=64000, time_limit_sec=3600,
-                                             last_reset_time=last_reset_time)
+        exit_code = run_with_resource_limits(process_func, mem_limit_mb=64000, time_limit_sec=7200)
         if exit_code != 0:
             print(f"[Warning] Groups {groupnames} failed or was terminated. Skipping.\n")
 
@@ -349,19 +346,18 @@ def main(dataset_id, method, wanted_min_relative_improvement, last_reset_time):
         last_reset_time.value = time.time()
         print(f"\n=== Starting groups: {groupnames} ===")
         process_func = lambda: process_groups(dataset_id, method, groupnames, model, wanted_min_relative_improvement, last_reset_time)
-        exit_code = run_with_resource_limits(process_func, mem_limit_mb=64000, time_limit_sec=3600,
-                                             last_reset_time=last_reset_time)
+        exit_code = run_with_resource_limits(process_func, mem_limit_mb=64000, time_limit_sec=7200)
         if exit_code != 0:
             print(f"[Warning] Groups {groupnames} failed or was terminated. Skipping.\n")
     else:
         print(f"\n=== Starting Method: {method} ===")
         process_func = lambda: process_method(dataset_id, method, model, wanted_min_relative_improvement, last_reset_time)
-        exit_code = run_with_resource_limits(process_func, mem_limit_mb=64000, time_limit_sec=3600, last_reset_time=last_reset_time)
+        exit_code = run_with_resource_limits(process_func, mem_limit_mb=64000, time_limit_sec=7200)
         if exit_code != 0:
             print(f"[Warning] Method {method} failed or was terminated. Skipping.\n")
 
 
-def run_with_resource_limits(target_func, mem_limit_mb, time_limit_sec, last_reset_time, check_interval=5):
+def run_with_resource_limits(target_func, mem_limit_mb, time_limit_sec, check_interval=5):
     process = multiprocessing.Process(target=target_func)
     process.start()
     pid = process.pid
@@ -370,6 +366,7 @@ def run_with_resource_limits(target_func, mem_limit_mb, time_limit_sec, last_res
         try:
             mem = psutil.Process(pid).memory_info().rss / (1024 * 1024)  # MB
             elapsed_time = time.time() - last_reset_time.value
+            print("Elapsed Time: " + str(elapsed_time))
 
             if mem > mem_limit_mb:
                 print(f"[Monitor] Memory exceeded: {mem:.2f} MB > {mem_limit_mb} MB. Terminating.")
@@ -389,16 +386,16 @@ def run_with_resource_limits(target_func, mem_limit_mb, time_limit_sec, last_res
     return process.exitcode
 
 
-def main_wrapper(last_reset_time):
+def main_wrapper():
     parser = argparse.ArgumentParser(description='Run CatBoost Surrogate Model with Metadata from Method')
     # parser.add_argument('--mf_method', required=True, help='Metafeature Method')
     parser.add_argument('--dataset', required=True, help='Metafeature Method')
     args = parser.parse_args()
     method = "MFE"
     wanted_min_relative_improvement = 0.1
-    main(int(args.dataset), method, wanted_min_relative_improvement, last_reset_time)
+    main(int(args.dataset), method, wanted_min_relative_improvement)
 
 
 if __name__ == '__main__':
     last_reset_time = Value(ctypes.c_double, time.time())
-    main_wrapper(last_reset_time)
+    main_wrapper()
