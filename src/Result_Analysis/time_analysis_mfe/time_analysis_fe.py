@@ -55,8 +55,6 @@ def main():
                     method_and_dataset = str(method) + " - " + str(dataset)
                     times.update({method_and_dataset: time})
 
-    print(times)
-
     df = pd.DataFrame(list(times.items()), columns=['method_dataset', 'value'])
     df[['method', 'dataset']] = df['method_dataset'].str.split(' - ', expand=True)
     df['dataset'] = df['dataset'].astype(int)
@@ -118,11 +116,19 @@ def main():
     df_mfe['dataset'] = df_mfe['dataset'].astype(int)
 
     time_per_category = df_mfe.groupby("category")["value"].sum().sort_values(ascending=False)
-    average_time_per_category = df_mfe.groupby("category")["value"].mean().sort_values(ascending=False)
+    memory_issue_category_names = {"complexity", "clustering", "concept"}
 
-    # Plot
+    memory_issue_categories = pd.Series([1, 1, 1], index=list(memory_issue_category_names))
+    time_per_category = time_per_category._append(memory_issue_categories)
+
+    colors = ['red' if cat in memory_issue_categories else 'skyblue' for cat in time_per_category.index]
+
+    # Step 4: Plot total time per category (bar colors depend on memory issue)
     plt.figure(figsize=(10, 6))
-    time_per_category.plot(kind='bar', color='skyblue', label='Total Time per Method')
+    time_per_category.plot(kind='bar', color=colors, label='Total Time per Method')
+
+    # Step 5: Add average time per category as overlay
+    average_time_per_category = df_mfe.groupby("category")["value"].mean().reindex(time_per_category.index)
     average_time_per_category.plot(kind='bar', width=0.3, color='orange', label='Average Time per Category')
     plt.legend()
     plt.xlabel("Method")
