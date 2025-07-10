@@ -72,20 +72,20 @@ def plot_count_best(df_pivot_val, df_pivot_test, name):
     plt.show()
 
 
-def plot_avg_perc_impr(baseline_col, df_pivot, name):
-    improvement_test = pd.DataFrame()
+def plot_avg_percentage_impr(baseline_col, df_pivot, name):
+    improvement = pd.DataFrame()
     for method in df_pivot.columns:
         if method == baseline_col:
             continue
-        improvement = (df_pivot[baseline_col] - df_pivot[method]) / df_pivot[baseline_col] * 100
-        improvement_test[method] = improvement
-    avg_improvement_test = improvement_test.mean().sort_values(ascending=False)
+        calc = (df_pivot[baseline_col] - df_pivot[method]) / df_pivot[baseline_col] * 100
+        improvement[method] = calc
+    avg_improvement = improvement.mean().sort_values(ascending=False)
     # for i, val in enumerate(avg_improvement_test):
     #    plt.text(i, val + (1 if val >= 0 else -1), f"{val:.2f}%", ha='center', va='bottom' if val >= 0 else 'top')
     plt.figure(figsize=(10, 6))
     # avg_improvement_test.plot(kind="bar", color="skyblue")
-    bars = avg_improvement_test.plot(kind="bar", color="skyblue")
-    for i, val in enumerate(avg_improvement_test):
+    bars = avg_improvement.plot(kind="bar", color="skyblue")
+    for i, val in enumerate(avg_improvement):
         y = -1 if val >= 0 else 0  # adjust offset for spacing
         plt.text(i, y, f"{val:.2f}%", ha='center', va='top' if val >= 0 else 'bottom', color='black')
     plt.axhline(0, color="black", linewidth=0.8)
@@ -96,6 +96,27 @@ def plot_avg_perc_impr(baseline_col, df_pivot, name):
     plt.grid(True, linestyle="--", alpha=0.6)
     plt.tight_layout()
     plt.savefig("../Result_Analysis/test_analysis/Average_Percentage_Improvement_" + name + ".png")
+    plt.show()
+
+
+def plot_boxplot_percentage_impr(baseline_col, df_pivot, name):
+    improvement = pd.DataFrame()
+    for method in df_pivot.columns:
+        if method == baseline_col:
+            continue
+        calc = (df_pivot[baseline_col] - df_pivot[method]) / df_pivot[baseline_col] * 100
+        improvement[method] = calc
+
+    # Plot as boxplot
+    plt.figure(figsize=(10, 6))
+    improvement.boxplot(column=list(improvement.columns), grid=True)
+    plt.axhline(0, color="black", linewidth=0.8, linestyle="--")
+    plt.title("Distribution of Percentage of Improvement " + name + " over original Dataset")
+    plt.xlabel("Method")
+    plt.ylabel("Improvement (%)")
+    plt.xticks(rotation=45, ha="right")
+    plt.tight_layout()
+    plt.savefig("../Result_Analysis/test_analysis/Boxplot_Percentage_Improvement_" + name + ".png")
     plt.show()
 
 
@@ -145,8 +166,10 @@ def test_analysis():
     plot_random_vs_me_graph(dataset_list_wrapped, df_pivot_test, "Test")
 
     plot_count_best(df_pivot_val, df_pivot_test, "")
-    plot_avg_perc_impr(baseline_col, df_pivot_val, "Val")
-    plot_avg_perc_impr(baseline_col, df_pivot_test, "Test")
+    plot_avg_percentage_impr(baseline_col, df_pivot_val, "Val")
+    plot_avg_percentage_impr(baseline_col, df_pivot_test, "Test")
+    plot_boxplot_percentage_impr(baseline_col, df_pivot_val, "Val")
+    plot_boxplot_percentage_impr(baseline_col, df_pivot_test, "Test")
 
     # Drop OpenFE column
     df_pivot_val.drop(columns=["OpenFE"], inplace=True)
@@ -154,8 +177,10 @@ def test_analysis():
 
     #Plot again
     plot_count_best(df_pivot_val, df_pivot_test,"without_OpenFE_")
-    plot_avg_perc_impr(baseline_col, df_pivot_val, "Val_without_OpenFE")
-    plot_avg_perc_impr(baseline_col, df_pivot_test, "Test_without_OpenFE")
+    plot_avg_percentage_impr(baseline_col, df_pivot_val, "Val_without_OpenFE")
+    plot_avg_percentage_impr(baseline_col, df_pivot_test, "Test_without_OpenFE")
+    plot_boxplot_percentage_impr(baseline_col, df_pivot_val, "Val_without_OpenFE")
+    plot_boxplot_percentage_impr(baseline_col, df_pivot_test, "Test_without_OpenFE")
 
 
 if __name__ == "__main__":
