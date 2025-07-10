@@ -93,6 +93,7 @@ def main():
     plt.savefig("Time_for_FE_per_Dataset.png")
     plt.show()
 
+    df = df[df["method"] != "TabPFN"]
     time_per_method = df.groupby("method")["value"].sum().sort_values(ascending=False)
     average_time_per_method = df.groupby("method")["value"].mean().sort_values(ascending=False)
 
