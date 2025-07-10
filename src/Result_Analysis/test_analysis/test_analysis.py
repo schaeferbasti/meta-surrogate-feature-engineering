@@ -26,7 +26,7 @@ def plot_autogluon_score_graph(dataset_list_wrapped, df_pivot_val, name):
     plt.legend()
     plt.grid(True)
     plt.tight_layout()
-    plt.savefig("test_results/Autogluon_" + name + "_Score_by_FE_Method.png")
+    plt.savefig("../Result_Analysis/test_analysis/Autogluon_" + name + "_Score_by_FE_Method.png")
     plt.show()
 
 
@@ -50,7 +50,7 @@ def plot_random_vs_me_graph(dataset_list_wrapped, df_pivot_val, name):
     plt.legend()
     plt.grid(True)
     plt.tight_layout()
-    plt.savefig("test_results/Random_vs_Me_" + name + "_graph.png")
+    plt.savefig("../Result_Analysis/test_analysis/Random_vs_Me_" + name + "_graph.png")
     plt.show()
 
 
@@ -68,7 +68,7 @@ def plot_count_best(df_pivot_val, df_pivot_test, name):
     plt.title("Which method is the best?")
     plt.xticks(rotation=45, ha="right")
     plt.tight_layout()
-    plt.savefig("test_results/Count_Best_" + name + "bar.png")
+    plt.savefig("../Result_Analysis/test_analysis/Count_Best_" + name + "bar.png")
     plt.show()
 
 
@@ -95,11 +95,11 @@ def plot_avg_perc_impr(baseline_col, df_pivot, name):
     plt.xticks(rotation=45, ha="right")
     plt.grid(True, linestyle="--", alpha=0.6)
     plt.tight_layout()
-    plt.savefig("test_results/Average_Percentage_Improvement_" + name + ".png")
+    plt.savefig("../Result_Analysis/test_analysis/Average_Percentage_Improvement_" + name + ".png")
     plt.show()
 
 
-def analyse_results():
+def test_analysis():
     result_files = glob.glob("test_results/Result_*.parquet")
     all_results = []
 
@@ -153,10 +153,10 @@ def analyse_results():
     df_pivot_test.drop(columns=["OpenFE"], inplace=True)
 
     #Plot again
-    plot_count_best(df_pivot_val, df_pivot_test,"without_OpenFE")
+    plot_count_best(df_pivot_val, df_pivot_test,"without_OpenFE_")
     plot_avg_perc_impr(baseline_col, df_pivot_val, "Val_without_OpenFE")
     plot_avg_perc_impr(baseline_col, df_pivot_test, "Test_without_OpenFE")
 
 
 if __name__ == "__main__":
-    analyse_results()
+    test_analysis()
