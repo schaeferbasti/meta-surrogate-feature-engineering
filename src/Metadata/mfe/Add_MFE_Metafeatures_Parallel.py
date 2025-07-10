@@ -70,6 +70,8 @@ def main(group):
                 print("Time for MFE on Dataset " + str(dataset) + ": " + str(end_dataset - start_dataset))
             except TypeError:
                 continue
+            except KeyError:
+                continue
     result_matrix_pandas.to_parquet("src/Metadata/mfe/MFE_" + str(group) + "_Matrix_Complete.parquet")
     end = time.time()
     print("Time for complete MFE MF: " + str(end - start) + " on " + str(counter) + " datasets.")
