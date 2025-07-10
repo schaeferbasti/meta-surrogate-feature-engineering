@@ -100,23 +100,27 @@ def plot_avg_percentage_impr(baseline_col, df_pivot, name):
 
 
 def plot_boxplot_percentage_impr(baseline_col, df_pivot, name):
-    improvement = pd.DataFrame()
+    improvement_test = pd.DataFrame()
     for method in df_pivot.columns:
         if method == baseline_col:
             continue
-        calc = (df_pivot[baseline_col] - df_pivot[method]) / df_pivot[baseline_col] * 100
-        improvement[method] = calc
+        improvement = (df_pivot[baseline_col] - df_pivot[method]) / df_pivot[baseline_col] * 100
+        improvement_test[method] = improvement
 
-    # Plot as boxplot
+    # Sort methods by mean improvement (descending)
+    method_order = improvement_test.mean().sort_values(ascending=False).index.tolist()
+    improvement_test = improvement_test[method_order]
+
+    # Plot
     plt.figure(figsize=(10, 6))
-    improvement.boxplot(column=list(improvement.columns), grid=True)
+    improvement_test.boxplot(column=method_order, grid=True)
     plt.axhline(0, color="black", linewidth=0.8, linestyle="--")
-    plt.title("Distribution of Percentage of Improvement " + name + " over original Dataset")
+    plt.title("Distribution of % Improvement " + name + " over original Dataset")
     plt.xlabel("Method")
     plt.ylabel("Improvement (%)")
     plt.xticks(rotation=45, ha="right")
     plt.tight_layout()
-    plt.savefig("../Result_Analysis/test_analysis/Boxplot_Percentage_Improvement_" + name + ".png")
+    plt.savefig(f"../Result_Analysis/test_analysis/Boxplot_Percentage_Improvement_{name}.png")
     plt.show()
 
 
