@@ -94,7 +94,11 @@ def analyse_results():
 
     # ----- Plot average improvement -----
     plt.figure(figsize=(10, 6))
-    avg_improvement_val.plot(kind="bar", color="skyblue")
+    # avg_improvement_val.plot(kind="bar", color="skyblue")
+    bars = avg_improvement_val.plot(kind="bar", color="skyblue")
+    for i, val in enumerate(avg_improvement_val):
+        y = -1 if val >= 0 else 0  # adjust offset for spacing
+        plt.text(i, y, f"{val:.2f}%", ha='center', va='top' if val >= 0 else 'bottom', color='black')
     plt.axhline(0, color="black", linewidth=0.8)
     plt.title("Average % Improvement Val over original Dataset')")
     plt.xlabel("Method")
@@ -115,7 +119,11 @@ def analyse_results():
     avg_improvement_test = improvement_test.mean().sort_values(ascending=False)
 
     plt.figure(figsize=(10, 6))
-    avg_improvement_test.plot(kind="bar", color="skyblue")
+    # avg_improvement_test.plot(kind="bar", color="skyblue")
+    bars = avg_improvement_test.plot(kind="bar", color="skyblue")
+    for i, val in enumerate(avg_improvement_test):
+        y = -1 if val >= 0 else 0  # adjust offset for spacing
+        plt.text(i, y, f"{val:.2f}%", ha='center', va='top' if val >= 0 else 'bottom', color='black')
     plt.axhline(0, color="black", linewidth=0.8)
     plt.title("Average % Improvement Test over original Dataset")
     plt.xlabel("Method")
@@ -136,6 +144,8 @@ def analyse_results():
         elif method.startswith("d2v"):
             plt.plot(dataset_list_wrapped, df_pivot_val[method], marker='o', label=method)
         elif method.startswith("MFE"):
+            plt.plot(dataset_list_wrapped, df_pivot_val[method], marker='o', label=method)
+        elif method.startswith("Original"):
             plt.plot(dataset_list_wrapped, df_pivot_val[method], marker='o', label=method)
 
     plt.xlabel("Dataset ID")
@@ -158,6 +168,8 @@ def analyse_results():
             plt.plot(dataset_list_wrapped, df_pivot_test[method], marker='o', label=method)
         elif method.startswith("MFE"):
             plt.plot(dataset_list_wrapped, df_pivot_test[method], marker='o', label=method)
+        elif method.startswith("Original"):
+            plt.plot(dataset_list_wrapped, df_pivot_val[method], marker='o', label=method)
 
     plt.xlabel("Dataset ID")
     plt.xticks(rotation=45)  # or 90
@@ -204,6 +216,61 @@ def analyse_results():
     plt.savefig("test_results/Count_Best_without_OpenFE_bar.png")
     plt.show()
 
+    # ----- Compute percentage improvement over baseline -----
+    baseline_col = "Original"
+    improvement_val = pd.DataFrame()
+    for method in df_pivot_val.columns:
+        if method == baseline_col:
+            continue
+        improvement = (df_pivot_val[baseline_col] - df_pivot_val[method]) / df_pivot_val[baseline_col] * 100
+        improvement_val[method] = improvement
+
+    avg_improvement_val = improvement_val.mean().sort_values(ascending=False)
+
+    # ----- Plot average improvement -----
+    plt.figure(figsize=(10, 6))
+    # avg_improvement_val.plot(kind="bar", color="skyblue")
+    bars = avg_improvement_val.plot(kind="bar", color="skyblue")
+    for i, val in enumerate(avg_improvement_val):
+        y = -1 if val >= 0 else 0  # adjust offset for spacing
+        plt.text(i, y, f"{val:.2f}%", ha='center', va='top' if val >= 0 else 'bottom', color='black')
+    plt.axhline(0, color="black", linewidth=0.8)
+    plt.title("Average % Improvement Val over original Dataset')")
+    plt.xlabel("Method")
+    plt.ylabel("Average Improvement (%)")
+    plt.xticks(rotation=45, ha="right")
+    plt.grid(True, linestyle="--", alpha=0.6)
+    plt.tight_layout()
+    plt.savefig("test_results/Average_Percentage_Improvement_Val_without_OpenFE.png")
+    plt.show()
+
+    improvement_test = pd.DataFrame()
+    for method in df_pivot_val.columns:
+        if method == baseline_col:
+            continue
+        improvement = (df_pivot_test[baseline_col] - df_pivot_test[method]) / df_pivot_test[baseline_col] * 100
+        improvement_test[method] = improvement
+
+    avg_improvement_test = improvement_test.mean().sort_values(ascending=False)
+
+    #for i, val in enumerate(avg_improvement_test):
+    #    plt.text(i, val + (1 if val >= 0 else -1), f"{val:.2f}%", ha='center', va='bottom' if val >= 0 else 'top')
+
+    plt.figure(figsize=(10, 6))
+    # avg_improvement_test.plot(kind="bar", color="skyblue")
+    bars = avg_improvement_test.plot(kind="bar", color="skyblue")
+    for i, val in enumerate(avg_improvement_test):
+        y = -1 if val >= 0 else 0  # adjust offset for spacing
+        plt.text(i, y, f"{val:.2f}%", ha='center', va='top' if val >= 0 else 'bottom', color='black')
+    plt.axhline(0, color="black", linewidth=0.8)
+    plt.title("Average % Improvement Test over original Dataset")
+    plt.xlabel("Method")
+    plt.ylabel("Average Improvement (%)")
+    plt.xticks(rotation=45, ha="right")
+    plt.grid(True, linestyle="--", alpha=0.6)
+    plt.tight_layout()
+    plt.savefig("test_results/Average_Percentage_Improvement_Test_without_OpenFE.png")
+    plt.show()
 
 if __name__ == "__main__":
     analyse_results()
