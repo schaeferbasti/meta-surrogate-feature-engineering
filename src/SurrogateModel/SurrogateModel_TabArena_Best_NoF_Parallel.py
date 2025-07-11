@@ -386,7 +386,6 @@ def run_with_resource_limits(target_func, mem_limit_mb, time_limit_sec, last_res
 
 def main_wrapper():
     parser = argparse.ArgumentParser(description='Run Surrogate Model with Metadata from Method')
-    # parser.add_argument('--mf_method', required=True, help='Metafeature Method')
     parser.add_argument('--dataset', required=True, help='Dataset')
     args = parser.parse_args()
     methods = ["pandas", "d2v", "MFE"]
