@@ -4,7 +4,7 @@
 #SBATCH --partition bosch_cpu-cascadelake # mlhiwidlc_gpu-rtx2080 #
 
 # Define a name for your job
-#SBATCH --job-name NoF_Best_Surrogate_Model_Parallel
+#SBATCH --job-name NOF_Best_Surrogate_Model_Parallel
 
 # Define the files to write the outputs of the job to.
 #SBATCH --output logs/%x-%A_%a.out   # STDOUT  %x and %A will be replaced by the job name and job id, respectively. short: -o logs/%x-%A.out
@@ -15,7 +15,7 @@
 #SBATCH --gres=localtmp:100
 
 #Time Format = days-hours:minutes:seconds
-#SBATCH --time=1-00:00:00
+#SBATCH --time=4-00:00:00
 
 #SBATCH --propagate=NONE
 
