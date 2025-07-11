@@ -299,60 +299,58 @@ def process_method(dataset_id, method, model, number_of_features):
     data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_NOF_" + str(number_of_features) + "_CatBoost_best.parquet")
 
 
-def main(dataset_id, method):
+def main(dataset_id, method, number_of_features):
     print("Method: " + str(method) + ", Dataset: " + str(dataset_id) + ", Model: " + str("CatBoost"))
     model = "LightGBM_BAG_L1"
-    numbers_of_features = [1, 10, 25, 50, 75, 100, 125, 150, 200]
-    for number_of_features in numbers_of_features:
-        if method.startswith("MFE"):
-            groups = ["general", "statistical", "info_theory"]
-            for group in groups:
-                last_reset_time.value = time.time()
-                print(f"\n=== Starting group: {group} ===")
-                process_func = lambda: process_group(dataset_id, method, group, model, number_of_features)
-                exit_code = run_with_resource_limits(process_func, mem_limit_mb=64000, time_limit_sec=7200, last_reset_time=last_reset_time)
-                if exit_code != 0:
-                    print(f"[Warning] Group {group} failed or was terminated. Skipping.\n")
-                    continue
-
-            groupnames = {groups[0], groups[1]}
+    if method.startswith("MFE"):
+        groups = ["general", "statistical", "info_theory"]
+        for group in groups:
             last_reset_time.value = time.time()
-            print(f"\n=== Starting groups: {groupnames} ===")
-            process_func = lambda: process_groups(dataset_id, method, groupnames, model, number_of_features)
+            print(f"\n=== Starting group: {group} ===")
+            process_func = lambda: process_group(dataset_id, method, group, model, number_of_features)
             exit_code = run_with_resource_limits(process_func, mem_limit_mb=64000, time_limit_sec=7200, last_reset_time=last_reset_time)
             if exit_code != 0:
-                print(f"[Warning] Groups {groupnames} failed or was terminated. Skipping.\n")
+                print(f"[Warning] Group {group} failed or was terminated. Skipping.\n")
+                continue
 
-            groupnames = {groups[1], groups[2]}
-            last_reset_time.value = time.time()
-            print(f"\n=== Starting groups: {groupnames} ===")
-            process_func = lambda: process_groups(dataset_id, method, groupnames, model, number_of_features)
-            exit_code = run_with_resource_limits(process_func, mem_limit_mb=64000, time_limit_sec=7200,
-                                                 last_reset_time=last_reset_time)
-            if exit_code != 0:
-                print(f"[Warning] Groups {groupnames} failed or was terminated. Skipping.\n")
+        groupnames = {groups[0], groups[1]}
+        last_reset_time.value = time.time()
+        print(f"\n=== Starting groups: {groupnames} ===")
+        process_func = lambda: process_groups(dataset_id, method, groupnames, model, number_of_features)
+        exit_code = run_with_resource_limits(process_func, mem_limit_mb=64000, time_limit_sec=7200, last_reset_time=last_reset_time)
+        if exit_code != 0:
+            print(f"[Warning] Groups {groupnames} failed or was terminated. Skipping.\n")
 
-            groupnames = {groups[0], groups[2]}
-            last_reset_time.value = time.time()
-            print(f"\n=== Starting groups: {groupnames} ===")
-            process_func = lambda: process_groups(dataset_id, method, groupnames, model, number_of_features)
-            exit_code = run_with_resource_limits(process_func, mem_limit_mb=64000, time_limit_sec=7200, last_reset_time=last_reset_time)
-            if exit_code != 0:
-                print(f"[Warning] Groups {groupnames} failed or was terminated. Skipping.\n")
+        groupnames = {groups[1], groups[2]}
+        last_reset_time.value = time.time()
+        print(f"\n=== Starting groups: {groupnames} ===")
+        process_func = lambda: process_groups(dataset_id, method, groupnames, model, number_of_features)
+        exit_code = run_with_resource_limits(process_func, mem_limit_mb=64000, time_limit_sec=7200,
+                                             last_reset_time=last_reset_time)
+        if exit_code != 0:
+            print(f"[Warning] Groups {groupnames} failed or was terminated. Skipping.\n")
 
-            groupnames = {groups[0], groups[1], groups[2]}
-            last_reset_time.value = time.time()
-            print(f"\n=== Starting groups: {groupnames} ===")
-            process_func = lambda: process_groups(dataset_id, method, groupnames, model, number_of_features)
-            exit_code = run_with_resource_limits(process_func, mem_limit_mb=64000, time_limit_sec=7200, last_reset_time=last_reset_time)
-            if exit_code != 0:
-                print(f"[Warning] Groups {groupnames} failed or was terminated. Skipping.\n")
-        else:
-            print(f"\n=== Starting Method: {method} ===")
-            process_func = lambda: process_method(dataset_id, method, model, number_of_features)
-            exit_code = run_with_resource_limits(process_func, mem_limit_mb=64000, time_limit_sec=7200, last_reset_time=last_reset_time)
-            if exit_code != 0:
-                print(f"[Warning] Method {method} failed or was terminated. Skipping.\n")
+        groupnames = {groups[0], groups[2]}
+        last_reset_time.value = time.time()
+        print(f"\n=== Starting groups: {groupnames} ===")
+        process_func = lambda: process_groups(dataset_id, method, groupnames, model, number_of_features)
+        exit_code = run_with_resource_limits(process_func, mem_limit_mb=64000, time_limit_sec=7200, last_reset_time=last_reset_time)
+        if exit_code != 0:
+            print(f"[Warning] Groups {groupnames} failed or was terminated. Skipping.\n")
+
+        groupnames = {groups[0], groups[1], groups[2]}
+        last_reset_time.value = time.time()
+        print(f"\n=== Starting groups: {groupnames} ===")
+        process_func = lambda: process_groups(dataset_id, method, groupnames, model, number_of_features)
+        exit_code = run_with_resource_limits(process_func, mem_limit_mb=64000, time_limit_sec=7200, last_reset_time=last_reset_time)
+        if exit_code != 0:
+            print(f"[Warning] Groups {groupnames} failed or was terminated. Skipping.\n")
+    else:
+        print(f"\n=== Starting Method: {method} ===")
+        process_func = lambda: process_method(dataset_id, method, model, number_of_features)
+        exit_code = run_with_resource_limits(process_func, mem_limit_mb=64000, time_limit_sec=7200, last_reset_time=last_reset_time)
+        if exit_code != 0:
+            print(f"[Warning] Method {method} failed or was terminated. Skipping.\n")
 
 
 
@@ -389,8 +387,10 @@ def main_wrapper():
     parser.add_argument('--dataset', required=True, help='Dataset')
     args = parser.parse_args()
     methods = ["pandas", "d2v", "MFE"]
-    for method in methods:
-        main(int(args.dataset), method)
+    numbers_of_features = [1, 10, 25, 50, 75, 100, 125, 150, 200]
+    for number_of_features in numbers_of_features:
+        for method in methods:
+            main(int(args.dataset), method, number_of_features)
 
 
 if __name__ == '__main__':
