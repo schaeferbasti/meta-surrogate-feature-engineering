@@ -232,7 +232,9 @@ def feature_addition_mfe_groups(X_train, y_train, X_test, y_test, model, method,
         X_new, y_new = predict_improvement(result_matrix, comparison_result_matrix, "all")
         end = time.time()
         print("Time for Predicting Improvement using CatBoost: " + str(end - start))
-        data = concat_data(X_new, y_new, X_test, y_test, "target")
+        y_list = y_new['target'].tolist()
+        y_series = pd.Series(y_list)
+        data = concat_data(X_new, y_series, X_test, y_test, "target")
         data.to_parquet(f"FE_{dataset_id}_{method}_{str(groups)}_CatBoost_best.parquet")
         return X_new, y_new, X_test, y_test
 
@@ -356,8 +358,6 @@ def run_with_resource_limits(target_func, mem_limit_mb, time_limit_sec, last_res
         try:
             mem = psutil.Process(pid).memory_info().rss / (1024 * 1024)  # MB
             elapsed_time = time.time() - last_reset_time.value
-            print("Elapsed Time: " + str(elapsed_time))
-
             if mem > mem_limit_mb:
                 print(f"[Monitor] Memory exceeded: {mem:.2f} MB > {mem_limit_mb} MB. Terminating.")
                 process.terminate()
