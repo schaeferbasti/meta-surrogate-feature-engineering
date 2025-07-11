@@ -77,8 +77,11 @@ def plot_avg_percentage_impr(baseline_col, df_pivot, name):
     for method in df_pivot.columns:
         if method == baseline_col:
             continue
-        calc = (df_pivot[baseline_col] - df_pivot[method]) / df_pivot[baseline_col] * 100
-        improvement[method] = calc
+        calc_loss_improvement = ((df_pivot[baseline_col] - df_pivot[method]) / df_pivot[baseline_col]) * 100
+        # calc = ((df_pivot[baseline_col] - df_pivot[method]) / df_pivot[method]) * 100
+        # f1 = ((df_pivot[method] - df_pivot[baseline_col]) / df_pivot[baseline_col]) * 100
+        # increase_in_error = ((df_pivot[method] - df_pivot[baseline_col]) / df_pivot[baseline_col]) * 100
+        improvement[method] = calc_loss_improvement
     avg_improvement = improvement.mean().sort_values(ascending=False)
     # for i, val in enumerate(avg_improvement_test):
     #    plt.text(i, val + (1 if val >= 0 else -1), f"{val:.2f}%", ha='center', va='bottom' if val >= 0 else 'top')

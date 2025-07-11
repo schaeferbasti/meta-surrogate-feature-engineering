@@ -6,7 +6,8 @@ from collections import defaultdict
 
 import pyarrow
 
-from src.Apply_and_Test.analyse_results import analyse_results
+from src.Result_Analysis.test_analysis import test_analysis
+
 from src.utils.get_data import get_openfe_data
 from src.utils.get_data import split_data, get_openml_dataset_split_and_metadata
 from src.utils.run_models import get_model_score_origin_classification, get_model_score_origin_regression
@@ -120,7 +121,7 @@ def main():
         all_results.to_parquet(f"test_results/Result_{dataset_id}.parquet")
         print(f"Saved combined results for dataset {dataset_id}.")
 
-    analyse_results()
+    test_analysis()
 
 
 if __name__ == "__main__":
