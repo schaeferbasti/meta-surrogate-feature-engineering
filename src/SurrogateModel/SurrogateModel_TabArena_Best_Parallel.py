@@ -137,9 +137,13 @@ def feature_addition(X_train, y_train, X_test, y_test, model, method, dataset_me
     X_new, y_new = predict_improvement(result_matrix, comparison_result_matrix, method)
     end = time.time()
     print("Time for Predicting Improvement using CatBoost: " + str(end - start))
-    y_list = y_new['target'].tolist()
-    y_series = pd.Series(y_list)
-    data = concat_data(X_new, y_series, X_test, y_test, "target")
+    try:
+        y_list = y_new['target'].tolist()
+        y_series = pd.Series(y_list)
+        y_new = y_series
+    except KeyError:
+        print("")
+    data = concat_data(X_new, y_new, X_test, y_test, "target")
     data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_CatBoost_best.parquet")
     return X_new, y_new, X_test, y_test
 
@@ -177,9 +181,13 @@ def feature_addition_mfe_group(X_train, y_train, X_test, y_test, model, method, 
         X_new, y_new = predict_improvement(result_matrix, comparison_result_matrix, "all")
         end = time.time()
         print("Time for Predicting Improvement using CatBoost: " + str(end - start))
-        y_list = y_new['target'].tolist()
-        y_series = pd.Series(y_list)
-        data = concat_data(X_new, y_series, X_test, y_test, "target")
+        try:
+            y_list = y_new['target'].tolist()
+            y_series = pd.Series(y_list)
+            y_new = y_series
+        except KeyError:
+            print("")
+        data = concat_data(X_new, y_new, X_test, y_test, "target")
         data.to_parquet(f"FE_{dataset_id}_{method}_{groupname}_CatBoost_best.parquet")
         return X_new, y_new, X_test, y_test
 
@@ -232,9 +240,13 @@ def feature_addition_mfe_groups(X_train, y_train, X_test, y_test, model, method,
         X_new, y_new = predict_improvement(result_matrix, comparison_result_matrix, "all")
         end = time.time()
         print("Time for Predicting Improvement using CatBoost: " + str(end - start))
-        y_list = y_new['target'].tolist()
-        y_series = pd.Series(y_list)
-        data = concat_data(X_new, y_series, X_test, y_test, "target")
+        try:
+            y_list = y_new['target'].tolist()
+            y_series = pd.Series(y_list)
+            y_new = y_series
+        except KeyError:
+            print("")
+        data = concat_data(X_new, y_new, X_test, y_test, "target")
         data.to_parquet(f"FE_{dataset_id}_{method}_{str(groups)}_CatBoost_best.parquet")
         return X_new, y_new, X_test, y_test
 
@@ -266,18 +278,14 @@ def process_group(dataset_id, method, group, model):
     print(f"[Processing Group] {groupname}")
     X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
     X_train, y_train, X_test, y_test = feature_addition_mfe_group(X_train, y_train, X_test, y_test, model, method, dataset_id, groupname)
-    y_list = y_train['target'].tolist()
-    y_series = pd.Series(y_list)
-    data = concat_data(X_train, y_series, X_test, y_test, "target")
+    data = concat_data(X_train, y_train, X_test, y_test, "target")
     data.to_parquet(f"FE_{dataset_id}_{method}_{groupname}_CatBoost_best.parquet")
 
 
 def process_groups(dataset_id, method, groups, model):
     X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
     X_train, y_train, X_test, y_test = feature_addition_mfe_groups(X_train, y_train, X_test, y_test, model, method, dataset_id, groups)
-    y_list = y_train['target'].tolist()
-    y_series = pd.Series(y_list)
-    data = concat_data(X_train, y_series, X_test, y_test, "target")
+    data = concat_data(X_train, y_train, X_test, y_test, "target")
     data.to_parquet(f"FE_{dataset_id}_{method}_{str(groups)}_CatBoost_best.parquet")
 
 
@@ -286,10 +294,8 @@ def process_method(dataset_id, method, model):
     start = time.time()
     X_train, y_train, X_test, y_test = feature_addition(X_train, y_train, X_test, y_test, model, method, dataset_metadata, dataset_id)
     end = time.time()
-    y_list = y_train['target'].tolist()
-    y_series = pd.Series(y_list)
     print("Time for creating Comparison Result Matrix: " + str(end - start))
-    data = concat_data(X_train, y_series, X_test, y_test, "target")
+    data = concat_data(X_train, y_train, X_test, y_test, "target")
     data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_CatBoost_best.parquet")
 
 
@@ -378,12 +384,11 @@ def run_with_resource_limits(target_func, mem_limit_mb, time_limit_sec, last_res
 
 def main_wrapper():
     parser = argparse.ArgumentParser(description='Run Surrogate Model with Metadata from Method')
-    # parser.add_argument('--mf_method', required=True, help='Metafeature Method')
     parser.add_argument('--dataset', required=True, help='Dataset')
     args = parser.parse_args()
-    method = "MFE"
-    main(int(args.dataset), method)
-    # main(2073, method)
+    methods = ["pandas", "d2v", "MFE"]
+    for method in methods:
+        main(int(args.dataset), method)
 
 
 if __name__ == '__main__':
