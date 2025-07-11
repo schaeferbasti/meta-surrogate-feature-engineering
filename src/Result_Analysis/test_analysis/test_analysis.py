@@ -14,6 +14,39 @@ def insert_line_breaks(name, max_len=20):
         return name
 
 
+def get_data(result_files):
+    all_results = []
+    for result_file in result_files:
+        df = pd.read_parquet(result_file)
+        dataset_id = int(result_file.split("Result_")[1].split(".parquet")[0])
+        df["origin"] = df["origin"].apply(lambda x: "Best Random" if str(x).startswith("Random") else x)
+        all_results.append(df)
+    df_all = pd.concat(all_results, ignore_index=True)
+    df_all = df_all.drop_duplicates()
+    # Convert score to error (you can adjust this as needed)
+    df_all["error_val"] = - df_all["score_val"]
+    df_all["error_test"] = - df_all["score_test"]
+    # Pivot to have datasets on x, methods on lines
+    df_pivot_val = df_all.pivot(index="dataset", columns="origin", values="error_val")
+    df_pivot_val = df_pivot_val.sort_index()  # Sort by dataset ID
+    df_pivot_test = df_all.pivot(index="dataset", columns="origin", values="error_test")
+    df_pivot_test = df_pivot_test.sort_index()  # Sort by dataset ID
+    datasets = df_pivot_val.index.astype(str)
+    dataset_list = []
+    for dataset in datasets.tolist():
+        task = openml.tasks.get_task(
+            int(dataset),
+            download_splits=True,
+            download_data=True,
+            download_qualities=True,
+            download_features_meta_data=True,
+        )
+        dataset = task.get_dataset().name
+        dataset_list.append(dataset)
+    dataset_list_wrapped = [insert_line_breaks(name, max_len=15) for name in dataset_list]
+    return dataset_list_wrapped, df_pivot_test, df_pivot_val
+
+
 def plot_autogluon_score_graph(dataset_list_wrapped, df_pivot_val, name):
     plt.figure(figsize=(12, 6))
     for method in df_pivot_val.columns:
@@ -133,44 +166,11 @@ def plot_boxplot_percentage_impr(baseline_col, df_pivot, name):
 
 
 def test_analysis():
-    result_files = glob.glob("test_results/Result_*.parquet")
-    all_results = []
-
-    for result_file in result_files:
-        df = pd.read_parquet(result_file)
-        dataset_id = int(result_file.split("Result_")[1].split(".parquet")[0])
-        df["origin"] = df["origin"].apply(lambda x: "Best Random" if str(x).startswith("Random") else x)
-        all_results.append(df)
-
-    df_all = pd.concat(all_results, ignore_index=True)
-    df_all = df_all.drop_duplicates()
-    # Convert score to error (you can adjust this as needed)
-    df_all["error_val"] = - df_all["score_val"]
-    df_all["error_test"] = - df_all["score_test"]
-
-    # Pivot to have datasets on x, methods on lines
-    df_pivot_val = df_all.pivot(index="dataset", columns="origin", values="error_val")
-    df_pivot_val = df_pivot_val.sort_index()  # Sort by dataset ID
-    df_pivot_test = df_all.pivot(index="dataset", columns="origin", values="error_test")
-    df_pivot_test = df_pivot_test.sort_index()  # Sort by dataset ID
-
-    datasets = df_pivot_val.index.astype(str)
-    dataset_list = []
-    for dataset in datasets.tolist():
-        task = openml.tasks.get_task(
-            int(dataset),
-            download_splits=True,
-            download_data=True,
-            download_qualities=True,
-            download_features_meta_data=True,
-        )
-        dataset = task.get_dataset().name
-        dataset_list.append(dataset)
-    dataset_list_wrapped = [insert_line_breaks(name, max_len=15) for name in dataset_list]
-
     baseline_col = "Original"
+    result_files = glob.glob("test_results/Result_*.parquet")
+    dataset_list_wrapped, df_pivot_test, df_pivot_val = get_data(result_files)
 
-    #Plot
+    # Plot
     plot_autogluon_score_graph(dataset_list_wrapped, df_pivot_val, "Val")
     plot_autogluon_score_graph(dataset_list_wrapped, df_pivot_test, "Test")
 
@@ -186,7 +186,7 @@ def test_analysis():
     # Drop OpenFE column to compare MFE approaches
     df_pivot_val.drop(columns=["OpenFE"], inplace=True)
     df_pivot_test.drop(columns=["OpenFE"], inplace=True)
-    #Plot again
+    # Plot again
     plot_count_best(df_pivot_val, df_pivot_test, "without_OpenFE_")
     plot_avg_percentage_impr(baseline_col, df_pivot_val, "Val_without_OpenFE")
     plot_avg_percentage_impr(baseline_col, df_pivot_test, "Test_without_OpenFE")
@@ -209,7 +209,6 @@ def test_analysis():
     plot_count_best(df_pivot_val, df_pivot_test, "only_pandas_")
     plot_autogluon_score_graph(dataset_list_wrapped, df_pivot_val, "Val_only_pandas")
     plot_autogluon_score_graph(dataset_list_wrapped, df_pivot_test, "Test_only_pandas")
-
 
 
 if __name__ == "__main__":
