@@ -72,7 +72,7 @@ def plot_count_best(df_pivot_val, df_pivot_test, name):
     plt.show()
 
 
-def plot_avg_percentage_impr(baseline_col, df_pivot, name):
+def plot_avg_percentage_impr(baseline_col, df_pivot, name, only_pandas=False):
     improvement = pd.DataFrame()
     for method in df_pivot.columns:
         if method == baseline_col:
@@ -88,9 +88,14 @@ def plot_avg_percentage_impr(baseline_col, df_pivot, name):
     plt.figure(figsize=(10, 6))
     # avg_improvement_test.plot(kind="bar", color="skyblue")
     bars = avg_improvement.plot(kind="bar", color="skyblue")
-    for i, val in enumerate(avg_improvement):
-        y = -1 if val >= 0 else 0  # adjust offset for spacing
-        plt.text(i, y, f"{val:.2f}%", ha='center', va='top' if val >= 0 else 'bottom', color='black')
+    if only_pandas:
+        for i, val in enumerate(avg_improvement):
+            y = 2  # adjust offset for spacing
+            plt.text(i, y, f"{val:.2f}%", ha='center', va='top' if val >= 0 else 'bottom', color='black')
+    else:
+        for i, val in enumerate(avg_improvement):
+            y = -1 if val >= 0 else 0  # adjust offset for spacing
+            plt.text(i, y, f"{val:.2f}%", ha='center', va='top' if val >= 0 else 'bottom', color='black')
     plt.axhline(0, color="black", linewidth=0.8)
     plt.title("Average Percentage Improvement " + name + " over original Dataset")
     plt.xlabel("Method")
@@ -192,8 +197,8 @@ def test_analysis():
     df_pivot_val = df_pivot_val[["pandas_best", "pandas_recursion", "Original"]]
     df_pivot_test = df_pivot_test[["pandas_best", "pandas_recursion", "Original"]]
     # Plot
-    plot_avg_percentage_impr(baseline_col, df_pivot_val, "Val_only_pandas")
-    plot_avg_percentage_impr(baseline_col, df_pivot_test, "Test_only_pandas")
+    plot_avg_percentage_impr(baseline_col, df_pivot_val, "Val_only_pandas", True)
+    plot_avg_percentage_impr(baseline_col, df_pivot_test, "Test_only_pandas", True)
     plot_boxplot_percentage_impr(baseline_col, df_pivot_val, "Val_only_pandas")
     plot_boxplot_percentage_impr(baseline_col, df_pivot_test, "Test_only_pandas")
 
