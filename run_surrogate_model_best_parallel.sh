@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define the partition on which the job shall run.
-#SBATCH --partition mlhiwidlc_gpu-rtx2080 # bosch_cpu-cascadelake  #
+#SBATCH --partition bosch_cpu-cascadelake # mlhiwidlc_gpu-rtx2080 #
 
 # Define a name for your job
 #SBATCH --job-name Best_Surrogate_Model_Parallel
@@ -15,11 +15,11 @@
 #SBATCH --gres=localtmp:100
 
 #Time Format = days-hours:minutes:seconds
-#SBATCH --time=1-00:00:00
+#SBATCH --time=4-00:00:00
 
 #SBATCH --propagate=NONE
 
-#SBATCH --array=0-12  # Adjust based on the number of methods
+#SBATCH --array=0-32  # Adjust based on the number of methods
 
 
 echo "Workingdir: $PWD";
@@ -53,7 +53,7 @@ export PYTHONPATH=$PWD/src:$PYTHONPATH
 echo "PYTHONPATH set to $PYTHONPATH"
 
 
-datasets=(359963 359968 359971 359972 359974 359975 359979 359981 359982 359983 359987 359992 359993)
+datasets=(2073 146818 146820 167120 168350 168784 190146 233211 359930 359931 359933 359935 359936 359949 359950 359952 359955 359956 359958 359959 359963 359968 359971 359972 359974 359975 359979 359981 359982 359983 359987 359992 359993)
 dataset=${datasets[$SLURM_ARRAY_TASK_ID]}
 
 
