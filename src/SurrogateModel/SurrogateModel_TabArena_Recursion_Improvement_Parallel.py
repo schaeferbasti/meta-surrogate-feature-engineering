@@ -171,9 +171,7 @@ def recursive_feature_addition_mfe_group(X_train, y_train, X_test, y_test, model
         end = time.time()
         print("Time for Predicting Improvement using CatBoost: " + str(end - start))
         if X_new.equals(X_train):  # if X_new.shape == X.shape
-            y_list = y_new['target'].tolist()
-            y_series = pd.Series(y_list)
-            data = concat_data(X_train, y_series, X_test, y_test, "target")
+            data = concat_data(X_train, y_train, X_test, y_test, "target")
             data.to_parquet(f"FE_{dataset_id}_{method}_{groupname}_CatBoost_recursion.parquet")
             return X_train, y_train
         else:
@@ -366,7 +364,6 @@ def run_with_resource_limits(target_func, mem_limit_mb, time_limit_sec, check_in
         try:
             mem = psutil.Process(pid).memory_info().rss / (1024 * 1024)  # MB
             elapsed_time = time.time() - last_reset_time.value
-            print("Elapsed Time: " + str(elapsed_time))
 
             if mem > mem_limit_mb:
                 print(f"[Monitor] Memory exceeded: {mem:.2f} MB > {mem_limit_mb} MB. Terminating.")
