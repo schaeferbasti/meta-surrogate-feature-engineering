@@ -127,10 +127,22 @@ def recursive_feature_addition(X, y, X_test, y_test, model, method, dataset_meta
     end = time.time()
     print("Time for Predicting Improvement using CatBoost: " + str(end - start))
     if X_new.equals(X):  # if X_new.shape == X.shape
+        try:
+            y_list = y['target'].tolist()
+            y_series = pd.Series(y_list)
+            y = y_series
+        except KeyError:
+            print("")
         data = concat_data(X, y, X_test, y_test, "target")
         data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + f"_MWI_{wanted_min_relative_improvement}_CatBoost_recursion.parquet")
         return X, y
     else:
+        try:
+            y_list = y_new['target'].tolist()
+            y_series = pd.Series(y_list)
+            y_new = y_series
+        except KeyError:
+            print("")
         data = concat_data(X_new, y_new, X_test, y_test, "target")
         data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + f"_MWI_{wanted_min_relative_improvement}_CatBoost_recursion.parquet")
         return recursive_feature_addition(X_new, y_new, X_test, y_test, model, method, dataset_metadata, category_to_drop, wanted_min_relative_improvement, dataset_id)
@@ -170,12 +182,22 @@ def recursive_feature_addition_mfe_group(X_train, y_train, X_test, y_test, model
         end = time.time()
         print("Time for Predicting Improvement using CatBoost: " + str(end - start))
         if X_new.equals(X_train):  # if X_new.shape == X.shape
-            y_list = y_new['target'].tolist()
-            y_series = pd.Series(y_list)
-            data = concat_data(X_train, y_series, X_test, y_test, "target")
+            try:
+                y_list = y_train['target'].tolist()
+                y_series = pd.Series(y_list)
+                y_train = y_series
+            except KeyError:
+                print("")
+            data = concat_data(X_train, y_train, X_test, y_test, "target")
             data.to_parquet(f"FE_{dataset_id}_{method}_{groupname}_CatBoost_recursion.parquet")
             return X_train, y_train
         else:
+            try:
+                y_list = y_new['target'].tolist()
+                y_series = pd.Series(y_list)
+                y_new = y_series
+            except KeyError:
+                print("")
             data = concat_data(X_new, y_new, X_test, y_test, "target")
             data.to_parquet(f"FE_{dataset_id}_{method}_{groupname}_CatBoost_recursion.parquet")
             return recursive_feature_addition_mfe_group(X_new, y_new, X_test, y_test, model, method, dataset_id, group, wanted_min_relative_improvement)
@@ -231,12 +253,22 @@ def recursive_feature_addition_mfe_groups(X_train, y_train, X_test, y_test, mode
         end = time.time()
         print("Time for Predicting Improvement using CatBoost: " + str(end - start))
         if X_new.equals(X_train):  # if X_new.shape == X.shape
-            y_list = y_new['target'].tolist()
-            y_series = pd.Series(y_list)
-            data = concat_data(X_train, y_series, X_test, y_test, "target")
+            try:
+                y_list = y_train['target'].tolist()
+                y_series = pd.Series(y_list)
+                y_train = y_series
+            except KeyError:
+                print("")
+            data = concat_data(X_train, y_train, X_test, y_test, "target")
             data.to_parquet(f"FE_{dataset_id}_{method}_{str(groups)}_CatBoost_recursion.parquet")
             return X_train, y_train
         else:
+            try:
+                y_list = y_new['target'].tolist()
+                y_series = pd.Series(y_list)
+                y_new = y_series
+            except KeyError:
+                print("")
             data = concat_data(X_new, y_new, X_test, y_test, "target")
             data.to_parquet(f"FE_{dataset_id}_{method}_{str(groups)}_CatBoost_recursion.parquet")
             return recursive_feature_addition_mfe_group(X_new, y_new, X_test, y_test, model, method, dataset_id, groups, wanted_min_relative_improvement)
@@ -276,9 +308,7 @@ def process_group(dataset_id, method, group, model, wanted_min_relative_improvem
     print(f"[Processing Group] {groupname}")
     X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
     X_train, y_train, X_test, y_test = recursive_feature_addition_mfe_group(X_train, y_train, X_test, y_test, model, method, dataset_id, groupname, wanted_min_relative_improvement)
-    y_list = y_train['target'].tolist()
-    y_series = pd.Series(y_list)
-    data = concat_data(X_train, y_series, X_test, y_test, "target")
+    data = concat_data(X_train, y_train, X_test, y_test, "target")
     data.to_parquet(f"FE_{dataset_id}_{method}_{groupname}_MWI_{wanted_min_relative_improvement}_CatBoost_recursion.parquet")
 
 
@@ -286,9 +316,7 @@ def process_groups(dataset_id, method, groups, model, wanted_min_relative_improv
     last_reset_time.value = time.time()
     X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
     X_train, y_train, X_test, y_test = recursive_feature_addition_mfe_groups(X_train, y_train, X_test, y_test, model, method, dataset_id, groups, wanted_min_relative_improvement)
-    y_list = y_train['target'].tolist()
-    y_series = pd.Series(y_list)
-    data = concat_data(X_train, y_series, X_test, y_test, "target")
+    data = concat_data(X_train, y_train, X_test, y_test, "target")
     data.to_parquet(f"FE_{dataset_id}_{method}_{str(groups)}_MWI_{wanted_min_relative_improvement}_CatBoost_recursion.parquet")
 
 
@@ -390,10 +418,11 @@ def main_wrapper():
     # parser.add_argument('--mf_method', required=True, help='Metafeature Method')
     parser.add_argument('--dataset', required=True, help='Metafeature Method')
     args = parser.parse_args()
-    method = "MFE"
+    methods = ["pandas", "d2v", "MFE"]
     wanted_min_relative_improvements = [0, 0.05, 0.1, 0.15, 0.2, 0.3, 0.5, 1.0]
     for wanted_min_relative_improvement in wanted_min_relative_improvements:
-        main(int(args.dataset), method, wanted_min_relative_improvement)
+        for method in methods:
+            main(int(args.dataset), method, wanted_min_relative_improvement)
 
 
 if __name__ == '__main__':
