@@ -178,16 +178,33 @@ def test_analysis():
     plot_boxplot_percentage_impr(baseline_col, df_pivot_val, "Val")
     plot_boxplot_percentage_impr(baseline_col, df_pivot_test, "Test")
 
-    # Drop OpenFE column
+    # Drop OpenFE column to compare MFE approaches
     df_pivot_val.drop(columns=["OpenFE"], inplace=True)
     df_pivot_test.drop(columns=["OpenFE"], inplace=True)
-
     #Plot again
-    plot_count_best(df_pivot_val, df_pivot_test,"without_OpenFE_")
+    plot_count_best(df_pivot_val, df_pivot_test, "without_OpenFE_")
     plot_avg_percentage_impr(baseline_col, df_pivot_val, "Val_without_OpenFE")
     plot_avg_percentage_impr(baseline_col, df_pivot_test, "Test_without_OpenFE")
     plot_boxplot_percentage_impr(baseline_col, df_pivot_val, "Val_without_OpenFE")
     plot_boxplot_percentage_impr(baseline_col, df_pivot_test, "Test_without_OpenFE")
+
+    # Drop everything but pandas & original columns to compare SM approaches
+    df_pivot_val = df_pivot_val[["pandas_best", "pandas_recursion", "Original"]]
+    df_pivot_test = df_pivot_test[["pandas_best", "pandas_recursion", "Original"]]
+    # Plot
+    plot_avg_percentage_impr(baseline_col, df_pivot_val, "Val_only_pandas")
+    plot_avg_percentage_impr(baseline_col, df_pivot_test, "Test_only_pandas")
+    plot_boxplot_percentage_impr(baseline_col, df_pivot_val, "Val_only_pandas")
+    plot_boxplot_percentage_impr(baseline_col, df_pivot_test, "Test_only_pandas")
+
+    # Drop everything but pandas columns to compare SM approaches
+    df_pivot_val = df_pivot_val[["pandas_best", "pandas_recursion"]]
+    df_pivot_test = df_pivot_test[["pandas_best", "pandas_recursion"]]
+    # Plot again
+    plot_count_best(df_pivot_val, df_pivot_test, "only_pandas_")
+    plot_autogluon_score_graph(dataset_list_wrapped, df_pivot_val, "Val_only_pandas")
+    plot_autogluon_score_graph(dataset_list_wrapped, df_pivot_test, "Test_only_pandas")
+
 
 
 if __name__ == "__main__":
