@@ -8,7 +8,7 @@ import pyarrow
 
 from src.Result_Analysis.test_analysis import test_analysis
 
-from src.utils.get_data import get_openfe_data
+from src.utils.get_data import get_openfe_data, concat_data
 from src.utils.get_data import split_data, get_openml_dataset_split_and_metadata
 from src.utils.run_models import get_model_score_origin_classification, get_model_score_origin_regression
 
@@ -54,7 +54,13 @@ def main():
                 openfe_results = pd.read_parquet(openfe_path)
                 print("OpenFE Results loaded.")
             except FileNotFoundError:
-                X_openfe_train, y_openfe_train, X_openfe_test, y_openfe_test = get_openfe_data(X_train, y_train, X_test, y_test)
+                try:
+                    data = pd.read_parquet(f"FE_{dataset_id}_OpenFE.parquet")
+                    X_openfe_train, y_openfe_train, X_openfe_test, y_openfe_test = split_data(data, "target")
+                except FileNotFoundError:
+                    X_openfe_train, y_openfe_train, X_openfe_test, y_openfe_test = get_openfe_data(X_train, y_train, X_test, y_test)
+                    data = concat_data(X_openfe_train, y_openfe_train, X_openfe_test, y_openfe_test, "target")
+                    data.to_parquet(f"FE_{dataset_id}_OpenFE.parquet")
                 X_openfe_train = X_openfe_train.rename(columns=lambda x: re.sub('[^A-Za-z0-9_]+', '', x))
                 X_openfe_test = X_openfe_test.rename(columns=lambda x: re.sub('[^A-Za-z0-9_]+', '', x))
 
@@ -120,8 +126,6 @@ def main():
         all_results = pd.concat(combined_results, ignore_index=True).drop_duplicates()
         all_results.to_parquet(f"test_results/Result_{dataset_id}.parquet")
         print(f"Saved combined results for dataset {dataset_id}.")
-
-    test_analysis()
 
 
 if __name__ == "__main__":
