@@ -163,7 +163,8 @@ def main():
     result_matrix_pandas = pd.DataFrame(columns=columns)
     start = time.time()
     counter = 0
-    for dataset, _ in result_matrix.groupby('dataset - id'):
+    datasets = list(result_matrix.groupby('dataset - id').groups.keys())
+    for dataset in datasets:
         print("Dataset: " + str(dataset))
         try:
             pd.read_parquet("src/Metadata/pandas/Pandas_Matrix_Complete" + str(dataset) + ".parquet")

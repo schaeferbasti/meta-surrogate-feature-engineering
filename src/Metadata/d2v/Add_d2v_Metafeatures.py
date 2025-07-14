@@ -50,7 +50,8 @@ def main():
     result_matrix_pandas = pd.DataFrame(columns=columns)
     start = time.time()
     counter = 0
-    for dataset, _ in result_matrix.groupby('dataset - id'):
+    datasets = list(result_matrix.groupby('dataset - id').groups.keys())
+    for dataset in datasets:
         get_name_and_split_and_save_dataset(dataset)
         print("Dataset: " + str(dataset))
         try:

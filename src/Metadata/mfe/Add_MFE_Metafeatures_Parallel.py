@@ -53,7 +53,8 @@ def main(group):
     columns = get_additional_mfe_columns_group(group)
     result_matrix_pandas = pd.DataFrame(columns=columns)
     counter = 0
-    for dataset, _ in result_matrix.groupby('dataset - id'):
+    datasets = list(result_matrix.groupby('dataset - id').groups.keys())
+    for dataset in datasets:
         print("Dataset: " + str(dataset))
         try:
             pd.read_parquet("src/Metadata/mfe/MFE_" + str(group) + "_Matrix_Complete" + str(dataset) + ".parquet")
