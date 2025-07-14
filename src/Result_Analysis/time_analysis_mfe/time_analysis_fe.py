@@ -4,7 +4,7 @@ import openml
 import pandas as pd
 from matplotlib import pyplot as plt
 
-from src.Apply_and_Test.analyse_results import insert_line_breaks
+from src.Result_Analysis.test_analysis.test_analysis import insert_line_breaks
 
 
 def main():
