@@ -1,12 +1,8 @@
 import os
 import re
 
-import openml
 import pandas as pd
 from matplotlib import pyplot as plt
-
-from src.Apply_and_Test.analyse_results import insert_line_breaks
-
 
 def main():
     times = pd.DataFrame(columns=["Method", "Dataset", "Task", "Time"])
@@ -120,8 +116,9 @@ def main():
         .groupby("Method", group_keys=False)
         .head(7)
     )
-
+    print(times_filtered)
     time_per_method = times_filtered.groupby("Method")["Time"].sum().sort_values(ascending=False)
+    print(time_per_method)
     average_openfe = time_per_method.values[0] / 7
     average_recursion = time_per_method.values[1] / 7
     average_best = time_per_method.values[2] / 7
@@ -136,7 +133,6 @@ def main():
     plt.ylabel("Time in seconds")
     plt.title("Time Usage of FE Methods")
     plt.xticks(rotation=45, ha="right")
-    # plt.yscale('log')
     plt.tight_layout()
     plt.savefig("Time_FE_methods.png")
     plt.show()
