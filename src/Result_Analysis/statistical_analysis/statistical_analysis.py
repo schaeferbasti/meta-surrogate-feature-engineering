@@ -130,9 +130,7 @@ def statistical_analysis():
     data_files.sort()
     columns = ["Dataset", "Method", "DeltaR2", "Count_Suppressor_Candidates", "Number_of_Features", "DeltaR2_Normalized"]
     delta_r2_df = pd.DataFrame(columns=columns)
-    delta_r2_normalized_df = pd.DataFrame(columns=columns)
     delta_r2_non_suppressor_df = pd.DataFrame(columns=columns)
-    delta_r2_non_suppressor_normalized_df = pd.DataFrame(columns=columns)
     try:
         delta_r2_df = pd.read_parquet("delta_r2.parquet")
     except FileNotFoundError:
@@ -185,12 +183,15 @@ def statistical_analysis():
             delta_r2_non_suppressor_df.to_parquet("delta_r2_non_suppressor.parquet")
 
     df_pivot = delta_r2_df.pivot(index="Dataset", columns="Method", values="DeltaR2")
+    random_cols = [col for col in df_pivot.columns if col.startswith("Random_fold_")]
+    df_pivot["Best_Random"] = df_pivot[random_cols].max(axis=1)
+    df_pivot = df_pivot.drop(random_cols, axis=1)
     df_pivot_normalized = delta_r2_df.pivot(index="Dataset", columns="Method", values="DeltaR2_Normalized")
-    df_pivot_non_suppressor = delta_r2_non_suppressor_df.pivot(index="Dataset", columns="Method", values="Count_Suppressor_Candidates")
+    df_pivot_normalized["Best_Random"] = df_pivot_normalized[random_cols].max(axis=1)
+    df_pivot_normalized = df_pivot_normalized.drop(random_cols, axis=1)
 
     df_pivot = df_pivot.sort_index()
     df_pivot_normalized = df_pivot_normalized.sort_index()
-    df_pivot_non_suppressor = df_pivot_non_suppressor.sort_index()
 
     datasets = df_pivot.index.astype(str)
     dataset_list = []
@@ -209,8 +210,31 @@ def statistical_analysis():
     plot_delta_r2_graph(dataset_list_wrapped, df_pivot, "")
     plot_delta_r2_graph(dataset_list_wrapped, df_pivot_normalized, "Normalized")
 
-    df_pivot_pandas = df_pivot[["pandas_CatBoost_best", "pandas_CatBoost_recursion", "OpenFE"]]
-    df_pivot_normalized_pandas = df_pivot_normalized[["pandas_CatBoost_best", "pandas_CatBoost_recursion", "OpenFE"]]
+    random_cols = [col for col in df_pivot.columns if col.startswith("MFE_")]
+    df_pivot["Best_MFE"] = df_pivot[random_cols].max(axis=1)
+    df_pivot = df_pivot.drop(random_cols, axis=1)
+    random_cols = [col for col in df_pivot.columns if col.startswith("pandas_")]
+    df_pivot["Best_Pandas"] = df_pivot[random_cols].max(axis=1)
+    df_pivot = df_pivot.drop(random_cols, axis=1)
+    random_cols = [col for col in df_pivot.columns if col.startswith("d2v_")]
+    df_pivot["Best_d2v"] = df_pivot[random_cols].max(axis=1)
+    df_pivot = df_pivot.drop(random_cols, axis=1)
+    random_cols = [col for col in df_pivot_normalized.columns if col.startswith("MFE_")]
+    df_pivot_normalized["Best_MFE"] = df_pivot_normalized[random_cols].max(axis=1)
+    df_pivot_normalized = df_pivot_normalized.drop(random_cols, axis=1)
+    random_cols = [col for col in df_pivot_normalized.columns if col.startswith("pandas_")]
+    df_pivot_normalized["Best_Pandas"] = df_pivot_normalized[random_cols].max(axis=1)
+    df_pivot_normalized = df_pivot_normalized.drop(random_cols, axis=1)
+    random_cols = [col for col in df_pivot_normalized.columns if col.startswith("d2v_")]
+    df_pivot_normalized["Best_d2v"] = df_pivot_normalized[random_cols].max(axis=1)
+    df_pivot_normalized = df_pivot_normalized.drop(random_cols, axis=1)
+
+
+    plot_delta_r2_graph(dataset_list_wrapped, df_pivot, "best")
+    plot_delta_r2_graph(dataset_list_wrapped, df_pivot_normalized, "best Normalized")
+
+    df_pivot_pandas = df_pivot[["pandas_CatBoost_best", "pandas_CatBoost_recursion", "OpenFE", "Best_Random"]]
+    df_pivot_normalized_pandas = df_pivot_normalized[["pandas_CatBoost_best", "pandas_CatBoost_recursion", "OpenFE", "Best_Random"]]
 
     plot_delta_r2_graph(dataset_list_wrapped, df_pivot_pandas, "Pandas and OpenFE")
     plot_delta_r2_graph(dataset_list_wrapped, df_pivot_normalized_pandas, "Normalized Pandas and OpenFE")
