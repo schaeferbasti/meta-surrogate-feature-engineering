@@ -6,8 +6,6 @@ from collections import defaultdict
 
 import pyarrow
 
-from src.Result_Analysis.test_analysis import test_analysis
-
 from src.utils.get_data import get_openfe_data, concat_data
 from src.utils.get_data import split_data, get_openml_dataset_split_and_metadata
 from src.utils.run_models import get_model_score_origin_classification, get_model_score_origin_regression
