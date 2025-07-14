@@ -1,0 +1,541 @@
+/Users/schaefer.bastian/miniconda3/envs/meta-surrogate-feature-engineering-tf/bin/python /Users/schaefer.bastian/Programming/ALU/Masterarbeit/meta-surrogate-feature-engineering/src/Metadata/core/core_submatrices/analyse_and_correct_core_matrix.py
+Operator_Model_Feature_Matrix_Core146818.parquet
+Operator_Model_Feature_Matrix_Core360975.parquet
+Operator_Model_Feature_Matrix_Core359960.parquet
+Operator_Model_Feature_Matrix_Core359970.parquet
+Operator_Model_Feature_Matrix_Core233213.parquet
+Operator_Model_Feature_Matrix_Core190411.parquet
+Operator_Model_Feature_Matrix_Core360112.parquet
+Operator_Model_Feature_Matrix_Core7593.parquet
+Operator_Model_Feature_Matrix_Core359984.parquet
+Operator_Model_Feature_Matrix_Core359994.parquet
+Operator_Model_Feature_Matrix_Core3945.parquet
+Operator_Model_Feature_Matrix_Core359979.parquet
+Operator_Model_Feature_Matrix_Core359969.parquet
+Operator_Model_Feature_Matrix_Core189356.parquet
+Operator_Model_Feature_Matrix_Core359934.parquet
+Operator_Model_Feature_Matrix_Core2073.parquet
+Operator_Model_Feature_Matrix_Core359946.parquet
+Operator_Model_Feature_Matrix_Core359956.parquet
+Operator_Model_Feature_Matrix_Core359968.parquet
+Operator_Model_Feature_Matrix_Core359935.parquet
+Operator_Model_Feature_Matrix_Core359957.parquet
+Operator_Model_Feature_Matrix_Core359971.parquet
+Operator_Model_Feature_Matrix_Core359961.parquet
+Operator_Model_Feature_Matrix_Core233212.parquet
+Operator_Model_Feature_Matrix_Core190410.parquet
+Operator_Model_Feature_Matrix_Core167210.parquet
+Operator_Model_Feature_Matrix_Core360113.parquet
+Operator_Model_Feature_Matrix_Core359985.parquet
+Operator_Model_Feature_Matrix_Core317614.parquet
+Operator_Model_Feature_Matrix_Core167120.parquet
+Operator_Model_Feature_Matrix_Core359945.parquet
+Operator_Model_Feature_Matrix_Core359955.parquet
+Operator_Model_Feature_Matrix_Core168909.parquet
+Operator_Model_Feature_Matrix_Core189355.parquet
+Operator_Model_Feature_Matrix_Core359937.parquet
+Operator_Model_Feature_Matrix_Core360932.parquet
+Operator_Model_Feature_Matrix_Core190412.parquet
+Operator_Model_Feature_Matrix_Core10090.parquet
+Operator_Model_Feature_Matrix_Core359963.parquet
+Operator_Model_Feature_Matrix_Core359973.parquet
+Operator_Model_Feature_Matrix_Core359987.parquet
+Operator_Model_Feature_Matrix_Core168868.parquet
+Operator_Model_Feature_Matrix_Core168910.parquet
+Operator_Model_Feature_Matrix_Core233211.parquet
+Operator_Model_Feature_Matrix_Core359972.parquet
+Operator_Model_Feature_Matrix_Core359962.parquet
+Operator_Model_Feature_Matrix_Core359986.parquet
+Operator_Model_Feature_Matrix_Core168911.parquet
+Operator_Model_Feature_Matrix_Core359954.parquet
+Operator_Model_Feature_Matrix_Core359944.parquet
+Operator_Model_Feature_Matrix_Core360933.parquet
+Operator_Model_Feature_Matrix_Core359936.parquet
+Operator_Model_Feature_Matrix_Core189354.parquet
+Operator_Model_Feature_Matrix_Core359941.parquet
+Operator_Model_Feature_Matrix_Core359951.parquet
+Operator_Model_Feature_Matrix_Core359933.parquet
+Operator_Model_Feature_Matrix_Core359983.parquet
+Operator_Model_Feature_Matrix_Core359993.parquet
+Operator_Model_Feature_Matrix_Core211979.parquet
+Operator_Model_Feature_Matrix_Core359958.parquet
+Operator_Model_Feature_Matrix_Core359948.parquet
+Operator_Model_Feature_Matrix_Core146820.parquet
+Operator_Model_Feature_Matrix_Core190392.parquet
+Operator_Model_Feature_Matrix_Core233214.parquet
+Operator_Model_Feature_Matrix_Core359967.parquet
+Operator_Model_Feature_Matrix_Core359977.parquet
+Operator_Model_Feature_Matrix_Core359992.parquet
+Operator_Model_Feature_Matrix_Core359982.parquet
+Operator_Model_Feature_Matrix_Core360114.parquet
+Operator_Model_Feature_Matrix_Core359949.parquet
+Operator_Model_Feature_Matrix_Core359959.parquet
+Operator_Model_Feature_Matrix_Core233215.parquet
+Operator_Model_Feature_Matrix_Core359976.parquet
+Operator_Model_Feature_Matrix_Core359966.parquet
+Operator_Model_Feature_Matrix_Core190146.parquet
+Operator_Model_Feature_Matrix_Core360945.parquet
+Operator_Model_Feature_Matrix_Core359950.parquet
+Operator_Model_Feature_Matrix_Core359940.parquet
+Operator_Model_Feature_Matrix_Core359932.parquet
+Operator_Model_Feature_Matrix_Core359939.parquet
+Operator_Model_Feature_Matrix_Core359929.parquet
+Operator_Model_Feature_Matrix_Core359980.parquet
+Operator_Model_Feature_Matrix_Core359990.parquet
+Operator_Model_Feature_Matrix_Core359964.parquet
+Operator_Model_Feature_Matrix_Core359974.parquet
+Operator_Model_Feature_Matrix_Core189922.parquet
+Operator_Model_Feature_Matrix_Core168757.parquet
+Operator_Model_Feature_Matrix_Core359930.parquet
+Operator_Model_Feature_Matrix_Core359989.parquet
+Operator_Model_Feature_Matrix_Core359942.parquet
+Operator_Model_Feature_Matrix_Core359952.parquet
+Operator_Model_Feature_Matrix_Core359988.parquet
+Operator_Model_Feature_Matrix_Core359931.parquet
+Operator_Model_Feature_Matrix_Core359953.parquet
+Operator_Model_Feature_Matrix_Core359943.parquet
+Operator_Model_Feature_Matrix_Core211986.parquet
+Operator_Model_Feature_Matrix_Core168784.parquet
+Operator_Model_Feature_Matrix_Core168350.parquet
+Operator_Model_Feature_Matrix_Core359991.parquet
+Operator_Model_Feature_Matrix_Core359981.parquet
+Operator_Model_Feature_Matrix_Core359938.parquet
+Operator_Model_Feature_Matrix_Core359975.parquet
+Operator_Model_Feature_Matrix_Core359965.parquet
+Operator_Model_Feature_Matrix_Core190137.parquet
+Operator_Model_Feature_Matrix_Core10090.parquet
+Present number of lines: 1368
+Calculated number of lines of matrix: 1300110000
+❌ Some required operators are missing.
+Operator_Model_Feature_Matrix_Core146818.parquet
+Present number of lines: 2702
+Calculated number of lines of matrix: 2702
+✅ All required operators are present.
+Operator_Model_Feature_Matrix_Core146820.parquet
+Present number of lines: 380
+Calculated number of lines of matrix: 380
+✅ All required operators are present.
+Operator_Model_Feature_Matrix_Core167120.parquet
+Present number of lines: 5964
+Calculated number of lines of matrix: 5964
+✅ All required operators are present.
+Operator_Model_Feature_Matrix_Core167210.parquet
+Present number of lines: 2785
+Calculated number of lines of matrix: 2702
+✅ All required operators are present.
+Operator_Model_Feature_Matrix_Core168350.parquet
+Present number of lines: 380
+Calculated number of lines of matrix: 380
+✅ All required operators are present.
+Operator_Model_Feature_Matrix_Core168757.parquet
+Present number of lines: 5366
+Calculated number of lines of matrix: 5420
+✅ All required operators are present.
+Operator_Model_Feature_Matrix_Core168784.parquet
+Present number of lines: 9774
+Calculated number of lines of matrix: 9774
+✅ All required operators are present.
+Operator_Model_Feature_Matrix_Core168868.parquet
+Present number of lines: 4279
+Calculated number of lines of matrix: 377570
+❌ Some required operators are missing.
+Operator_Model_Feature_Matrix_Core168909.parquet
+Present number of lines: 551
+Calculated number of lines of matrix: 52022000
+❌ Some required operators are missing.
+Operator_Model_Feature_Matrix_Core168910.parquet
+Present number of lines: 3594
+Calculated number of lines of matrix: 8328800
+❌ Some required operators are missing.
+Operator_Model_Feature_Matrix_Core168911.parquet
+Present number of lines: 42733
+Calculated number of lines of matrix: 271152
+❌ Some required operators are missing.
+Operator_Model_Feature_Matrix_Core189354.parquet
+Present number of lines: 710
+Calculated number of lines of matrix: 714
+✅ All required operators are present.
+Operator_Model_Feature_Matrix_Core189355.parquet
+Present number of lines: 313
+Calculated number of lines of matrix: 47460
+❌ Some required operators are missing.
+Operator_Model_Feature_Matrix_Core189356.parquet
+Present number of lines: 2230
+Calculated number of lines of matrix: 79950
+❌ Some required operators are missing.
+Operator_Model_Feature_Matrix_Core189922.parquet
+Present number of lines: 28287
+Calculated number of lines of matrix: 12242370
+❌ Some required operators are missing.
+Operator_Model_Feature_Matrix_Core190137.parquet
+Present number of lines: 42653
+Calculated number of lines of matrix: 68184
+❌ Some required operators are missing.
+Operator_Model_Feature_Matrix_Core190146.parquet
+Present number of lines: 4410
+Calculated number of lines of matrix: 4410
+✅ All required operators are present.
+Operator_Model_Feature_Matrix_Core190392.parquet
+Present number of lines: 60322
+Calculated number of lines of matrix: 874902
+❌ Some required operators are missing.
+Operator_Model_Feature_Matrix_Core190410.parquet
+Present number of lines: 10304
+Calculated number of lines of matrix: 1236620
+❌ Some required operators are missing.
+Operator_Model_Feature_Matrix_Core190411.parquet
+Present number of lines: 16714
+Calculated number of lines of matrix: 30480
+❌ Some required operators are missing.
+Operator_Model_Feature_Matrix_Core190412.parquet
+Present number of lines: 3435
+Calculated number of lines of matrix: 1300110000
+❌ Some required operators are missing.
+Operator_Model_Feature_Matrix_Core2073.parquet
+Present number of lines: 920
+Calculated number of lines of matrix: 920
+✅ All required operators are present.
+Operator_Model_Feature_Matrix_Core211979.parquet
+Present number of lines: 6066
+Calculated number of lines of matrix: 38502
+❌ Some required operators are missing.
+Operator_Model_Feature_Matrix_Core211986.parquet
+Present number of lines: 16060
+Calculated number of lines of matrix: 31752
+❌ Some required operators are missing.
+Operator_Model_Feature_Matrix_Core233211.parquet
+Present number of lines: 1222
+Calculated number of lines of matrix: 1152
+✅ All required operators are present.
+Operator_Model_Feature_Matrix_Core233212.parquet
+Present number of lines: 6815
+Calculated number of lines of matrix: 221130
+❌ Some required operators are missing.
+Operator_Model_Feature_Matrix_Core233213.parquet
+Present number of lines: 1109
+Calculated number of lines of matrix: 77924
+❌ Some required operators are missing.
+Operator_Model_Feature_Matrix_Core233214.parquet
+Present number of lines: 1874
+Calculated number of lines of matrix: 323885954
+❌ Some required operators are missing.
+Operator_Model_Feature_Matrix_Core233215.parquet
+Present number of lines: 85289
+Calculated number of lines of matrix: 1842024
+❌ Some required operators are missing.
+Operator_Model_Feature_Matrix_Core317614.parquet
+Present number of lines: 1200
+Calculated number of lines of matrix: 131100
+❌ Some required operators are missing.
+Operator_Model_Feature_Matrix_Core359929.parquet
+Present number of lines: 350
+Calculated number of lines of matrix: 1152
+❌ Some required operators are missing.
+Operator_Model_Feature_Matrix_Core359930.parquet
+Present number of lines: 150
+Calculated number of lines of matrix: 150
+✅ All required operators are present.
+Operator_Model_Feature_Matrix_Core359931.parquet
+Present number of lines: 1811
+Calculated number of lines of matrix: 1694
+✅ All required operators are present.
+Operator_Model_Feature_Matrix_Core359932.parquet
+Present number of lines: 371
+Calculated number of lines of matrix: 380
+✅ All required operators are present.
+Operator_Model_Feature_Matrix_Core359933.parquet
+Present number of lines: 534
+Calculated number of lines of matrix: 534
+✅ All required operators are present.
+Operator_Model_Feature_Matrix_Core359934.parquet
+Present number of lines: 192413
+Calculated number of lines of matrix: 201252
+❌ Some required operators are missing.
+Operator_Model_Feature_Matrix_Core359935.parquet
+Present number of lines: 1768
+Calculated number of lines of matrix: 1694
+✅ All required operators are present.
+Operator_Model_Feature_Matrix_Core359936.parquet
+Present number of lines: 4410
+Calculated number of lines of matrix: 4410
+✅ All required operators are present.
+Operator_Model_Feature_Matrix_Core359937.parquet
+Present number of lines: 1160
+Calculated number of lines of matrix: 1152
+✅ All required operators are present.
+Operator_Model_Feature_Matrix_Core359938.parquet
+Present number of lines: 2032
+Calculated number of lines of matrix: 2004
+✅ All required operators are present.
+Operator_Model_Feature_Matrix_Core359939.parquet
+Present number of lines: 3145
+Calculated number of lines of matrix: 922754
+❌ Some required operators are missing.
+Operator_Model_Feature_Matrix_Core359940.parquet
+Present number of lines: 19352
+Calculated number of lines of matrix: 821774
+❌ Some required operators are missing.
+Operator_Model_Feature_Matrix_Core359941.parquet
+Present number of lines: 21450
+Calculated number of lines of matrix: 45902
+❌ Some required operators are missing.
+Operator_Model_Feature_Matrix_Core359942.parquet
+Present number of lines: 25629
+Calculated number of lines of matrix: 25652
+❌ Some required operators are missing.
+Operator_Model_Feature_Matrix_Core359943.parquet
+Present number of lines: 837
+Calculated number of lines of matrix: 4410
+❌ Some required operators are missing.
+Operator_Model_Feature_Matrix_Core359944.parquet
+Present number of lines: 948
+Calculated number of lines of matrix: 920
+✅ All required operators are present.
+Operator_Model_Feature_Matrix_Core359945.parquet
+Present number of lines: 118655
+Calculated number of lines of matrix: 207774
+❌ Some required operators are missing.
+Operator_Model_Feature_Matrix_Core359946.parquet
+Present number of lines: 2488
+Calculated number of lines of matrix: 30480
+❌ Some required operators are missing.
+Operator_Model_Feature_Matrix_Core359948.parquet
+Present number of lines: 29297
+Calculated number of lines of matrix: 176204
+❌ Some required operators are missing.
+Operator_Model_Feature_Matrix_Core359949.parquet
+Present number of lines: 5964
+Calculated number of lines of matrix: 5964
+✅ All required operators are present.
+Operator_Model_Feature_Matrix_Core359950.parquet
+Present number of lines: 2340
+Calculated number of lines of matrix: 2340
+✅ All required operators are present.
+Operator_Model_Feature_Matrix_Core359951.parquet
+Present number of lines: 17765
+Calculated number of lines of matrix: 82002
+❌ Some required operators are missing.
+Operator_Model_Feature_Matrix_Core359952.parquet
+Present number of lines: 3504
+Calculated number of lines of matrix: 3504
+✅ All required operators are present.
+Operator_Model_Feature_Matrix_Core359953.parquet
+Present number of lines: 8711
+Calculated number of lines of matrix: 21984300
+❌ Some required operators are missing.
+Operator_Model_Feature_Matrix_Core359954.parquet
+Present number of lines: 4892
+Calculated number of lines of matrix: 4902
+✅ All required operators are present.
+Operator_Model_Feature_Matrix_Core359955.parquet
+Present number of lines: 252
+Calculated number of lines of matrix: 252
+✅ All required operators are present.
+Operator_Model_Feature_Matrix_Core359956.parquet
+Present number of lines: 22304
+Calculated number of lines of matrix: 22304
+✅ All required operators are present.
+Operator_Model_Feature_Matrix_Core359957.parquet
+Present number of lines: 26946
+Calculated number of lines of matrix: 9534984
+❌ Some required operators are missing.
+Operator_Model_Feature_Matrix_Core359958.parquet
+Present number of lines: 18204
+Calculated number of lines of matrix: 18204
+✅ All required operators are present.
+Operator_Model_Feature_Matrix_Core359959.parquet
+Present number of lines: 1152
+Calculated number of lines of matrix: 1152
+✅ All required operators are present.
+Operator_Model_Feature_Matrix_Core359960.parquet
+Present number of lines: 521
+Calculated number of lines of matrix: 534
+✅ All required operators are present.
+Operator_Model_Feature_Matrix_Core359961.parquet
+Present number of lines: 35835
+Calculated number of lines of matrix: 608904
+❌ Some required operators are missing.
+Operator_Model_Feature_Matrix_Core359962.parquet
+Present number of lines: 5964
+Calculated number of lines of matrix: 5964
+✅ All required operators are present.
+Operator_Model_Feature_Matrix_Core359963.parquet
+Present number of lines: 3504
+Calculated number of lines of matrix: 3504
+✅ All required operators are present.
+Operator_Model_Feature_Matrix_Core359964.parquet
+Present number of lines: 21058
+Calculated number of lines of matrix: 423180
+❌ Some required operators are missing.
+Operator_Model_Feature_Matrix_Core359965.parquet
+Present number of lines: 16904
+Calculated number of lines of matrix: 17244
+✅ All required operators are present.
+Operator_Model_Feature_Matrix_Core359966.parquet
+Present number of lines: 9482
+Calculated number of lines of matrix: 31572870
+❌ Some required operators are missing.
+Operator_Model_Feature_Matrix_Core359967.parquet
+Present number of lines: 34007
+Calculated number of lines of matrix: 41023824
+❌ Some required operators are missing.
+Operator_Model_Feature_Matrix_Core359968.parquet
+Present number of lines: 5420
+Calculated number of lines of matrix: 5420
+✅ All required operators are present.
+Operator_Model_Feature_Matrix_Core359969.parquet
+Present number of lines: 16975
+Calculated number of lines of matrix: 34374
+❌ Some required operators are missing.
+Operator_Model_Feature_Matrix_Core359970.parquet
+Present number of lines: 7259
+Calculated number of lines of matrix: 13664
+❌ Some required operators are missing.
+Operator_Model_Feature_Matrix_Core359971.parquet
+Present number of lines: 12030
+Calculated number of lines of matrix: 12030
+✅ All required operators are present.
+Operator_Model_Feature_Matrix_Core359972.parquet
+Present number of lines: 5420
+Calculated number of lines of matrix: 5420
+✅ All required operators are present.
+Operator_Model_Feature_Matrix_Core359973.parquet
+Present number of lines: 2733
+Calculated number of lines of matrix: 34812444
+❌ Some required operators are missing.
+Operator_Model_Feature_Matrix_Core359974.parquet
+Present number of lines: 1694
+Calculated number of lines of matrix: 1694
+✅ All required operators are present.
+Operator_Model_Feature_Matrix_Core359975.parquet
+Present number of lines: 17244
+Calculated number of lines of matrix: 17244
+✅ All required operators are present.
+Operator_Model_Feature_Matrix_Core359976.parquet
+Present number of lines: 507
+Calculated number of lines of matrix: 7999152
+❌ Some required operators are missing.
+Operator_Model_Feature_Matrix_Core359977.parquet
+Present number of lines: 1561
+Calculated number of lines of matrix: 23394
+❌ Some required operators are missing.
+Operator_Model_Feature_Matrix_Core359979.parquet
+Present number of lines: 1152
+Calculated number of lines of matrix: 1152
+✅ All required operators are present.
+Operator_Model_Feature_Matrix_Core359980.parquet
+Present number of lines: 7169
+Calculated number of lines of matrix: 182310
+❌ Some required operators are missing.
+Operator_Model_Feature_Matrix_Core359981.parquet
+Present number of lines: 534
+Calculated number of lines of matrix: 534
+✅ All required operators are present.
+Operator_Model_Feature_Matrix_Core359982.parquet
+Present number of lines: 3461
+Calculated number of lines of matrix: 3504
+✅ All required operators are present.
+Operator_Model_Feature_Matrix_Core359983.parquet
+Present number of lines: 2683
+Calculated number of lines of matrix: 2702
+✅ All required operators are present.
+Operator_Model_Feature_Matrix_Core359984.parquet
+Present number of lines: 1135
+Calculated number of lines of matrix: 9774
+❌ Some required operators are missing.
+Operator_Model_Feature_Matrix_Core359985.parquet
+Present number of lines: 1258
+Calculated number of lines of matrix: 423180
+❌ Some required operators are missing.
+Operator_Model_Feature_Matrix_Core359986.parquet
+Present number of lines: 53
+Calculated number of lines of matrix: 673999200
+❌ Some required operators are missing.
+Operator_Model_Feature_Matrix_Core359987.parquet
+Present number of lines: 1152
+Calculated number of lines of matrix: 1152
+✅ All required operators are present.
+Operator_Model_Feature_Matrix_Core359988.parquet
+Present number of lines: 540
+Calculated number of lines of matrix: 239970264
+❌ Some required operators are missing.
+Operator_Model_Feature_Matrix_Core359989.parquet
+Present number of lines: 453
+Calculated number of lines of matrix: 239970264
+❌ Some required operators are missing.
+Operator_Model_Feature_Matrix_Core359990.parquet
+Present number of lines: 6526
+Calculated number of lines of matrix: 33050
+❌ Some required operators are missing.
+Operator_Model_Feature_Matrix_Core359991.parquet
+Present number of lines: 12010
+Calculated number of lines of matrix: 13664
+❌ Some required operators are missing.
+Operator_Model_Feature_Matrix_Core359992.parquet
+Present number of lines: 1694
+Calculated number of lines of matrix: 1694
+✅ All required operators are present.
+Operator_Model_Feature_Matrix_Core359993.parquet
+Present number of lines: 4855
+Calculated number of lines of matrix: 4902
+✅ All required operators are present.
+Operator_Model_Feature_Matrix_Core359994.parquet
+Present number of lines: 847
+Calculated number of lines of matrix: 920
+❌ Some required operators are missing.
+Operator_Model_Feature_Matrix_Core360112.parquet
+Present number of lines: 276
+Calculated number of lines of matrix: 22304
+❌ Some required operators are missing.
+Operator_Model_Feature_Matrix_Core360113.parquet
+Present number of lines: 2495
+Calculated number of lines of matrix: 42864
+❌ Some required operators are missing.
+Operator_Model_Feature_Matrix_Core360114.parquet
+Present number of lines: 396
+Calculated number of lines of matrix: 10500
+❌ Some required operators are missing.
+Operator_Model_Feature_Matrix_Core360932.parquet
+Present number of lines: 1028
+Failed to download parquet, fallback on ARFF.
+/Users/schaefer.bastian/miniconda3/envs/meta-surrogate-feature-engineering-tf/lib/python3.10/site-packages/openml/datasets/dataset.py:455: FutureWarning:
+
+factorize with argument that is not not a Series, Index, ExtensionArray, or np.ndarray is deprecated and will raise in a future version.
+
+Calculated number of lines of matrix: 13642752
+❌ Some required operators are missing.
+Operator_Model_Feature_Matrix_Core360933.parquet
+Present number of lines: 1031
+Failed to download parquet, fallback on ARFF.
+/Users/schaefer.bastian/miniconda3/envs/meta-surrogate-feature-engineering-tf/lib/python3.10/site-packages/openml/datasets/dataset.py:455: FutureWarning:
+
+factorize with argument that is not not a Series, Index, ExtensionArray, or np.ndarray is deprecated and will raise in a future version.
+
+Calculated number of lines of matrix: 13642752
+❌ Some required operators are missing.
+Operator_Model_Feature_Matrix_Core360945.parquet
+Present number of lines: 24309
+Calculated number of lines of matrix: 271152
+❌ Some required operators are missing.
+Operator_Model_Feature_Matrix_Core360975.parquet
+Present number of lines: 310
+Calculated number of lines of matrix: 2882808254
+❌ Some required operators are missing.
+Operator_Model_Feature_Matrix_Core3945.parquet
+Present number of lines: 325
+Calculated number of lines of matrix: 690230
+❌ Some required operators are missing.
+Operator_Model_Feature_Matrix_Core7593.parquet
+Present number of lines: 391
+/Users/schaefer.bastian/Programming/ALU/Masterarbeit/meta-surrogate-feature-engineering/src/Metadata/core/core_submatrices/complete/core_matrix_fusion.py:20: FutureWarning:
+
+The behavior of DataFrame concatenation with empty or all-NA entries is deprecated. In a future version, this will no longer exclude empty or all-NA columns when determining the result dtypes. To retain the old behavior, exclude the relevant entries before the concat operation.
+
+Calculated number of lines of matrix: 38502
+❌ Some required operators are missing.
+Number of Saved Files: 104
+Number of Incomplete Files: 60
+Number of Complete Files: 44
+List of Incomplete Files: ['10090', '168868', '168909', '168910', '168911', '189355', '189356', '189922', '190137', '190392', '190410', '190411', '190412', '211979', '211986', '233212', '233213', '233214', '233215', '317614', '359929', '359934', '359939', '359940', '359941', '359942', '359943', '359945', '359946', '359948', '359951', '359953', '359957', '359961', '359964', '359966', '359967', '359969', '359970', '359973', '359976', '359977', '359980', '359984', '359985', '359986', '359988', '359989', '359990', '359991', '359994', '360112', '360113', '360114', '360932', '360933', '360945', '360975', '3945', '7593']
+Old Matrix Shape: (190641, 5)
+New Matrix Shape: (190641, 5)
