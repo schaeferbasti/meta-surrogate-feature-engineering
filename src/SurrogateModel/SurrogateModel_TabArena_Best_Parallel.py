@@ -7,6 +7,7 @@ import psutil
 
 import numpy as np
 import pandas as pd
+from autogluon.core.models import BaggedEnsembleModel
 
 from pymfe.mfe import MFE
 from autogluon.tabular.models import CatBoostModel
@@ -23,6 +24,9 @@ from multiprocessing import Value
 import ctypes
 
 import warnings
+
+from tabrepo.models.utils import get_configs_generator_from_name
+
 warnings.filterwarnings('ignore')
 
 last_reset_time = Value(ctypes.c_double, time.time())
@@ -133,8 +137,13 @@ def feature_addition(X_train, y_train, X_test, y_test, model, method, dataset_me
     print("Time for creating Comparison Result Matrix: " + str(end - start))
     comparison_result_matrix.to_parquet("Comparison_Result_Matrix.parquet")
     # Predict and split again
+    task_type = dataset_metadata["task_type"]
+    if "classification" in task_type or "Classification" in task_type:
+        task_type = "classification"
+    elif "regression" in task_type or "Regression" in task_type:
+        task_type = "regression"
     start = time.time()
-    X_new, y_new = predict_improvement(result_matrix, comparison_result_matrix, method)
+    X_new, y_new = predict_improvement(result_matrix, comparison_result_matrix, method, task_type)
     end = time.time()
     print("Time for Predicting Improvement using CatBoost: " + str(end - start))
     try:
@@ -177,8 +186,13 @@ def feature_addition_mfe_group(X_train, y_train, X_test, y_test, model, method, 
         end = time.time()
         print("Time for creating Comparison Result Matrix: " + str(end - start))
         # Predict and split again
+        task_type = dataset_metadata["task_type"]
+        if "classification" in task_type or "Classification" in task_type:
+            task_type = "classification"
+        elif "regression" in task_type or "Regression" in task_type:
+            task_type = "regression"
         start = time.time()
-        X_new, y_new = predict_improvement(result_matrix, comparison_result_matrix, "all")
+        X_new, y_new = predict_improvement(result_matrix, comparison_result_matrix, "all", task_type)
         end = time.time()
         print("Time for Predicting Improvement using CatBoost: " + str(end - start))
         try:
@@ -234,10 +248,14 @@ def feature_addition_mfe_groups(X_train, y_train, X_test, y_test, model, method,
             comparison_result_matrix = safe_merge(safe_merge(comparison_result_matrix_1, comparison_result_matrix_2), comparison_result_matrix_3)
         end = time.time()
         print("Time for creating Comparison Result Matrix: " + str(end - start))
-        # comparison_result_matrix.to_parquet("Comparison_Result_Matrix.parquet")
-        # Predict and split again
+        _, _, _, _, dataset_metadata = get_openml_dataset_split_and_metadata(int(dataset_id))
+        task_type = dataset_metadata["task_type"]
+        if "classification" in task_type or "Classification" in task_type:
+            task_type = "classification"
+        elif "regression" in task_type or "Regression" in task_type:
+            task_type = "regression"
         start = time.time()
-        X_new, y_new = predict_improvement(result_matrix, comparison_result_matrix, "all")
+        X_new, y_new = predict_improvement(result_matrix, comparison_result_matrix, "all", task_type)
         end = time.time()
         print("Time for Predicting Improvement using CatBoost: " + str(end - start))
         try:
@@ -250,18 +268,28 @@ def feature_addition_mfe_groups(X_train, y_train, X_test, y_test, model, method,
         data.to_parquet(f"FE_{dataset_id}_{method}_{str(groups)}_CatBoost_best.parquet")
         return X_new, y_new, X_test, y_test
 
-def predict_improvement(result_matrix, comparison_result_matrix, category_or_method):
+def predict_improvement(result_matrix, comparison_result_matrix, category_or_method, task_type):
     y_result = result_matrix["improvement"]
     result_matrix = result_matrix.drop("improvement", axis=1)
     comparison_result_matrix = comparison_result_matrix.drop("improvement", axis=1)
+
+    model_meta = get_configs_generator_from_name(model_name="CatBoost")
+    model_cls = model_meta.model_cls
+    model_config = model_meta.manual_configs[0]
+    model = BaggedEnsembleModel(model_cls(problem_type=task_type, **model_config))
+    model.params["fold_fitting_strategy"] = "sequential_local"
+    model.fit(X=result_matrix, y=y_result, k_fold=8)
+    print(f"Validation {model.eval_metric.name}:", model.score_with_oof(y=y_result))
+    # Predict and score
+    comparison_result_matrix = comparison_result_matrix[result_matrix.columns]
+    prediction = model.predict(X=comparison_result_matrix)
+    """
     # clf = RealMLPModel()
     # clf = TabDPTModel()
     clf = CatBoostModel()
     clf.fit(X=result_matrix, y=y_result)
-
-    # Predict and score
-    comparison_result_matrix = comparison_result_matrix[result_matrix.columns]
     prediction = clf.predict(X=comparison_result_matrix)
+    """
     prediction_df = pd.DataFrame(prediction, columns=["predicted_improvement"])
     prediction_concat_df = pd.concat([comparison_result_matrix[["dataset - id", "feature - name", "model"]], prediction_df], axis=1)
     prediction_concat_df.to_parquet("Prediction_" + str(category_or_method) + ".parquet")
