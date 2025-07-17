@@ -25,8 +25,6 @@ import ctypes
 
 import warnings
 
-from tabrepo.models.utils import get_configs_generator_from_name
-
 warnings.filterwarnings('ignore')
 
 last_reset_time = Value(ctypes.c_double, time.time())
@@ -116,7 +114,7 @@ def add_method_metadata(result_matrix, dataset_metadata, X_predict, y_predict, m
     return result_matrix
 
 
-def feature_addition(X_train, y_train, X_test, y_test, model, method, dataset_metadata, dataset_id):
+def feature_addition(X_train, y_train, X_test, y_test, model, method, dataset_metadata, dataset_id, number_of_features):
     if method == "pandas":
         result_matrix = pd.read_parquet("src/Metadata/pandas/Pandas_Matrix_Complete.parquet")
     elif method == "tabpfn":
@@ -143,7 +141,7 @@ def feature_addition(X_train, y_train, X_test, y_test, model, method, dataset_me
     elif "regression" in task_type or "Regression" in task_type:
         task_type = "regression"
     start = time.time()
-    X_new, y_new = predict_improvement(result_matrix, comparison_result_matrix, method, task_type)
+    X_new, y_new = predict_improvement(result_matrix, comparison_result_matrix, method, number_of_features)
     end = time.time()
     print("Time for Predicting Improvement using CatBoost: " + str(end - start))
     try:
@@ -157,7 +155,7 @@ def feature_addition(X_train, y_train, X_test, y_test, model, method, dataset_me
     return X_new, y_new, X_test, y_test
 
 
-def feature_addition_mfe_group(X_train, y_train, X_test, y_test, model, method, dataset_id, group):
+def feature_addition_mfe_group(X_train, y_train, X_test, y_test, model, method, dataset_id, group, number_of_features):
     # Reload base matrix
     if group == "info-theory":
         filename = "info_theory"
@@ -186,13 +184,14 @@ def feature_addition_mfe_group(X_train, y_train, X_test, y_test, model, method, 
         end = time.time()
         print("Time for creating Comparison Result Matrix: " + str(end - start))
         # Predict and split again
+        _, _, _, _, dataset_metadata = get_openml_dataset_split_and_metadata(int(dataset_id))
         task_type = dataset_metadata["task_type"]
         if "classification" in task_type or "Classification" in task_type:
             task_type = "classification"
         elif "regression" in task_type or "Regression" in task_type:
             task_type = "regression"
         start = time.time()
-        X_new, y_new = predict_improvement(result_matrix, comparison_result_matrix, "all", task_type)
+        X_new, y_new = predict_improvement(result_matrix, comparison_result_matrix, "all", number_of_features)
         end = time.time()
         print("Time for Predicting Improvement using CatBoost: " + str(end - start))
         try:
@@ -205,7 +204,7 @@ def feature_addition_mfe_group(X_train, y_train, X_test, y_test, model, method, 
         data.to_parquet(f"FE_{dataset_id}_{method}_{groupname}_CatBoost_best.parquet")
         return X_new, y_new, X_test, y_test
 
-def feature_addition_mfe_groups(X_train, y_train, X_test, y_test, model, method, dataset_id, groups):
+def feature_addition_mfe_groups(X_train, y_train, X_test, y_test, model, method, dataset_id, groups, number_of_features):
     # Reload base matrix
     group_set = set(groups)
     if group_set == {"general", "statistical"}:
@@ -255,7 +254,7 @@ def feature_addition_mfe_groups(X_train, y_train, X_test, y_test, model, method,
         elif "regression" in task_type or "Regression" in task_type:
             task_type = "regression"
         start = time.time()
-        X_new, y_new = predict_improvement(result_matrix, comparison_result_matrix, "all", task_type)
+        X_new, y_new = predict_improvement(result_matrix, comparison_result_matrix, "all", number_of_features)
         end = time.time()
         print("Time for Predicting Improvement using CatBoost: " + str(end - start))
         try:
@@ -268,12 +267,12 @@ def feature_addition_mfe_groups(X_train, y_train, X_test, y_test, model, method,
         data.to_parquet(f"FE_{dataset_id}_{method}_{str(groups)}_CatBoost_best.parquet")
         return X_new, y_new, X_test, y_test
 
-def predict_improvement(result_matrix, comparison_result_matrix, category_or_method, task_type):
+def predict_improvement(result_matrix, comparison_result_matrix, category_or_method, number_of_features):
     y_result = result_matrix["improvement"]
     result_matrix = result_matrix.drop("improvement", axis=1)
     comparison_result_matrix = comparison_result_matrix.drop("improvement", axis=1)
-
-    model_meta = get_configs_generator_from_name(model_name="CatBoost")
+    """
+    model_meta =                            dd(model_name="CatBoost")
     model_cls = model_meta.model_cls
     model_config = model_meta.manual_configs[0]
     model = BaggedEnsembleModel(model_cls(problem_type=task_type, **model_config))
@@ -289,45 +288,44 @@ def predict_improvement(result_matrix, comparison_result_matrix, category_or_met
     clf = CatBoostModel()
     clf.fit(X=result_matrix, y=y_result)
     prediction = clf.predict(X=comparison_result_matrix)
-    """
     prediction_df = pd.DataFrame(prediction, columns=["predicted_improvement"])
     prediction_concat_df = pd.concat([comparison_result_matrix[["dataset - id", "feature - name", "model"]], prediction_df], axis=1)
     prediction_concat_df.to_parquet("Prediction_" + str(category_or_method) + ".parquet")
-    best_operation = prediction_concat_df.nlargest(n=10, columns="predicted_improvement", keep="first")
+    best_operation = prediction_concat_df.nlargest(n=number_of_features, columns="predicted_improvement", keep="first")
     X, y, _, _ = execute_feature_engineering(best_operation)
     return X, y
 
 
-def process_group(dataset_id, method, group, model):
+def process_group(dataset_id, method, group, model, number_of_features):
     if group == "info_theory":
         groupname = "info-theory"
     else:
         groupname = group
     print(f"[Processing Group] {groupname}")
     X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
-    X_train, y_train, X_test, y_test = feature_addition_mfe_group(X_train, y_train, X_test, y_test, model, method, dataset_id, groupname)
+    X_train, y_train, X_test, y_test = feature_addition_mfe_group(X_train, y_train, X_test, y_test, model, method, dataset_id, groupname, number_of_features)
     data = concat_data(X_train, y_train, X_test, y_test, "target")
     data.to_parquet(f"FE_{dataset_id}_{method}_{groupname}_CatBoost_best.parquet")
 
 
-def process_groups(dataset_id, method, groups, model):
+def process_groups(dataset_id, method, groups, model, number_of_features):
     X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
-    X_train, y_train, X_test, y_test = feature_addition_mfe_groups(X_train, y_train, X_test, y_test, model, method, dataset_id, groups)
+    X_train, y_train, X_test, y_test = feature_addition_mfe_groups(X_train, y_train, X_test, y_test, model, method, dataset_id, groups, number_of_features)
     data = concat_data(X_train, y_train, X_test, y_test, "target")
     data.to_parquet(f"FE_{dataset_id}_{method}_{str(groups)}_CatBoost_best.parquet")
 
 
-def process_method(dataset_id, method, model):
+def process_method(dataset_id, method, model, number_of_features):
     X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
     start = time.time()
-    X_train, y_train, X_test, y_test = feature_addition(X_train, y_train, X_test, y_test, model, method, dataset_metadata, dataset_id)
+    X_train, y_train, X_test, y_test = feature_addition(X_train, y_train, X_test, y_test, model, method, dataset_metadata, dataset_id, number_of_features)
     end = time.time()
     print("Time for creating Comparison Result Matrix: " + str(end - start))
     data = concat_data(X_train, y_train, X_test, y_test, "target")
     data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_CatBoost_best.parquet")
 
 
-def main(dataset_id, method):
+def main(dataset_id, method, number_of_features):
     print("Method: " + str(method) + ", Dataset: " + str(dataset_id) + ", Model: " + str("CatBoost"))
     model = "LightGBM_BAG_L1"
     if method.startswith("MFE"):
@@ -336,7 +334,7 @@ def main(dataset_id, method):
         for group in groups:
             last_reset_time.value = time.time()
             print(f"\n=== Starting group: {group} ===")
-            process_func = lambda: process_group(dataset_id, method, group, model)
+            process_func = lambda: process_group(dataset_id, method, group, model, number_of_features)
             exit_code = run_with_resource_limits(process_func, mem_limit_mb=64000, time_limit_sec=7200, last_reset_time=last_reset_time)
             if exit_code != 0:
                 print(f"[Warning] Group {group} failed or was terminated. Skipping.\n")
@@ -345,7 +343,7 @@ def main(dataset_id, method):
         groupnames = {groups[0], groups[1]}
         last_reset_time.value = time.time()
         print(f"\n=== Starting groups: {groupnames} ===")
-        process_func = lambda: process_groups(dataset_id, method, groupnames, model)
+        process_func = lambda: process_groups(dataset_id, method, groupnames, model, number_of_features)
         exit_code = run_with_resource_limits(process_func, mem_limit_mb=64000, time_limit_sec=7200, last_reset_time=last_reset_time)
         if exit_code != 0:
             print(f"[Warning] Groups {groupnames} failed or was terminated. Skipping.\n")
@@ -353,7 +351,7 @@ def main(dataset_id, method):
         groupnames = {groups[1], groups[2]}
         last_reset_time.value = time.time()
         print(f"\n=== Starting groups: {groupnames} ===")
-        process_func = lambda: process_groups(dataset_id, method, groupnames, model)
+        process_func = lambda: process_groups(dataset_id, method, groupnames, model, number_of_features)
         exit_code = run_with_resource_limits(process_func, mem_limit_mb=64000, time_limit_sec=7200,
                                              last_reset_time=last_reset_time)
         if exit_code != 0:
@@ -362,7 +360,7 @@ def main(dataset_id, method):
         groupnames = {groups[0], groups[2]}
         last_reset_time.value = time.time()
         print(f"\n=== Starting groups: {groupnames} ===")
-        process_func = lambda: process_groups(dataset_id, method, groupnames, model)
+        process_func = lambda: process_groups(dataset_id, method, groupnames, model, number_of_features)
         exit_code = run_with_resource_limits(process_func, mem_limit_mb=64000, time_limit_sec=7200, last_reset_time=last_reset_time)
         if exit_code != 0:
             print(f"[Warning] Groups {groupnames} failed or was terminated. Skipping.\n")
@@ -370,13 +368,13 @@ def main(dataset_id, method):
         groupnames = {groups[0], groups[1], groups[2]}
         last_reset_time.value = time.time()
         print(f"\n=== Starting groups: {groupnames} ===")
-        process_func = lambda: process_groups(dataset_id, method, groupnames, model)
+        process_func = lambda: process_groups(dataset_id, method, groupnames, model, number_of_features)
         exit_code = run_with_resource_limits(process_func, mem_limit_mb=64000, time_limit_sec=7200, last_reset_time=last_reset_time)
         if exit_code != 0:
             print(f"[Warning] Groups {groupnames} failed or was terminated. Skipping.\n")
     else:
         print(f"\n=== Starting Method: {method} ===")
-        process_func = lambda: process_method(dataset_id, method, model)
+        process_func = lambda: process_method(dataset_id, method, model, number_of_features)
         exit_code = run_with_resource_limits(process_func, mem_limit_mb=64000, time_limit_sec=7200, last_reset_time=last_reset_time)
         if exit_code != 0:
             print(f"[Warning] Method {method} failed or was terminated. Skipping.\n")
@@ -415,8 +413,9 @@ def main_wrapper():
     parser.add_argument('--dataset', required=True, help='Dataset')
     args = parser.parse_args()
     methods = ["pandas", "d2v", "MFE"]
+    number_of_features = 50
     for method in methods:
-        main(int(args.dataset), method)
+        main(int(args.dataset), method, number_of_features)
 
 
 if __name__ == '__main__':
