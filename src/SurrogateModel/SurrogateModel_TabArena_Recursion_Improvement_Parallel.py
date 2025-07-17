@@ -419,6 +419,8 @@ def main_wrapper():
     methods = ["pandas", "d2v", "MFE"]
     wanted_min_relative_improvement = 0.1
     for method in methods:
+        if method == "MFE":
+            wanted_min_relative_improvement = 0.3
         main(int(args.dataset), method, wanted_min_relative_improvement)
 
 
