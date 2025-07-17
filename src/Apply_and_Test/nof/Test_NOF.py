@@ -64,20 +64,26 @@ def main():
             elif "MFE" in name:
                 version = name.split('.parquet')[0].split("_")[-1]
                 category = name.split("MFE_")[1].split("_")[0]
-                nof_match = re.search(r'NOF_(\d+)', name)
-                nof_number = nof_match.group(1).zfill(3)  # pad with leading zeros
-                nof_suffix = f"NOF_{nof_number}"
-                method = name.split('_')[0] + f"_{category}_{nof_suffix}_{version}"
-                is_random = False  # e.g., pandas
-                result_path = f"test_results/{method}_Result_{dataset_id}.parquet"
+                try:
+                    nof_match = re.search(r'NOF_(\d+)', name)
+                    nof_number = nof_match.group(1).zfill(3)  # pad with leading zeros
+                    nof_suffix = f"NOF_{nof_number}"
+                    method = name.split('_')[0] + f"_{category}_{nof_suffix}_{version}"
+                    is_random = False  # e.g., pandas
+                    result_path = f"test_results/{method}_Result_{dataset_id}.parquet"
+                except AttributeError:
+                    continue
             else:
                 version = name.split('.parquet')[0].split("_")[-1]
-                nof_match = re.search(r'NOF_(\d+)', name)
-                nof_number = nof_match.group(1).zfill(3)  # pad with leading zeros
-                nof_suffix = f"NOF_{nof_number}"
-                method = name.split('_')[0] + f"_{nof_suffix}_{version}"
-                is_random = False  # e.g., pandas
-                result_path = f"test_results/{method}_Result_{dataset_id}.parquet"
+                try:
+                    nof_match = re.search(r'NOF_(\d+)', name)
+                    nof_number = nof_match.group(1).zfill(3)  # pad with leading zeros
+                    nof_suffix = f"NOF_{nof_number}"
+                    method = name.split('_')[0] + f"_{nof_suffix}_{version}"
+                    is_random = False  # e.g., pandas
+                    result_path = f"test_results/{method}_Result_{dataset_id}.parquet"
+                except AttributeError:
+                    continue
             try:
                 results = pd.read_parquet(result_path)
             except (FileNotFoundError, pyarrow.lib.ArrowInvalid):

@@ -192,7 +192,13 @@ def plot_correlation_nof(df, dataset_n_features, name):
 
     df_clean = df.dropna(subset=["dataset", "score_test", "NOF", "n_features_original"])
     idx_best = df_clean.groupby("dataset")["score_test"].idxmax()
+    df_clean_2 = df_clean.drop(idx_best, axis=0)
+    idx_2_best = df_clean_2.groupby("dataset")["score_test"].idxmax()
+    df_clean_3 = df_clean_2.drop(idx_2_best, axis=0)
+    idx_3_best = df_clean_3.groupby("dataset")["score_test"].idxmax()
     best_rows = df_clean.loc[idx_best].reset_index(drop=True)
+    best_rows_2 = df_clean_2.loc[idx_2_best].reset_index(drop=True)
+    best_rows_3 = df_clean_3.loc[idx_3_best].reset_index(drop=True)
 
     # Step 3: Plot the relationship
     plt.figure(figsize=(10, 6))
@@ -204,7 +210,24 @@ def plot_correlation_nof(df, dataset_n_features, name):
         s=100,
         alpha=0.8
     )
-
+    plt.scatter(
+        best_rows_2["NOF"],
+        best_rows_2["n_features_original"],
+        color="royalblue",
+        edgecolor="black",
+        s=100,
+        alpha=0.8
+    )
+    """
+    plt.scatter(
+        best_rows_3["NOF"],
+        best_rows_3["n_features_original"],
+        color="royalblue",
+        edgecolor="black",
+        s=100,
+        alpha=0.8
+    )
+    """
     plt.xlabel("Number of Output Features (NOF)")
     plt.ylabel("Number of Original Features")
     plt.title("Best Score Rows: NOF vs. Original Feature Count")
@@ -268,6 +291,7 @@ def test_analysis():
     result_files = glob.glob("test_results/Result_*.parquet")
     dataset_list_wrapped, df_pivot_test, df_pivot_val, df_all = get_data(result_files)
 
+    df_all.groupby('origin')['score_test'].idxmax().apply(lambda i: df_all.loc[i, ['origin', 'score_test']])
     """
     # Plot
     plot_autogluon_score_graph(dataset_list_wrapped, df_pivot_val, "Val")
@@ -284,34 +308,29 @@ def test_analysis():
     """
 
     # Drop everything but pandas & original columns to compare SM approaches
-    # df_pivot_val = df_pivot_val[["pandas_NOF_001_best", "pandas_NOF_010_best", "pandas_NOF_025_best", "pandas_NOF_050_best", "pandas_NOF_075_best", "pandas_NOF_100_best", "pandas_NOF_125_best", "pandas_NOF_150_best", "pandas_NOF_200_best", "Original"]]
-    # df_pivot_test = df_pivot_test[["pandas_NOF_001_best", "pandas_NOF_010_best", "pandas_NOF_025_best", "pandas_NOF_050_best", "pandas_NOF_075_best", "pandas_NOF_100_best", "pandas_NOF_125_best", "pandas_NOF_150_best", "pandas_NOF_200_best", "Original"]]
+    # df_pivot_val_pandas = df_pivot_val[["pandas_NOF_001_best", "pandas_NOF_010_best", "pandas_NOF_025_best", "pandas_NOF_050_best", "pandas_NOF_075_best", "pandas_NOF_100_best", "pandas_NOF_125_best", "pandas_NOF_150_best", "pandas_NOF_200_best", "Original"]]
+    df_pivot_test_pandas = df_pivot_test[["pandas_NOF_001_best", "pandas_NOF_010_best", "pandas_NOF_025_best", "pandas_NOF_050_best", "pandas_NOF_075_best", "pandas_NOF_100_best", "pandas_NOF_125_best", "pandas_NOF_150_best", "pandas_NOF_200_best", "Original"]]
+    # plot_avg_percentage_impr(baseline_col, df_pivot_val_pandas, "Val_only_pandas")
+    plot_avg_percentage_impr(baseline_col, df_pivot_test_pandas, "Test_only_pandas")
+    df_pivot_test_mfe_statistical = df_pivot_test[["MFE_statistical_NOF_001_best", "MFE_statistical_NOF_010_best", "MFE_statistical_NOF_025_best", "MFE_statistical_NOF_050_best", "MFE_statistical_NOF_075_best", "MFE_statistical_NOF_100_best", "MFE_statistical_NOF_125_best", "MFE_statistical_NOF_150_best", "MFE_statistical_NOF_200_best", "Original"]]
+    plot_avg_percentage_impr(baseline_col, df_pivot_test_mfe_statistical, "Test_only_mfe_statistical")
+    df_pivot_test_mfe_info = df_pivot_test[["MFE_info-theory_NOF_001_best", "MFE_info-theory_NOF_010_best", "MFE_info-theory_NOF_025_best", "MFE_info-theory_NOF_050_best", "MFE_info-theory_NOF_075_best", "MFE_info-theory_NOF_100_best", "MFE_info-theory_NOF_125_best", "MFE_info-theory_NOF_150_best", "MFE_info-theory_NOF_200_best", "Original"]]
+    plot_avg_percentage_impr(baseline_col, df_pivot_test_mfe_info, "Test_only_mfe_info-theory")
+    df_pivot_test_mfe_general = df_pivot_test[["MFE_general_NOF_001_best", "MFE_general_NOF_010_best", "MFE_general_NOF_025_best", "MFE_general_NOF_050_best", "MFE_general_NOF_075_best", "MFE_general_NOF_100_best", "MFE_general_NOF_125_best", "MFE_general_NOF_150_best", "MFE_general_NOF_200_best", "Original"]]
+    plot_avg_percentage_impr(baseline_col, df_pivot_test_mfe_general, "Test_only_mfe_general")
 
-    plot_correlation_nof(df_all, dataset_n_features, "Val_only_pandas")
 
-    """
+
     # Plot
-    plot_autogluon_score_graph(dataset_list_wrapped, df_pivot_val, "Val_only_pandas")
-    plot_autogluon_score_graph(dataset_list_wrapped, df_pivot_test, "Test_only_pandas")
 
-    plot_random_vs_me_graph(dataset_list_wrapped, df_pivot_val, "Val_only_pandas")
-    plot_random_vs_me_graph(dataset_list_wrapped, df_pivot_test, "Test_only_pandas")
-
-    plot_avg_percentage_impr(baseline_col, df_pivot_val, "Val_only_pandas")
-    plot_avg_percentage_impr(baseline_col, df_pivot_test, "Test_only_pandas")
-
-    plot_boxplot_percentage_impr(baseline_col, df_pivot_val, "Val_only_pandas")
-    plot_boxplot_percentage_impr(baseline_col, df_pivot_test, "Test_only_pandas")
-
-    # Drop everything but pandas columns to compare SM approaches
-    df_pivot_val = df_pivot_val[["pandas_NOF_001_best", "pandas_NOF_010_best", "pandas_NOF_025_best", "pandas_NOF_050_best", "pandas_NOF_075_best", "pandas_NOF_100_best", "pandas_NOF_125_best", "pandas_NOF_150_best", "pandas_NOF_200_best"]]
-    df_pivot_test = df_pivot_test[["pandas_NOF_001_best", "pandas_NOF_010_best", "pandas_NOF_025_best", "pandas_NOF_050_best", "pandas_NOF_075_best", "pandas_NOF_100_best", "pandas_NOF_125_best", "pandas_NOF_150_best", "pandas_NOF_200_best"]]
-    # Plot again
-    plot_count_best(df_pivot_val, df_pivot_test, "only_pandas_")
-    plot_autogluon_score_graph(dataset_list_wrapped, df_pivot_val, "Val_only_pandas")
+    plot_correlation_nof(df_all, dataset_n_features, "")
     plot_autogluon_score_graph(dataset_list_wrapped, df_pivot_test, "Test_only_pandas")
     """
+    plot_autogluon_score_graph(dataset_list_wrapped, df_pivot_val_pandas, "Val_only_pandas")
 
+    plot_random_vs_me_graph(dataset_list_wrapped, df_pivot_val_pandas, "Val_only_pandas")
+    plot_random_vs_me_graph(dataset_list_wrapped, df_pivot_test_pandas, "Test_only_pandas")
+    """
 
 if __name__ == "__main__":
     test_analysis()
