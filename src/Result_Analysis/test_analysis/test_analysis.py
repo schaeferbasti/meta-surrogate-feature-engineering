@@ -48,14 +48,19 @@ def get_data(result_files):
 
 
 def plot_autogluon_score_graph(dataset_list_wrapped, df_pivot_val, name):
+    if "only_pandas" in name:
+        score_type = name.split("_")[0]
+        if score_type == "Val":
+            score_type = "Validation"
+    else:
+        score_type = "Test"
     plt.figure(figsize=(12, 6))
     for method in df_pivot_val.columns:
         plt.plot(dataset_list_wrapped, df_pivot_val[method], marker='o', label=method)
     plt.xlabel("Dataset ID")
-    plt.xticks(rotation=45)  # or 90
-    plt.ylabel("Autogluon Val Score (flipped)")
-    # plt.yscale("log") # '', '', 'function', 'functionlog
-    plt.title("Autogluon Val Score by FE Method per Dataset")
+    plt.xticks(rotation=90)  # or 90
+    plt.ylabel(score_type + " Score")
+    plt.title(score_type + " score of the model on the feature-engineered datasets, the original and the randomly feature-engineered datasets")
     plt.legend()
     plt.grid(True)
     plt.tight_layout()
@@ -64,6 +69,10 @@ def plot_autogluon_score_graph(dataset_list_wrapped, df_pivot_val, name):
 
 
 def plot_random_vs_me_graph(dataset_list_wrapped, df_pivot_val, name):
+    if name == "Val":
+        score_type = "Validation"
+    else:
+        score_type = "Test"
     plt.figure(figsize=(12, 6))
     for method in df_pivot_val.columns:
         if method == "Best Random":
@@ -77,9 +86,9 @@ def plot_random_vs_me_graph(dataset_list_wrapped, df_pivot_val, name):
         elif method.startswith("Original"):
             plt.plot(dataset_list_wrapped, df_pivot_val[method], marker='o', label=method)
     plt.xlabel("Dataset ID")
-    plt.xticks(rotation=45)  # or 90
-    plt.ylabel("Autogluon " + name + " Score (flipped)")
-    plt.title("Autogluon " + name + " Score by FE Method per Dataset (Best random vs. our method)")
+    plt.xticks(rotation=90)  # or 90
+    plt.ylabel(score_type + " Score")
+    plt.title(score_type + " score of the model on the feature-engineered datasets, the original and the randomly feature-engineered datasets")
     plt.legend()
     plt.grid(True)
     plt.tight_layout()
@@ -92,20 +101,24 @@ def plot_count_best(df_pivot_val, df_pivot_test, name):
     minValueIndex_test = df_pivot_test.idxmin(axis=1).value_counts()
     # Plot
     plt.figure(figsize=(10, 6))
-    minValueIndex_val.plot(kind='bar', color='skyblue', label='Count of best val result on number of datasets')
+    minValueIndex_val.plot(kind='bar', color='skyblue', label='Count of the best validation scores over all datasets')
     minValueIndex_test.plot(kind='bar', width=0.3, color='darkblue',
-                            label='Count of best test result on number of datasets')
+                            label='Count of the best test scores over all datasets')
     plt.legend()
     plt.xlabel("Method")
-    plt.ylabel("Best result on number of datasets")
-    plt.title("Which method is the best?")
-    plt.xticks(rotation=45, ha="right")
+    plt.ylabel("Count of the best scores")
+    plt.title("Count of the best validation and test scores of the model")
+    plt.xticks(rotation=90, ha="right")
     plt.tight_layout()
     plt.savefig("../Result_Analysis/test_analysis/Count_Best_" + name + "bar.png")
     plt.show()
 
 
 def plot_avg_percentage_impr(baseline_col, df_pivot, name, only_pandas=False):
+    if name == "Val":
+        score_type = "Validation"
+    else:
+        score_type = "Test"
     improvement = pd.DataFrame()
     for method in df_pivot.columns:
         if method == baseline_col:
@@ -130,10 +143,10 @@ def plot_avg_percentage_impr(baseline_col, df_pivot, name, only_pandas=False):
             y = -1 if val >= 0 else 0  # adjust offset for spacing
             plt.text(i, y, f"{val:.2f}%", ha='center', va='top' if val >= 0 else 'bottom', color='black')
     plt.axhline(0, color="black", linewidth=0.8)
-    plt.title("Average Percentage Improvement " + name + " over original Dataset")
+    plt.title("Average percentage loss reduction of the " + score_type + " score of the model\nin relation to the " + score_type + " score of the model on the original datasets")
     plt.xlabel("Method")
-    plt.ylabel("Average Improvement (%)")
-    plt.xticks(rotation=45, ha="right")
+    plt.ylabel("Average percentage loss reduction\nof the " + score_type + " score")
+    plt.xticks(rotation=90, ha="right")
     plt.grid(True, linestyle="--", alpha=0.6)
     plt.tight_layout()
     plt.savefig("../Result_Analysis/test_analysis/Average_Percentage_Improvement_" + name + ".png")
@@ -141,6 +154,10 @@ def plot_avg_percentage_impr(baseline_col, df_pivot, name, only_pandas=False):
 
 
 def plot_boxplot_percentage_impr(baseline_col, df_pivot, name):
+    if name == "Val":
+        score_type = "Validation"
+    else:
+        score_type = "Test"
     improvement_test = pd.DataFrame()
     for method in df_pivot.columns:
         if method == baseline_col:
@@ -156,10 +173,10 @@ def plot_boxplot_percentage_impr(baseline_col, df_pivot, name):
     plt.figure(figsize=(10, 6))
     improvement_test.boxplot(column=method_order, grid=True)
     plt.axhline(0, color="black", linewidth=0.8, linestyle="--")
-    plt.title("Distribution of % Improvement " + name + " over original Dataset")
+    plt.title("Distribution of the percentage loss reduction of the " + score_type + " score of the model\nin relation to the " + score_type + " score of the model on the original datasets")
     plt.xlabel("Method")
-    plt.ylabel("Improvement (%)")
-    plt.xticks(rotation=45, ha="right")
+    plt.ylabel("Distribution of the percentage loss reduction\nof the " + score_type + " score")
+    plt.xticks(rotation=90, ha="right")
     plt.tight_layout()
     plt.savefig(f"../Result_Analysis/test_analysis/Boxplot_Percentage_Improvement_{name}.png")
     plt.show()
