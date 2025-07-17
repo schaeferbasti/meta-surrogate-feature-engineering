@@ -308,7 +308,10 @@ def process_group(dataset_id, method, group, model, wanted_min_relative_improvem
         groupname = group
     print(f"[Processing Group] {groupname}")
     X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
+    start = time.time()
     X_train, y_train, X_test, y_test = recursive_feature_addition_mfe_group(X_train, y_train, X_test, y_test, model, method, dataset_id, groupname, wanted_min_relative_improvement)
+    end = time.time()
+    print("Total Time SM: " + str(end - start))
     data = concat_data(X_train, y_train, X_test, y_test, "target")
     data.to_parquet(f"FE_{dataset_id}_{method}_{groupname}_CatBoost_recursion.parquet")
 
@@ -316,7 +319,10 @@ def process_group(dataset_id, method, group, model, wanted_min_relative_improvem
 def process_groups(dataset_id, method, groups, model, wanted_min_relative_improvement, last_reset_time):
     last_reset_time.value = time.time()
     X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
+    start = time.time()
     X_train, y_train, X_test, y_test = recursive_feature_addition_mfe_groups(X_train, y_train, X_test, y_test, model, method, dataset_id, groups, wanted_min_relative_improvement)
+    end = time.time()
+    print("Total Time SM: " + str(end - start))
     data = concat_data(X_train, y_train, X_test, y_test, "target")
     data.to_parquet(f"FE_{dataset_id}_{method}_{str(groups)}_CatBoost_recursion.parquet")
 
@@ -327,7 +333,7 @@ def process_method(dataset_id, method, model, wanted_min_relative_improvement, l
     start = time.time()
     X_train, y_train = recursive_feature_addition(X_train, y_train, X_test, y_test, model, method, dataset_metadata, None, wanted_min_relative_improvement, dataset_id)
     end = time.time()
-    print("Time for creating Comparison Result Matrix: " + str(end - start))
+    print("Total Time SM: " + str(end - start))
     data = concat_data(X_train, y_train, X_test, y_test, "target")
     data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_CatBoost_recursion.parquet")
 
