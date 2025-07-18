@@ -1,4 +1,5 @@
 import glob
+import time
 
 import pandas as pd
 import re
@@ -6,7 +7,7 @@ from collections import defaultdict
 
 import pyarrow
 
-from src.utils.get_data import get_openfe_data, concat_data
+from src.utils.get_data import (get_openfe_data, concat_data)
 from src.utils.get_data import split_data, get_openml_dataset_split_and_metadata
 from src.utils.run_models import get_model_score_origin_classification, get_model_score_origin_regression
 
@@ -46,19 +47,24 @@ def main():
         print("Original Results loaded.")
 
         # === OPENFE RESULTS ===
-        if int(dataset_id) != 359983:
+        if int(dataset_id) not in [2073, 359930, 359931, 359935, 359938, 359959, 359962, 359983]:
             openfe_path = f"test_results/OpenFE_Result_{dataset_id}.parquet"
             try:
                 openfe_results = pd.read_parquet(openfe_path)
                 print("OpenFE Results loaded.")
             except FileNotFoundError:
                 try:
-                    data = pd.read_parquet(f"FE_{dataset_id}_OpenFE.parquet")
+                    data = pd.read_parquet(f"test_data/FE_{dataset_id}_OpenFE.parquet")
                     X_openfe_train, y_openfe_train, X_openfe_test, y_openfe_test = split_data(data, "target")
                 except FileNotFoundError:
+                    start = time.time()
                     X_openfe_train, y_openfe_train, X_openfe_test, y_openfe_test = get_openfe_data(X_train, y_train, X_test, y_test)
+                    end = time.time()
+                    print(f"OpenFE Split Time: {end-start}")
+                    with open("../Result_Analysis/time_analysis_sm/openfe_times.txt", "a") as file:
+                        file.write(f"OpenFE on {dataset_id}: {end-start}\n")
                     data = concat_data(X_openfe_train, y_openfe_train, X_openfe_test, y_openfe_test, "target")
-                    data.to_parquet(f"FE_{dataset_id}_OpenFE.parquet")
+                    data.to_parquet(f"test_data/FE_{dataset_id}_OpenFE.parquet")
                 X_openfe_train = X_openfe_train.rename(columns=lambda x: re.sub('[^A-Za-z0-9_]+', '', x))
                 X_openfe_test = X_openfe_test.rename(columns=lambda x: re.sub('[^A-Za-z0-9_]+', '', x))
 
@@ -72,8 +78,10 @@ def main():
         else:
             continue
 
-        # === METHOD RESULTS (Random/pandas/MFE/d2v) ===
+
         combined_results = [original_results, openfe_results]
+
+        # === METHOD RESULTS (Random/pandas/MFE/d2v) ===
         best_random_result = None
         best_score = float('-inf')
 
