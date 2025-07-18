@@ -67,9 +67,11 @@ def plot_score_graph(dataset_list_wrapped, df_pivot, name):
             score_type = "validation"
         else:
             score_type = "test"
+    df_filtered = df_pivot[(df_pivot.le(1) | df_pivot.isna()).all(axis=1)]
+    dataset_list_wrapped = df_filtered.index.tolist()
     plt.figure(figsize=(12, 10))
-    for method in df_pivot.columns:
-        plt.plot(dataset_list_wrapped, df_pivot[method], marker='o', label=method)
+    for method in df_filtered.columns:
+        plt.plot(dataset_list_wrapped, df_filtered[method], marker='o', label=method)
     plt.xlabel("Dataset")
     plt.xticks(rotation=90)  # or 45
     plt.ylabel(score_type.title() + " Score")
@@ -100,10 +102,24 @@ def plot_count_best(df_pivot_val, df_pivot_test, name):
 
 
 def plot_avg_percentage_impr(baseline_col, df_pivot, name, only_pandas=False):
-    if name == "Val":
-        score_type = "validation"
+    if "only_pandas" in name or "openfe_pandas" in name:
+        score_type = name.split("_")[0]
+        if score_type == "Val":
+            score_type = "validation"
+        else:
+            score_type = "test"
+    elif "without_openfe" in name:
+        score_type = name.split("_")[0]
+        if score_type == "Val":
+            score_type = "validation"
+        else:
+            score_type = "test"
+        df_pivot = df_pivot.drop(["OpenFE"], axis=1)
     else:
-        score_type = "test"
+        if name == "Val":
+            score_type = "validation"
+        else:
+            score_type = "test"
     improvement = pd.DataFrame()
     for method in df_pivot.columns:
         if method == baseline_col:
@@ -139,10 +155,24 @@ def plot_avg_percentage_impr(baseline_col, df_pivot, name, only_pandas=False):
 
 
 def plot_boxplot_percentage_impr(baseline_col, df_pivot, name):
-    if name == "Val":
-        score_type = "validation"
+    if "only_pandas" in name or "openfe_pandas" in name:
+        score_type = name.split("_")[0]
+        if score_type == "Val":
+            score_type = "validation"
+        else:
+            score_type = "test"
+    elif "without_openfe" in name:
+        score_type = name.split("_")[0]
+        if score_type == "Val":
+            score_type = "validation"
+        else:
+            score_type = "test"
+        df_pivot = df_pivot.drop(["OpenFE"], axis=1)
     else:
-        score_type = "test"
+        if name == "Val":
+            score_type = "validation"
+        else:
+            score_type = "test"
     improvement_test = pd.DataFrame()
     for method in df_pivot.columns:
         if method == baseline_col:
