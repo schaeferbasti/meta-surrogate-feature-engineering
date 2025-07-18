@@ -65,26 +65,22 @@ def main():
                 }])
                 times = pd.concat([times, new_row], ignore_index=True)
     times = times.drop_duplicates()
-    times_filtered = (
-        times.sort_values("Time")  # sort ascending by Time
-        .groupby("Method", group_keys=False)
-        .head(7)
-    )
 
-    time_per_method = times_filtered.groupby("Method")["Time"].sum().sort_values(ascending=False)
-    average_recursion = time_per_method.values[0] / 7
-    average_best = time_per_method.values[1] / 7
+    time_per_method = times.groupby("Method")["Time"].sum().sort_values(ascending=False)
+    average_recursion = time_per_method.values[0] / times[times["Method"] == "Recursion"]["Dataset"].nunique()
+    average_best = time_per_method.values[1] / times[times["Method"] == "One-shot"]["Dataset"].nunique()
     average_time_per_method = pd.Series([average_recursion, average_best], index=["Recursion", "Best"])
 
+
     # Plot
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=(12, 10))
     time_per_method.plot(kind='bar', color='skyblue', label='Total Time for 12 Datasets per Surrogate Model')
     average_time_per_method.plot(kind='bar', width=0.3, color='orange', label='Average Time over 12 Datasets per Surrogate Model')
     plt.legend()
     plt.xlabel("Method")
     plt.ylabel("Time in seconds")
     plt.title("Time Usage of Surrogate Models")
-    plt.xticks(rotation=45, ha="right")
+    plt.xticks(rotation=90, ha="right")
     # plt.yscale('log')
     plt.tight_layout()
     plt.savefig("Time_SM_oneshot_recursive.png")
@@ -111,23 +107,16 @@ def main():
             times = pd.concat([times, new_row], ignore_index=True)
 
     times = times.drop_duplicates()
-    times_filtered = (
-        times.sort_values("Time")  # sort ascending by Time
-        .groupby("Method", group_keys=False)
-        .head(7)
-    )
-    print(times_filtered)
-    time_per_method = times_filtered.groupby("Method")["Time"].sum().sort_values(ascending=False)
+    time_per_method = times.groupby("Method")["Time"].sum().sort_values(ascending=False)
     print(time_per_method)
-    average_openfe = time_per_method.values[0] / 7
-    average_recursion = time_per_method.values[1] / 7
-    average_best = time_per_method.values[2] / 7
-    average_time_per_method = pd.Series([average_openfe, average_recursion, average_best], index=["OpenFE", "Recursion", "Best"])
+    average_recursion = time_per_method.values[0] / times[times["Method"] == "Recursion"]["Dataset"].nunique()
+    average_openfe = time_per_method.values[1] / times[times["Method"] == "OpenFE"]["Dataset"].nunique()
+    average_time_per_method = pd.Series([average_openfe, average_recursion], index=["Recursion", "OpenFE"])
 
     # Plot
     plt.figure(figsize=(10, 6))
-    time_per_method.plot(kind='bar', color='skyblue', label='Total Time for 7 Datasets per FE Method')
-    average_time_per_method.plot(kind='bar', width=0.3, color='orange', label='Average Time over 7 Datasets per FE Method')
+    time_per_method.plot(kind='bar', color='skyblue', label='Total Time per FE Method')
+    average_time_per_method.plot(kind='bar', width=0.3, color='orange', label='Average Time per FE Method')
     plt.legend()
     plt.xlabel("Method")
     plt.ylabel("Time in seconds")
