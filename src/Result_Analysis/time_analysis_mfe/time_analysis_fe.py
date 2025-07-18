@@ -77,11 +77,11 @@ def main():
     dataset_list_wrapped = [insert_line_breaks(name, max_len=15) for name in dataset_list]
 
     # Plot
-    plt.figure(figsize=(12, 6))
+    plt.figure(figsize=(12, 10))
     for method in df_pivot.columns:
         plt.plot(dataset_list_wrapped, df_pivot[method], marker='o', label=method)
     plt.xlabel("Dataset ID")
-    plt.xticks(rotation=45)  # or 90
+    plt.xticks(rotation=90)  # or 90
     plt.yscale('log')  # Optional: only if values vary a lot
     plt.ylabel("Time in seconds")
     plt.title("Time for generating metafeatures by FE Method per Dataset")
@@ -96,14 +96,14 @@ def main():
     average_time_per_method = df.groupby("method")["value"].mean().sort_values(ascending=False)
 
     # Plot
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=(12, 10))
     time_per_method.plot(kind='bar', color='skyblue', label='Total Time per Method')
     average_time_per_method.plot(kind='bar', width=0.3, color='orange', label='Average Time per Method')
     plt.legend()
     plt.xlabel("Method")
     plt.ylabel("Time in seconds")
     plt.title("Time per Method")
-    plt.xticks(rotation=45, ha="right")
+    plt.xticks(rotation=90, ha="right")
     plt.yscale('log')
     plt.tight_layout()
     plt.savefig("Time_for_FE_per_Method.png")
@@ -116,19 +116,25 @@ def main():
     df_mfe['dataset'] = df_mfe['dataset'].astype(int)
 
     time_per_category = df_mfe.groupby("category")["value"].sum().sort_values(ascending=False)
+    time_issue_category_names = {"itemset", "landmarking"}
     memory_issue_category_names = {"complexity", "clustering", "concept"}
 
+    time_issue_categories = pd.Series([1, 1], index=list(time_issue_category_names))
     memory_issue_categories = pd.Series([1, 1, 1], index=list(memory_issue_category_names))
-    time_per_category = time_per_category._append(memory_issue_categories)
 
-    colors = ['red' if cat in memory_issue_categories else 'skyblue' for cat in time_per_category.index]
+    time_per_category = time_per_category._append(time_issue_categories)
+    time_per_category = time_per_category._append(memory_issue_categories)
+    colors = ['red' if cat in time_issue_categories + memory_issue_categories else 'skyblue' for cat in time_per_category.index]
 
     # Step 4: Plot total time per category (bar colors depend on memory issue)
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=(12, 10))
     time_per_category.plot(kind='bar', color=colors, label='Total Time per Method')
     for idx, (category, value) in enumerate(time_per_category.items()):
+        if category in time_issue_category_names:
+            plt.text(idx, value * 1.1, 'Time Limit', color='red', ha='center', va='bottom',)
+    for idx, (category, value) in enumerate(time_per_category.items()):
         if category in memory_issue_category_names:
-            plt.text(idx, value * 1.1, 'OOM', color='red', ha='center', va='bottom',)
+            plt.text(idx, value * 1.1, 'Memory Limit', color='red', ha='center', va='bottom',)
     # Step 5: Add average time per category as overlay
     average_time_per_category = df_mfe.groupby("category")["value"].mean().reindex(time_per_category.index)
     average_time_per_category.plot(kind='bar', width=0.3, color='orange', label='Average Time per Category')
@@ -136,7 +142,7 @@ def main():
     plt.xlabel("Method")
     plt.ylabel("Time in seconds")
     plt.title("Time per MFE Category")
-    plt.xticks(rotation=45, ha="right")
+    plt.xticks(rotation=90, ha="right")
     plt.yscale('log')
     plt.tight_layout()
     plt.savefig("Time_for_MFE_per_Category.png")
