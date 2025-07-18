@@ -46,10 +46,13 @@ def run_random_surrogate_model(dataset_id):
     n_features_to_add = 10
     folds = 10
     for i in range(folds):
-        X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
-        X_train, y_train, X_test, y_test = feature_addition_random(X_train, n_features_to_add, model, dataset_id)
-        data = concat_data(X_train, y_train, X_test, y_test, "target")
-        data.to_parquet("test_data/FE_" + str(dataset_id) + "_" + str(method) + "_fold_" + str(i) + ".parquet")
+        try:
+            data = pd.read_parquet("test_data/FE_" + str(dataset_id) + "_" + str(method) + "_fold_" + str(i) + ".parquet")
+        except FileNotFoundError:
+            X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
+            X_train, y_train, X_test, y_test = feature_addition_random(X_train, n_features_to_add, model, dataset_id)
+            data = concat_data(X_train, y_train, X_test, y_test, "target")
+            data.to_parquet("test_data/FE_" + str(dataset_id) + "_" + str(method) + "_fold_" + str(i) + ".parquet")
 
 
 if __name__ == '__main__':
