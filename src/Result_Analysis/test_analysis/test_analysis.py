@@ -94,8 +94,8 @@ def plot_count_best(df_pivot_val, df_pivot_test, name):
     minValueIndex_test = df_pivot_test.idxmin(axis=1).value_counts()
     # Plot
     plt.figure(figsize=(12, 7))
-    minValueIndex_val.plot(kind='bar', color='skyblue', label='Count of the lowest validation errors')
-    minValueIndex_test.plot(kind='bar', width=0.3, color='darkblue', label='Count of the lowest test errors over all datasets')
+    minValueIndex_val.plot(kind='bar', color='skyblue', label='Count of the lowest validation error')
+    minValueIndex_test.plot(kind='bar', width=0.3, color='darkblue', label='Count of the lowest test error over all datasets')
     plt.legend()
     plt.xlabel("Method")
     plt.ylabel("Count of the lowest error")
