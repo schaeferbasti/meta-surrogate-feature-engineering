@@ -292,7 +292,6 @@ def predict_improvement(result_matrix, comparison_result_matrix, category_or_met
     prediction = clf.predict(X=comparison_result_matrix)
     prediction_df = pd.DataFrame(prediction, columns=["predicted_improvement"])
     prediction_concat_df = pd.concat([comparison_result_matrix[["dataset - id", "feature - name", "model"]], prediction_df], axis=1)
-    prediction_concat_df.to_parquet("Prediction_" + str(category_or_method) + ".parquet")
     best_operation = prediction_concat_df.nlargest(n=number_of_features, columns="predicted_improvement", keep="first")
     X, y, _, _ = execute_feature_engineering(best_operation)
     return X, y
