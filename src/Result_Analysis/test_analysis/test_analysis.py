@@ -14,6 +14,29 @@ def insert_line_breaks(name, max_len=20):
         return name
 
 
+def make_model_name_nice(df_pivot):
+    model_names_nice = []
+    model_names = df_pivot.columns.tolist()
+    for model_name in model_names:
+        model_name = model_name.replace('pandas_', 'Pandas, ')
+        model_name = model_name.replace('d2v_', 'Dataset2Vec, ')
+        model_name = model_name.replace('tabpfn_', 'TabPFN, ')
+        model_name = model_name.replace('MFE_general_', 'MFE (general), ')
+        model_name = model_name.replace('MFE_statistical', 'MFE (statistical), ')
+        model_name = model_name.replace('MFE_info-theory', 'MFE (info-theory), ')
+        model_name = model_name.replace("MFE_{'general', 'info-theory'}", 'MFE (general, info-theory), ')
+        model_name = model_name.replace("MFE_{'statistical', 'info-theory'}", 'MFE (statistical, info-theory), ')
+        model_name = model_name.replace("MFE_{'info-theory', 'general'}", 'MFE (info-theory, general), ')
+        model_name = model_name.replace("MFE_{'info-theory', 'statistical'}", 'MFE (info-theory, statistical), ')
+        model_name = model_name.replace("MFE_{'general', 'statistical'}", 'MFE (general, statistical), ')
+        model_name = model_name.replace("MFE_{'statistical', 'general'}", 'MFE (statistical, general), ')
+        model_name = model_name.replace("MFE_{'general', 'statistical', 'info-theory'}", 'MFE (general, statistical, info-theory), ')
+        model_name = model_name.replace('best', 'one-shot SM')
+        model_name = model_name.replace('recursion', 'recursive SM')
+        model_names_nice.append(model_name)
+    df_pivot.columns = model_names_nice
+    return df_pivot
+
 def get_data(result_files):
     all_results = []
     for result_file in result_files:
@@ -29,8 +52,10 @@ def get_data(result_files):
     # Pivot to have datasets on x, methods on lines
     df_pivot_val = df_all.pivot(index="dataset", columns="origin", values="error_val")
     df_pivot_val = df_pivot_val.sort_index()  # Sort by dataset ID
+    df_pivot_val = make_model_name_nice(df_pivot_val)
     df_pivot_test = df_all.pivot(index="dataset", columns="origin", values="error_test")
     df_pivot_test = df_pivot_test.sort_index()  # Sort by dataset ID
+    df_pivot_test = make_model_name_nice(df_pivot_test)
     datasets = df_pivot_val.index.astype(str)
     dataset_list = []
     for dataset in datasets.tolist():
@@ -231,8 +256,8 @@ def test_analysis():
     plot_boxplot_percentage_impr(baseline_col, df_pivot_test_without_OpenFE, "Test_without_OpenFE")
 
     # Drop everything but pandas & original columns to compare SM approaches
-    df_pivot_val_pandas = df_pivot_val[["pandas_best", "pandas_recursion", "Original"]]
-    df_pivot_test_pandas = df_pivot_test[["pandas_best", "pandas_recursion", "Original"]]
+    df_pivot_val_pandas = df_pivot_val[["Pandas, one-shot SM", "Pandas, recursive SM", "Original"]]
+    df_pivot_test_pandas = df_pivot_test[["Pandas, one-shot SM", "Pandas, recursive SM", "Original"]]
     # Plot
     plot_avg_percentage_impr(baseline_col, df_pivot_val_pandas, "Val_only_pandas", True)
     plot_avg_percentage_impr(baseline_col, df_pivot_test_pandas, "Test_only_pandas", True)
@@ -240,8 +265,8 @@ def test_analysis():
     plot_boxplot_percentage_impr(baseline_col, df_pivot_test_pandas, "Test_only_pandas")
 
     # Drop everything but pandas columns to compare SM approaches
-    df_pivot_val_pandas = df_pivot_val_pandas[["pandas_best", "pandas_recursion"]]
-    df_pivot_test_pandas = df_pivot_test_pandas[["pandas_best", "pandas_recursion"]]
+    df_pivot_val_pandas = df_pivot_val_pandas[["Pandas, one-shot SM", "Pandas, recursive SM"]]
+    df_pivot_test_pandas = df_pivot_test_pandas[["Pandas, one-shot SM", "Pandas, recursive SM"]]
     # Plot again
     plot_count_best(df_pivot_val_pandas, df_pivot_test_pandas, "only_pandas_")
     plot_score_graph(dataset_list_wrapped, df_pivot_val_pandas, "Val_only_pandas")
@@ -249,8 +274,8 @@ def test_analysis():
 
     dataset_list_wrapped, df_pivot_test, df_pivot_val = get_data(result_files)
 
-    df_pivot_val_openfe = df_pivot_val[["OpenFE", "pandas_recursion", "Original"]]
-    df_pivot_test_openfe = df_pivot_test[["OpenFE", "pandas_recursion", "Original"]]
+    df_pivot_val_openfe = df_pivot_val[["OpenFE", "Pandas, recursive SM", "Original"]]
+    df_pivot_test_openfe = df_pivot_test[["OpenFE", "Pandas, recursive SM", "Original"]]
     # Plot
     plot_avg_percentage_impr(baseline_col, df_pivot_val_openfe, "Val_openfe_pandas", True)
     plot_avg_percentage_impr(baseline_col, df_pivot_test_openfe, "Test_openfe_pandas", True)
