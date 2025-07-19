@@ -76,9 +76,7 @@ def main():
                 openfe_results.to_parquet(openfe_path)
                 print("OpenFE Results calculated.")
         else:
-            continue
-
-
+            print("No OpenFE")
 
         combined_results = [original_results, openfe_results]
 
