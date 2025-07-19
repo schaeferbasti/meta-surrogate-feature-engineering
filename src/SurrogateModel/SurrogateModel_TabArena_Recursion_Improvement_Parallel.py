@@ -116,12 +116,8 @@ def recursive_feature_addition(X, y, X_test, y_test, model, method, dataset_meta
     if dataset_id in datasets:
         result_matrix = result_matrix[result_matrix["dataset - id"] != dataset_id]
 
-    start = time.time()
     comparison_result_matrix = create_empty_core_matrix_for_dataset(X, model, dataset_id)
     comparison_result_matrix = add_method_metadata(comparison_result_matrix, dataset_metadata, X, y, method)
-    end = time.time()
-    print("Time for creating Comparison Result Matrix: " + str(end - start))
-    comparison_result_matrix.to_parquet("Comparison_Result_Matrix.parquet")
     # Predict and split again
     start = time.time()
     X_new, y_new = predict_improvement(result_matrix, comparison_result_matrix, method, X, y, wanted_min_relative_improvement)

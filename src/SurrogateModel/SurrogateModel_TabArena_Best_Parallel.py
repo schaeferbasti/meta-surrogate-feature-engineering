@@ -133,7 +133,6 @@ def feature_addition(X_train, y_train, X_test, y_test, model, method, dataset_me
     comparison_result_matrix = add_method_metadata(comparison_result_matrix, dataset_metadata, X_train, y_train, method)
     end = time.time()
     print("Time for creating Comparison Result Matrix: " + str(end - start))
-    comparison_result_matrix.to_parquet("Comparison_Result_Matrix.parquet")
     # Predict and split again
     task_type = dataset_metadata["task_type"]
     if "classification" in task_type or "Classification" in task_type:
@@ -306,14 +305,20 @@ def process_group(dataset_id, method, group, model, number_of_features):
         groupname = group
     print(f"[Processing Group] {groupname}")
     X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
+    start = time.time()
     X_train, y_train, X_test, y_test = feature_addition_mfe_group(X_train, y_train, X_test, y_test, model, method, dataset_id, groupname, number_of_features)
+    end = time.time()
+    print("Total Time SM: " + str(end - start))
     data = concat_data(X_train, y_train, X_test, y_test, "target")
     data.to_parquet(f"FE_{dataset_id}_{method}_{groupname}_CatBoost_best.parquet")
 
 
 def process_groups(dataset_id, method, groups, model, number_of_features):
     X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
+    start = time.time()
     X_train, y_train, X_test, y_test = feature_addition_mfe_groups(X_train, y_train, X_test, y_test, model, method, dataset_id, groups, number_of_features)
+    end = time.time()
+    print("Total Time SM: " + str(end - start))
     data = concat_data(X_train, y_train, X_test, y_test, "target")
     data.to_parquet(f"FE_{dataset_id}_{method}_{str(groups)}_CatBoost_best.parquet")
 
@@ -323,7 +328,7 @@ def process_method(dataset_id, method, model, number_of_features):
     start = time.time()
     X_train, y_train, X_test, y_test = feature_addition(X_train, y_train, X_test, y_test, model, method, dataset_metadata, dataset_id, number_of_features)
     end = time.time()
-    print("Time for creating Comparison Result Matrix: " + str(end - start))
+    print("Total Time SM: " + str(end - start))
     data = concat_data(X_train, y_train, X_test, y_test, "target")
     data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_CatBoost_best.parquet")
 
