@@ -8,7 +8,6 @@ from src.utils.get_data import get_openml_dataset_split_and_metadata, split_data
 def get_additional_features(data, prediction_result):
     additional_feature_list = prediction_result
     for additional_feature in additional_feature_list:
-        print("Add Feature: " + str(additional_feature))
         operation, original_features = extract_operation_and_original_features(additional_feature)
         if len(original_features) == 2:
             feature, _ = create_feature_and_featurename(data[original_features[0]], data[original_features[1]],
@@ -25,7 +24,6 @@ def execute_feature_engineering(prediction_result, model, dataset_id):
     target_label = "target"
     y = y.to_frame(target_label)
     data = pd.concat([X, y], axis=1)
-    print("Add Features to Data")
     data = get_additional_features(data, prediction_result)
     return data, dataset_id, model
 
@@ -43,7 +41,7 @@ def run_random_surrogate_model(dataset_id):
     method = "Random"
     print("Method: " + str(method) + ", Dataset: " + str(dataset_id))
     model = "LightGBM_BAG_L1"
-    n_features_to_add = 200
+    n_features_to_add = 150
     folds = 10
     for i in range(folds):
         # try:
