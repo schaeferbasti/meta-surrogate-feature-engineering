@@ -75,11 +75,10 @@ def main():
                 openfe_results = openfe_results[openfe_results['model'] == "LightGBM_BAG_L1"]
                 openfe_results.to_parquet(openfe_path)
                 print("OpenFE Results calculated.")
-                combined_results = [original_results, openfe_results]
+            combined_results = [original_results, openfe_results]
         else:
             print("No OpenFE")
-
-        combined_results = [original_results]
+            combined_results = [original_results]
 
         # === METHOD RESULTS (Random/pandas/MFE/d2v) ===
         best_random_result = None
@@ -99,7 +98,8 @@ def main():
                     result_path = f"test_results/{method}_Result_{dataset_id}.parquet"
                 elif "MFE" in name:
                     version = name.split('.parquet')[0].split("_")[-1]
-                    category = name.split("MFE_")[1].split("_")[0]
+                    name_info = name.replace("info_theory", "info-theory")
+                    category = name_info.split("MFE_")[1].split("_")[0]
                     method = name.split('_')[0] + f"_{category}_{version}"
                     is_random = False  # e.g., pandas
                     result_path = f"test_results/{method}_Result_{dataset_id}.parquet"
