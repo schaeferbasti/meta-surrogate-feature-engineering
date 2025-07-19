@@ -52,7 +52,7 @@ def main():
                     "Method": method,
                     "Dataset": dataset,
                     "Task": "Calculate Comparison Matrix",
-                    "Time": 3600.0
+                    "Time": 7200.0
                 }])
                 times = pd.concat([times, new_row], ignore_index=True)
             elif comp_time is not None:
@@ -73,7 +73,7 @@ def main():
 
 
     # Plot
-    plt.figure(figsize=(12, 10))
+    plt.figure(figsize=(12, 7))
     time_per_method.plot(kind='bar', color='skyblue', label='Total Time for 12 Datasets per Surrogate Model')
     average_time_per_method.plot(kind='bar', width=0.3, color='orange', label='Average Time over 12 Datasets per Surrogate Model')
     plt.legend()
@@ -105,16 +105,63 @@ def main():
                 "Time": time
             }])
             times = pd.concat([times, new_row], ignore_index=True)
+        else:
+            match = re.search(r"OpenFE on (\d+): ([\d.]+)", line)
+            if match:
+                dataset = int(match.group(1))
+                time = float(match.group(2))
 
+                # Mimic your pattern
+                new_row = pd.DataFrame([{
+                    "Method": method,
+                    "Dataset": dataset,
+                    "Task": "FE",
+                    "Time": time
+                }])
+                times = pd.concat([times, new_row], ignore_index=True)
+
+    times['Dataset'] = pd.to_numeric(times['Dataset'], errors='coerce').astype('Int64')
     times = times.drop_duplicates()
+
+    df_pivot = times.pivot(index="Dataset", columns="Method", values="Time")
+    df_pivot = df_pivot.sort_index()
+    df_pivot = df_pivot[["Recursion", "One-shot", "OpenFE"]]
+
+    formatted_df = df_pivot.applymap(lambda x: f"{x:.2f}" if pd.notnull(x) else "/")
+    latex_lines = []
+    latex_lines.append(r"\begin{table}[h!]")
+    latex_lines.append(r"    \footnotesize")
+    latex_lines.append(r"        \begin{tabular*}{\textwidth}{@{\extracolsep{3em}} c|ccc @{}}")
+    latex_lines.append(r"        \toprule")
+    latex_lines.append(r"        OpenML Dataset ID & " + " & ".join(df_pivot.columns) + r" \\")
+    latex_lines.append(r"        \midrule")
+
+    # Add table rows
+    for dataset_id, row in formatted_df.iterrows():
+        row_str = f"        {dataset_id} & " + " & ".join(row.values) + r" \\ \midrule"
+        latex_lines.append(row_str)
+
+    # Finish LaTeX code
+    latex_lines.append(r"    \end{tabular*}")
+    latex_lines.append(r"    \caption{Overview of time needed in seconds of \fe{} methods on the \OpenML{} datasets}")
+    latex_lines.append(r"    \label{tab:overview-time-openfe}")
+    latex_lines.append(r"\end{table}")
+
+    # Join all lines into one LaTeX string
+    latex_code = "\n".join(latex_lines)
+
+    # Print LaTeX table
+    print(latex_code)
+
     time_per_method = times.groupby("Method")["Time"].sum().sort_values(ascending=False)
     print(time_per_method)
-    average_recursion = time_per_method.values[0] / times[times["Method"] == "Recursion"]["Dataset"].nunique()
+    average_best = time_per_method.values[0] / times[times["Method"] == "Recursion"]["Dataset"].nunique()
+    average_recursion = time_per_method.values[2] / times[times["Method"] == "Recursion"]["Dataset"].nunique()
     average_openfe = time_per_method.values[1] / times[times["Method"] == "OpenFE"]["Dataset"].nunique()
-    average_time_per_method = pd.Series([average_openfe, average_recursion], index=["Recursion", "OpenFE"])
+    average_time_per_method = pd.Series([average_recursion, average_best, average_openfe], index=["Recursion", "One-shot", "OpenFE"])
 
     # Plot
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=(12, 7))
     time_per_method.plot(kind='bar', color='skyblue', label='Total Time per FE Method')
     average_time_per_method.plot(kind='bar', width=0.3, color='orange', label='Average Time per FE Method')
     plt.legend()

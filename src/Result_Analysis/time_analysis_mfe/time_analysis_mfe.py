@@ -59,8 +59,41 @@ def main():
     df[['method', 'dataset']] = df['method_dataset'].str.split(' - ', expand=True)
     df['dataset'] = df['dataset'].astype(int)
 
+    df_mfe = pd.DataFrame(list(times_mfe.items()), columns=['method_category_dataset', 'value'])
+    df_mfe[['method_category', 'dataset']] = df_mfe['method_category_dataset'].str.split(' - ', expand=True)
+    df_mfe['dataset'] = df_mfe['dataset'].astype(int)
+
     df_pivot = df.pivot(index="dataset", columns="method", values="value")
+    df_pivot_x = df_pivot.drop(columns=["MFE"], axis=1)
+    df_pivot_mfe = df_mfe.pivot(index="dataset", columns="method_category", values="value")
+    df_pivot = pd.concat([df_pivot_x, df_pivot_mfe], axis=1)
     df_pivot = df_pivot.sort_index()  # Sort by dataset ID
+
+    formatted_df = df_pivot.applymap(lambda x: f"{x:.2f}" if pd.notnull(x) else "/")
+    latex_lines = []
+    latex_lines.append(r"\begin{table}[h!]")
+    latex_lines.append(r"    \footnotesize")
+    latex_lines.append(r"        \begin{tabular*}{\textwidth}{@{\extracolsep{0.4em}} c|cccccc @{}}")
+    latex_lines.append(r"        \toprule")
+    latex_lines.append(r"        Dataset & Pandas & TabPFN & d2v & MFE general & MFE info-theory & MFE statistical \\")
+    latex_lines.append(r"        \midrule")
+
+    # Add table rows
+    for dataset_id, row in formatted_df.iterrows():
+        row_str = f"        {dataset_id} & " + " & ".join(row.values) + r" \\ \midrule"
+        latex_lines.append(row_str)
+
+    # Finish LaTeX code
+    latex_lines.append(r"    \end{tabular*}")
+    latex_lines.append(r"    \caption{Time in seconds elapsed for the calculation of \metafeatures{} of the tested extractors per dataset}")
+    latex_lines.append(r"    \label{tab:overview-time-mfe}")
+    latex_lines.append(r"\end{table}")
+
+    # Join all lines into one LaTeX string
+    latex_code = "\n".join(latex_lines)
+
+    # Print LaTeX table
+    print(latex_code)
 
     datasets = df_pivot.index.astype(str)
     dataset_list = []
@@ -77,7 +110,7 @@ def main():
     dataset_list_wrapped = [insert_line_breaks(name, max_len=15) for name in dataset_list]
 
     # Plot
-    plt.figure(figsize=(12, 10))
+    plt.figure(figsize=(12, 7))
     for method in df_pivot.columns:
         plt.plot(dataset_list_wrapped, df_pivot[method], marker='o', label=method)
     plt.xlabel("Dataset ID")
@@ -88,7 +121,7 @@ def main():
     plt.legend()
     plt.grid(True)
     plt.tight_layout()
-    plt.savefig("Time_for_FE_per_Dataset.png")
+    plt.savefig("Time_for_FE_per_Dataset.png", dpi=300)
     plt.show()
 
     df = df[df["method"] != "TabPFN"]
@@ -96,7 +129,7 @@ def main():
     average_time_per_method = df.groupby("method")["value"].mean().sort_values(ascending=False)
 
     # Plot
-    plt.figure(figsize=(12, 10))
+    plt.figure(figsize=(12, 7))
     time_per_method.plot(kind='bar', color='skyblue', label='Total Time per Method')
     average_time_per_method.plot(kind='bar', width=0.3, color='orange', label='Average Time per Method')
     plt.legend()
@@ -106,7 +139,7 @@ def main():
     plt.xticks(rotation=90, ha="right")
     plt.yscale('log')
     plt.tight_layout()
-    plt.savefig("Time_for_FE_per_Method.png")
+    plt.savefig("Time_for_FE_per_Method.png", dpi=300)
     plt.show()
 
 
@@ -127,7 +160,7 @@ def main():
     colors = ['red' if cat in time_issue_categories + memory_issue_categories else 'skyblue' for cat in time_per_category.index]
 
     # Step 4: Plot total time per category (bar colors depend on memory issue)
-    plt.figure(figsize=(12, 10))
+    plt.figure(figsize=(12, 7))
     time_per_category.plot(kind='bar', color=colors, label='Total Time per Method')
     for idx, (category, value) in enumerate(time_per_category.items()):
         if category in time_issue_category_names:
@@ -145,7 +178,7 @@ def main():
     plt.xticks(rotation=90, ha="right")
     plt.yscale('log')
     plt.tight_layout()
-    plt.savefig("Time_for_MFE_per_Category.png")
+    plt.savefig("Time_for_MFE_per_Category.png", dpi=300)
     plt.show()
 
 

@@ -55,6 +55,7 @@ def plot_score_graph(dataset_list_wrapped, df_pivot, name):
             score_type = "validation"
         else:
             score_type = "test"
+        large_plot = False
     elif "without_openfe" in name:
         score_type = name.split("_")[0]
         if score_type == "Val":
@@ -62,14 +63,19 @@ def plot_score_graph(dataset_list_wrapped, df_pivot, name):
         else:
             score_type = "test"
         df_pivot = df_pivot.drop(["OpenFE"], axis=1)
+        large_plot = True
     else:
         if name == "Val":
             score_type = "validation"
         else:
             score_type = "test"
+        large_plot = True
     df_filtered = df_pivot[(df_pivot.le(1) | df_pivot.isna()).all(axis=1)]
     dataset_list_wrapped = df_filtered.index.tolist()
-    plt.figure(figsize=(12, 10))
+    if large_plot:
+        plt.figure(figsize=(12, 10))
+    else:
+        plt.figure(figsize=(12, 7))
     for method in df_filtered.columns:
         plt.plot(dataset_list_wrapped, df_filtered[method], marker='o', label=method)
     plt.xlabel("Dataset")
@@ -87,7 +93,7 @@ def plot_count_best(df_pivot_val, df_pivot_test, name):
     minValueIndex_val = df_pivot_val.idxmin(axis=1).value_counts()
     minValueIndex_test = df_pivot_test.idxmin(axis=1).value_counts()
     # Plot
-    plt.figure(figsize=(12, 10))
+    plt.figure(figsize=(12, 7))
     minValueIndex_val.plot(kind='bar', color='skyblue', label='Count of the best validation scores over all datasets')
     minValueIndex_test.plot(kind='bar', width=0.3, color='darkblue',
                             label='Count of the best test scores over all datasets')
@@ -132,7 +138,7 @@ def plot_avg_percentage_impr(baseline_col, df_pivot, name, only_pandas=False):
     avg_improvement = improvement.mean().sort_values(ascending=False)
     # for i, val in enumerate(avg_improvement_test):
     #    plt.text(i, val + (1 if val >= 0 else -1), f"{val:.2f}%", ha='center', va='bottom' if val >= 0 else 'top')
-    plt.figure(figsize=(12, 10))
+    plt.figure(figsize=(12, 7))
     # avg_improvement_test.plot(kind="bar", color="skyblue")
     bars = avg_improvement.plot(kind="bar", color="skyblue")
     if only_pandas:
@@ -185,7 +191,7 @@ def plot_boxplot_percentage_impr(baseline_col, df_pivot, name):
     improvement_test = improvement_test[method_order]
 
     # Plot
-    plt.figure(figsize=(12, 10))
+    plt.figure(figsize=(12, 7))
     improvement_test.boxplot(column=method_order, grid=True)
     plt.axhline(0, color="black", linewidth=0.8, linestyle="--")
     plt.title("Distribution of the percentage loss reduction of the " + score_type + " score of the model\nin relation to the " + score_type + " score of the model on the original datasets")
