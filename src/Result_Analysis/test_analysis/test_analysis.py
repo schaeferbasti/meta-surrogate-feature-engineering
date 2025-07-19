@@ -151,7 +151,7 @@ def plot_avg_percentage_impr(baseline_col, df_pivot, name, only_pandas=False):
     plt.axhline(0, color="black", linewidth=0.8)
     plt.title("Average percentage error reduction of the " + score_type + " error of the model\nin relation to the " + score_type + " error of the model on the original datasets")
     plt.xlabel("Method")
-    plt.ylabel("Average percentage error reduction\nof the " + score_type + " error")
+    plt.ylabel("Average error reduction\nof the " + score_type + " error")
     plt.xticks(rotation=90, ha="right")
     plt.grid(True, linestyle="--", alpha=0.6)
     plt.tight_layout()
