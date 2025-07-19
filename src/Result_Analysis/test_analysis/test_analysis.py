@@ -1,8 +1,10 @@
 import glob
 
+import numpy as np
 import openml
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib.cm as cm
 
 
 def insert_line_breaks(name, max_len=20):
@@ -83,6 +85,7 @@ def plot_score_graph(dataset_list_wrapped, df_pivot, name):
         else:
             score_type = "test"
         large_plot = False
+        without_openfe = False
     elif "without_OpenFE" in name:
         score_type = name.split("_")[0]
         if score_type == "Val":
@@ -90,6 +93,7 @@ def plot_score_graph(dataset_list_wrapped, df_pivot, name):
         else:
             score_type = "test"
         large_plot = True
+        without_openfe = True
         df_pivot = df_pivot.drop(columns=["OpenFE"])
     else:
         if name == "Val":
@@ -97,16 +101,28 @@ def plot_score_graph(dataset_list_wrapped, df_pivot, name):
         else:
             score_type = "test"
         large_plot = True
+        without_openfe = False
         column_to_move = df_pivot.pop("OpenFE")
         df_pivot.insert(len(df_pivot.columns), "OpenFE", column_to_move)
-    df_filtered = df_pivot # [(df_pivot.le(1) | df_pivot.isna()).all(axis=1)]
-    dataset_list_wrapped = df_filtered.index.tolist()
+    if without_openfe:
+        colors = cm.get_cmap('nipy_spectral')
+        color_list = [colors(i) for i in np.linspace(0, 0.95, len(df_pivot.columns))]
+    else:
+        colors = cm.get_cmap('nipy_spectral', len(df_pivot.columns))
+
+    dataset_list_wrapped = df_pivot.index.tolist()
     if large_plot:
         plt.figure(figsize=(12, 10))
+        if without_openfe:
+            for idx, method in enumerate(df_pivot.columns):
+                plt.plot(dataset_list_wrapped, df_pivot[method], marker='o', label=method, color=color_list[idx])
+        else:
+            for idx, method in enumerate(df_pivot.columns):
+                plt.plot(dataset_list_wrapped, df_pivot[method], marker='o', label=method, color=colors(idx))
     else:
         plt.figure(figsize=(12, 7))
-    for method in df_filtered.columns:
-        plt.plot(dataset_list_wrapped, df_filtered[method], marker='o', label=method)
+        for method in df_pivot.columns:
+            plt.plot(dataset_list_wrapped, df_pivot[method], marker='o', label=method)
     plt.xlabel("Dataset")
     plt.xticks(rotation=90)  # or 45
     plt.ylabel(score_type.title() + " error")
