@@ -416,7 +416,7 @@ def main_wrapper():
     parser.add_argument('--dataset', required=True, help='Dataset')
     args = parser.parse_args()
     methods = ["pandas", "d2v", "MFE"]
-    number_of_features = 50
+    number_of_features = 200
     for method in methods:
         main(int(args.dataset), method, number_of_features)
 
