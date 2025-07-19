@@ -56,7 +56,7 @@ def plot_score_graph(dataset_list_wrapped, df_pivot, name):
         else:
             score_type = "test"
         large_plot = False
-    elif "without_openfe" in name:
+    elif "without_OpenFE" in name:
         score_type = name.split("_")[0]
         if score_type == "Val":
             score_type = "validation"
@@ -95,7 +95,7 @@ def plot_count_best(df_pivot_val, df_pivot_test, name):
     # Plot
     plt.figure(figsize=(12, 7))
     minValueIndex_val.plot(kind='bar', color='skyblue', label='Count of the lowest validation error')
-    minValueIndex_test.plot(kind='bar', width=0.3, color='darkblue', label='Count of the lowest test error over all datasets')
+    minValueIndex_test.plot(kind='bar', width=0.3, color='darkblue', label='Count of the lowest test error')
     plt.legend()
     plt.xlabel("Method")
     plt.ylabel("Count of the lowest error")
@@ -113,13 +113,12 @@ def plot_avg_percentage_impr(baseline_col, df_pivot, name, only_pandas=False):
             score_type = "validation"
         else:
             score_type = "test"
-    elif "without_openfe" in name:
+    elif "without_OpenFE" in name:
         score_type = name.split("_")[0]
         if score_type == "Val":
             score_type = "validation"
         else:
             score_type = "test"
-        df_pivot = df_pivot.drop(["OpenFE"], axis=1)
     else:
         if name == "Val":
             score_type = "validation"
@@ -166,13 +165,12 @@ def plot_boxplot_percentage_impr(baseline_col, df_pivot, name):
             score_type = "validation"
         else:
             score_type = "test"
-    elif "without_openfe" in name:
+    elif "without_OpenFE" in name:
         score_type = name.split("_")[0]
         if score_type == "Val":
             score_type = "validation"
         else:
             score_type = "test"
-        df_pivot = df_pivot.drop(["OpenFE"], axis=1)
     else:
         if name == "Val":
             score_type = "validation"
@@ -211,8 +209,8 @@ def test_analysis():
     plot_score_graph(dataset_list_wrapped, df_pivot_val, "Val")
     plot_score_graph(dataset_list_wrapped, df_pivot_test, "Test")
 
-    plot_score_graph(dataset_list_wrapped, df_pivot_val, "Val_without_openfe")
-    plot_score_graph(dataset_list_wrapped, df_pivot_test, "Test_without_openfe")
+    plot_score_graph(dataset_list_wrapped, df_pivot_val, "Val_without_OpenFE")
+    plot_score_graph(dataset_list_wrapped, df_pivot_test, "Test_without_OpenFE")
 
     plot_count_best(df_pivot_val, df_pivot_test, "")
     plot_avg_percentage_impr(baseline_col, df_pivot_val, "Val")
@@ -221,16 +219,16 @@ def test_analysis():
     plot_boxplot_percentage_impr(baseline_col, df_pivot_test, "Test")
 
     # Drop OpenFE column to compare MFE approaches
-    df_pivot_val_without_openfe = df_pivot_val
-    df_pivot_test_without_openfe = df_pivot_test
-    df_pivot_val_without_openfe.drop(columns=["OpenFE"], inplace=True)
-    df_pivot_test_without_openfe.drop(columns=["OpenFE"], inplace=True)
+    df_pivot_val_without_OpenFE = df_pivot_val
+    df_pivot_test_without_OpenFE = df_pivot_test
+    df_pivot_val_without_OpenFE.drop(columns=["OpenFE"], inplace=True)
+    df_pivot_test_without_OpenFE.drop(columns=["OpenFE"], inplace=True)
     # Plot again
-    plot_count_best(df_pivot_val_without_openfe, df_pivot_test_without_openfe, "without_OpenFE_")
-    plot_avg_percentage_impr(baseline_col, df_pivot_val_without_openfe, "Val_without_OpenFE")
-    plot_avg_percentage_impr(baseline_col, df_pivot_test_without_openfe, "Test_without_OpenFE")
-    plot_boxplot_percentage_impr(baseline_col, df_pivot_val_without_openfe, "Val_without_OpenFE")
-    plot_boxplot_percentage_impr(baseline_col, df_pivot_test_without_openfe, "Test_without_OpenFE")
+    plot_count_best(df_pivot_val_without_OpenFE, df_pivot_test_without_OpenFE, "without_OpenFE_")
+    plot_avg_percentage_impr(baseline_col, df_pivot_val_without_OpenFE, "Val_without_OpenFE")
+    plot_avg_percentage_impr(baseline_col, df_pivot_test_without_OpenFE, "Test_without_OpenFE")
+    plot_boxplot_percentage_impr(baseline_col, df_pivot_val_without_OpenFE, "Val_without_OpenFE")
+    plot_boxplot_percentage_impr(baseline_col, df_pivot_test_without_OpenFE, "Test_without_OpenFE")
 
     # Drop everything but pandas & original columns to compare SM approaches
     df_pivot_val_pandas = df_pivot_val[["pandas_best", "pandas_recursion", "Original"]]
