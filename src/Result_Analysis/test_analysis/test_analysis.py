@@ -97,6 +97,8 @@ def plot_score_graph(dataset_list_wrapped, df_pivot, name):
         else:
             score_type = "test"
         large_plot = True
+        column_to_move = df_pivot.pop("OpenFE")
+        df_pivot.insert(len(df_pivot.columns), "OpenFE", column_to_move)
     df_filtered = df_pivot[(df_pivot.le(1) | df_pivot.isna()).all(axis=1)]
     dataset_list_wrapped = df_filtered.index.tolist()
     if large_plot:
