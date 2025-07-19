@@ -75,10 +75,11 @@ def main():
                 openfe_results = openfe_results[openfe_results['model'] == "LightGBM_BAG_L1"]
                 openfe_results.to_parquet(openfe_path)
                 print("OpenFE Results calculated.")
+                combined_results = [original_results, openfe_results]
         else:
             print("No OpenFE")
 
-        combined_results = [original_results, openfe_results]
+        combined_results = [original_results]
 
         # === METHOD RESULTS (Random/pandas/MFE/d2v) ===
         best_random_result = None
