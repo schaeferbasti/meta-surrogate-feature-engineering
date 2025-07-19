@@ -90,6 +90,7 @@ def plot_score_graph(dataset_list_wrapped, df_pivot, name):
         else:
             score_type = "test"
         large_plot = True
+        df_pivot = df_pivot.drop(columns=["OpenFE"])
     else:
         if name == "Val":
             score_type = "validation"
