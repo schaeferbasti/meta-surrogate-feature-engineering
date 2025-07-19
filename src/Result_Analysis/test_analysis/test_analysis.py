@@ -16,7 +16,7 @@ def insert_line_breaks(name, max_len=20):
 
 def make_model_name_nice(df_pivot):
     model_names_nice = []
-    model_names = df_pivot.columns.tolist()
+    model_names = df_pivot.columns
     for model_name in model_names:
         model_name = model_name.replace('pandas_', 'Pandas, ')
         model_name = model_name.replace('d2v_', 'Dataset2Vec, ')
@@ -32,7 +32,9 @@ def make_model_name_nice(df_pivot):
         model_name = model_name.replace("MFE_{'statistical', 'general'}", 'MFE (statistical, general), ')
         model_name = model_name.replace("MFE_{'general', 'statistical', 'info-theory'}", 'MFE (general, statistical, info-theory), ')
         model_name = model_name.replace('best', 'one-shot SM')
+        model_name = model_name.replace('_one-shot', 'one-shot')
         model_name = model_name.replace('recursion', 'recursive SM')
+        model_name = model_name.replace('_recursive', 'recursive')
         model_names_nice.append(model_name)
     df_pivot.columns = model_names_nice
     return df_pivot
@@ -87,7 +89,6 @@ def plot_score_graph(dataset_list_wrapped, df_pivot, name):
             score_type = "validation"
         else:
             score_type = "test"
-        df_pivot = df_pivot.drop(["OpenFE"], axis=1)
         large_plot = True
     else:
         if name == "Val":
@@ -283,8 +284,8 @@ def test_analysis():
     plot_boxplot_percentage_impr(baseline_col, df_pivot_test_openfe, "Test_openfe_pandas")
 
     # Drop everything but pandas columns to compare SM approaches
-    df_pivot_val_openfe = df_pivot_val_openfe[["OpenFE", "pandas_recursion"]]
-    df_pivot_test_openfe = df_pivot_test_openfe[["OpenFE", "pandas_recursion"]]
+    df_pivot_val_openfe = df_pivot_val_openfe[["OpenFE", "Pandas, recursive SM"]]
+    df_pivot_test_openfe = df_pivot_test_openfe[["OpenFE", "Pandas, recursive SM"]]
     # Plot again
     plot_count_best(df_pivot_val_openfe, df_pivot_test_openfe, "openfe_pandas_")
     plot_score_graph(dataset_list_wrapped, df_pivot_val_openfe, "Val_openfe_pandas")
