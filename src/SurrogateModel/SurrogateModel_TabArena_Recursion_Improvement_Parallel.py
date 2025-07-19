@@ -347,7 +347,7 @@ def main(dataset_id, method, wanted_min_relative_improvement):
         for group in groups:
             print(f"\n=== Starting group: {group} ===")
             process_func = lambda: process_group(dataset_id, method, group, model, wanted_min_relative_improvement, last_reset_time)
-            exit_code = run_with_resource_limits(process_func, mem_limit_mb=64000, time_limit_sec=7200)
+            exit_code = run_with_resource_limits(process_func, mem_limit_mb=64000, time_limit_sec=3600)
             if exit_code != 0:
                 print(f"[Warning] Group {group} failed or was terminated. Skipping.\n")
                 continue
@@ -356,7 +356,7 @@ def main(dataset_id, method, wanted_min_relative_improvement):
         last_reset_time.value = time.time()
         print(f"\n=== Starting groups: {groupnames} ===")
         process_func = lambda: process_groups(dataset_id, method, groupnames, model, wanted_min_relative_improvement, last_reset_time)
-        exit_code = run_with_resource_limits(process_func, mem_limit_mb=64000, time_limit_sec=7200)
+        exit_code = run_with_resource_limits(process_func, mem_limit_mb=64000, time_limit_sec=3600)
         if exit_code != 0:
             print(f"[Warning] Groups {groupnames} failed or was terminated. Skipping.\n")
 
@@ -364,7 +364,7 @@ def main(dataset_id, method, wanted_min_relative_improvement):
         last_reset_time.value = time.time()
         print(f"\n=== Starting groups: {groupnames} ===")
         process_func = lambda: process_groups(dataset_id, method, groupnames, model, wanted_min_relative_improvement, last_reset_time)
-        exit_code = run_with_resource_limits(process_func, mem_limit_mb=64000, time_limit_sec=7200)
+        exit_code = run_with_resource_limits(process_func, mem_limit_mb=64000, time_limit_sec=3600)
         if exit_code != 0:
             print(f"[Warning] Groups {groupnames} failed or was terminated. Skipping.\n")
 
@@ -372,7 +372,7 @@ def main(dataset_id, method, wanted_min_relative_improvement):
         last_reset_time.value = time.time()
         print(f"\n=== Starting groups: {groupnames} ===")
         process_func = lambda: process_groups(dataset_id, method, groupnames, model, wanted_min_relative_improvement, last_reset_time)
-        exit_code = run_with_resource_limits(process_func, mem_limit_mb=64000, time_limit_sec=7200)
+        exit_code = run_with_resource_limits(process_func, mem_limit_mb=64000, time_limit_sec=3600)
         if exit_code != 0:
             print(f"[Warning] Groups {groupnames} failed or was terminated. Skipping.\n")
 
@@ -380,13 +380,13 @@ def main(dataset_id, method, wanted_min_relative_improvement):
         last_reset_time.value = time.time()
         print(f"\n=== Starting groups: {groupnames} ===")
         process_func = lambda: process_groups(dataset_id, method, groupnames, model, wanted_min_relative_improvement, last_reset_time)
-        exit_code = run_with_resource_limits(process_func, mem_limit_mb=64000, time_limit_sec=7200)
+        exit_code = run_with_resource_limits(process_func, mem_limit_mb=64000, time_limit_sec=3600)
         if exit_code != 0:
             print(f"[Warning] Groups {groupnames} failed or was terminated. Skipping.\n")
     else:
         print(f"\n=== Starting Method: {method} ===")
         process_func = lambda: process_method(dataset_id, method, model, wanted_min_relative_improvement, last_reset_time)
-        exit_code = run_with_resource_limits(process_func, mem_limit_mb=64000, time_limit_sec=7200)
+        exit_code = run_with_resource_limits(process_func, mem_limit_mb=64000, time_limit_sec=3600)
         if exit_code != 0:
             print(f"[Warning] Method {method} failed or was terminated. Skipping.\n")
 
