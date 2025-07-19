@@ -287,6 +287,9 @@ def predict_improvement(result_matrix, comparison_result_matrix, category_or_met
     # clf = TabDPTModel()
     clf = CatBoostModel()
     clf.fit(X=result_matrix, y=y_result)
+
+    # Predict and score
+    comparison_result_matrix = comparison_result_matrix[result_matrix.columns]
     prediction = clf.predict(X=comparison_result_matrix)
     prediction_df = pd.DataFrame(prediction, columns=["predicted_improvement"])
     prediction_concat_df = pd.concat([comparison_result_matrix[["dataset - id", "feature - name", "model"]], prediction_df], axis=1)
