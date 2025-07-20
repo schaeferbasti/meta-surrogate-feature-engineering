@@ -288,11 +288,13 @@ def predict_improvement(result_matrix, comparison_result_matrix, category_or_met
     clf.fit(X=result_matrix, y=y_result)
 
     # Predict and score
+    comparison_result_matrix.columns = comparison_result_matrix.columns.astype(str)
     comparison_result_matrix = comparison_result_matrix[result_matrix.columns]
     prediction = clf.predict(X=comparison_result_matrix)
     prediction_df = pd.DataFrame(prediction, columns=["predicted_improvement"])
     prediction_concat_df = pd.concat([comparison_result_matrix[["dataset - id", "feature - name", "model"]], prediction_df], axis=1)
     best_operation = prediction_concat_df.nlargest(n=number_of_features, columns="predicted_improvement", keep="first")
+    best_operation = best_operation.sort_values(key=lambda s: s.str.startswith("without - "), by="feature - name")
     X, y, _, _ = execute_feature_engineering(best_operation)
     return X, y
 
