@@ -41,6 +41,101 @@ def make_model_name_nice(df_pivot):
     df_pivot.columns = model_names_nice
     return df_pivot
 
+
+def make_latex_table(df_pivot, without_openfe):
+    formatted_df = df_pivot.applymap(lambda x: f"{x:.2f}" if pd.notnull(x) else "/")
+    latex_lines = []
+    latex_lines.append(r"\begin{table}[h!]")
+    latex_lines.append(r"    \tiny")
+    if without_openfe:
+        latex_lines.append(r"        \begin{tabular*}{\textwidth}{@{\extracolsep{0.4em}} c|cccccccccccccccccccccccc @{}}")
+        latex_lines.append(r"        \toprule")
+        latex_lines.append(r"        Dataset & \makecell{Best\\Random} & \makecell{MFE\\(general),\\one-shot SM} & \makecell{MFE\\(general),\\recursive SM} & \makecell{MFE\\(info-theory),\\one-shot SM} & \makecell{MFE\\(info-theory),\\recursive SM}  & \makecell{MFE\\(statistical),\\one-shot SM}  & \makecell{MFE\\(statistical),\\recursive SM}  & \makecell{MFE\\(general, info-theory),\\one-shot SM}  & \makecell{MFE\\(general, info-theory),\\recursive SM}  & \makecell{MFE\\(general, statistical),\\one-shot SM}  & \makecell{MFE\\(general, statistical),\\recursive SM}  & \makecell{MFE\\(info-theory, general),\\one-shot SM}  & \makecell{MFE\\(info-theory, general),\\recursive SM}  & \makecell{MFE\\(info-theory, statistical),\\one-shot SM}  & \makecell{MFE\\(info-theory, statistical),\\recursive SM}  & \makecell{MFE\\(statistical, general),\\one-shot SM}  & \makecell{MFE\\(statistical, general),\\recursive SM} & \makecell{MFE\\(statistical,info-theory),\\one-shot SM} & \makecell{MFE\\(statistical, info-theory),\\recursive SM} & \makecell{Original} & \makecell{Dataset2Vec,\\one-shot SM} & \makecell{Dataset2Vec,\\recursive SM} & \makecell{Pandas,\\one-shot SM} & \makecell{Pandas,\\recursive SM} \\")
+
+    else:
+        latex_lines.append(r"        \begin{tabular*}{\textwidth}{@{\extracolsep{0.4em}} c|ccccccccccccccccccccccccc @{}}")
+        latex_lines.append(r"        \toprule")
+        latex_lines.append(r"        Dataset & \makecell{Best\\Random} & \makecell{MFE\\(general),\\one-shot SM} & \makecell{MFE\\(general),\\recursive SM} & \makecell{MFE\\(info-theory),\\one-shot SM} & \makecell{MFE\\(info-theory),\\recursive SM}  & \makecell{MFE\\(statistical),\\one-shot SM}  & \makecell{MFE\\(statistical),\\recursive SM}  & \makecell{MFE\\(general, info-theory),\\one-shot SM}  & \makecell{MFE\\(general, info-theory),\\recursive SM}  & \makecell{MFE\\(general, statistical),\\one-shot SM}  & \makecell{MFE\\(general, statistical),\\recursive SM}  & \makecell{MFE\\(info-theory, general),\\one-shot SM}  & \makecell{MFE\\(info-theory, general),\\recursive SM}  & \makecell{MFE\\(info-theory, statistical),\\one-shot SM}  & \makecell{MFE\\(info-theory, statistical),\\recursive SM}  & \makecell{MFE\\(statistical, general),\\one-shot SM}  & \makecell{MFE\\(statistical, general),\\recursive SM} & \makecell{MFE\\(statistical,info-theory),\\one-shot SM} & \makecell{MFE\\(statistical, info-theory),\\recursive SM} & \makecell{Original} & \makecell{Dataset2Vec,\\one-shot SM} & \makecell{Dataset2Vec,\\recursive SM} & \makecell{Pandas,\\one-shot SM} & \makecell{Pandas,\\recursive SM} & \makecell{OpenFE} \\")
+
+    latex_lines.append(r"        \midrule")
+
+    # Add table rows
+    for dataset_id, row in formatted_df.iterrows():
+        row_str = f"        {dataset_id} & " + " & ".join(row.values) + r" \\ \midrule"
+        latex_lines.append(row_str)
+
+    # Finish LaTeX code
+    latex_lines.append(r"    \end{tabular*}")
+    if without_openfe:
+        latex_lines.append(r"    \caption{Test error of the model on the feature-engineered datasets of the \sm{} approaches using \metafeatures{} of the tested extractors, on the best randomly feature-engineered datasets and on the original datasets}")
+        latex_lines.append(r"    \label{tab:test_without_openfe}")
+    else:
+        latex_lines.append(r"    \caption{Test error of the model on the feature-engineered datasets of the \sm{} approaches using \metafeatures{} of the tested extractors, on the best randomly feature-engineered datasets, on the original datasets, and on the datasets feature-engineered with \gls{OpenFE}}")
+        latex_lines.append(r"    \label{tab:test}")
+    latex_lines.append(r"\end{table}")
+
+    latex_code = "\n".join(latex_lines)
+
+    print(latex_code)
+
+
+def make_latex_tables_split(df_pivot, without_openfe, columns_per_table=6):
+    import math
+
+    formatted_df = df_pivot.applymap(lambda x: f"{x:.2f}" if pd.notnull(x) else "/")
+    method_columns = df_pivot.columns.tolist()
+    total_tables = 4
+
+    for table_idx in range(total_tables):
+        start_col = table_idx * columns_per_table
+        # Fix: Add all remaining columns to the last table
+        if table_idx == total_tables - 1:
+            end_col = len(method_columns)
+        else:
+            end_col = start_col + columns_per_table
+
+        current_columns = method_columns[start_col:end_col]
+
+        latex_lines = []
+        latex_lines.append(r"\begin{table}[h!]")
+        latex_lines.append(r"    \footnotesize")
+
+        column_format = "c|" + "c" * len(current_columns)
+        if without_openfe:
+            latex_lines.append(fr"    \begin{{tabular*}}{{\textwidth}}{{@{{\extracolsep{{0.2em}}}} {column_format} @{{}}}}")
+        else:
+            if table_idx == total_tables - 1:
+                latex_lines.append(fr"    \begin{{tabular*}}{{\textwidth}}{{@{{\extracolsep{{-0.5em}}}} {column_format} @{{}}}}")
+            else:
+                latex_lines.append(fr"    \begin{{tabular*}}{{\textwidth}}{{@{{\extracolsep{{0.2em}}}} {column_format} @{{}}}}")
+        latex_lines.append(r"        \toprule")
+
+        header_cells = ["Dataset"]
+        for col in current_columns:
+            escaped_col = col.replace(", ", ",\\\\").replace(" ", "\\\\")  # Optional: better breaking
+            header_cells.append(f"\\makecell{{{escaped_col}}}")
+        latex_lines.append("        " + " & ".join(header_cells) + r" \\")
+        latex_lines.append(r"        \midrule")
+
+        for dataset_id, row in formatted_df.iterrows():
+            values = [row[col] for col in current_columns]
+            row_str = f"        {dataset_id} & " + " & ".join(values) + r" \\"
+            latex_lines.append(row_str)
+
+        latex_lines.append(r"        \bottomrule")
+        latex_lines.append(r"    \end{tabular*}")
+
+        base_caption = "Test error of the model on the feature-engineered datasets..."
+        label_prefix = "tab:test_without_openfe" if without_openfe else "tab:test_with_openfe"
+        latex_lines.append(fr"    \caption{{{base_caption} (Part {table_idx + 1})}}")
+        latex_lines.append(fr"    \label{{{label_prefix}_part{table_idx + 1}}}")
+        latex_lines.append(r"\end{table}")
+        latex_lines.append("")
+
+        print("\n".join(latex_lines))
+
+
+
 def get_data(result_files):
     all_results = []
     for result_file in result_files:
@@ -95,6 +190,8 @@ def plot_score_graph(dataset_list_wrapped, df_pivot, name):
         large_plot = True
         without_openfe = True
         df_pivot = df_pivot.drop(columns=["OpenFE"])
+        if score_type == "test":
+            make_latex_tables_split(df_pivot, without_openfe)
     else:
         if name == "Val":
             score_type = "validation"
@@ -104,6 +201,8 @@ def plot_score_graph(dataset_list_wrapped, df_pivot, name):
         without_openfe = False
         column_to_move = df_pivot.pop("OpenFE")
         df_pivot.insert(len(df_pivot.columns), "OpenFE", column_to_move)
+        if score_type == "test":
+            make_latex_tables_split(df_pivot, without_openfe)
     if without_openfe:
         colors = cm.get_cmap('nipy_spectral')
         color_list = [colors(i) for i in np.linspace(0, 0.95, len(df_pivot.columns))]
