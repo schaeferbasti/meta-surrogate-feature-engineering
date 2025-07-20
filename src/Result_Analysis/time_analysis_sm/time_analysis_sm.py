@@ -4,11 +4,10 @@ import re
 import pandas as pd
 from matplotlib import pyplot as plt
 
-def main():
+
+def get_data():
     times = pd.DataFrame(columns=["SM", "Method", "SM - Method", "Dataset", "Task", "Time"])
-
     log_files = os.listdir()
-
     for log_file in log_files:
         if log_file.endswith('.out'):
             with open(log_file, "r") as f:
@@ -78,31 +77,13 @@ def main():
                         else:
                             continue  # skip if no valid result
                         times = pd.concat([times, new_row], ignore_index=True)
-
     times = times.drop_duplicates()
-    time_per_method = times.groupby("SM - Method")["Time"].sum().sort_values(ascending=False)
-    average_recursion = time_per_method.values[0] / times[times["SM"] == "Recursion"]["Dataset"].nunique()
-    average_best = time_per_method.values[1] / times[times["SM"] == "One-shot"]["Dataset"].nunique()
-    average_time_per_method = pd.Series([average_recursion, average_best], index=["Recursion", "One-shot"])
+    return times
 
 
-    # Plot
-    plt.figure(figsize=(12, 7))
-    time_per_method.plot(kind='bar', color='skyblue', label='Total Time for 12 Datasets per Surrogate Model')
-    average_time_per_method.plot(kind='bar', width=0.3, color='orange', label='Average Time over 12 Datasets per Surrogate Model')
-    plt.legend()
-    plt.xlabel("Method")
-    plt.ylabel("Time in seconds")
-    plt.title("Time Usage of Surrogate Models")
-    plt.xticks(rotation=90, ha="right")
-    # plt.yscale('log')
-    plt.tight_layout()
-    plt.savefig("Time_SM_oneshot_recursive.png")
-    plt.show()
-
+def add_openfe_data(times):
     with open("openfe_times.txt", "r") as f:
         lines = f.readlines()
-
     method = "OpenFE"
     # Parse each line
     for line in lines:
@@ -137,14 +118,12 @@ def main():
                     "Time": time
                 }])
                 times = pd.concat([times, new_row], ignore_index=True)
-
     times['Dataset'] = pd.to_numeric(times['Dataset'], errors='coerce').astype('Int64')
     times = times.drop_duplicates()
+    return times
 
-    df_pivot = times.pivot(index="Dataset", columns="SM - Method", values="Time")
-    df_pivot = df_pivot.sort_index()
-    # df_pivot = df_pivot[["Recursion", "One-shot", "OpenFE"]]
 
+def print_latex_table(df_pivot):
     formatted_df = df_pivot.applymap(lambda x: f"{x:.2f}" if pd.notnull(x) else "/")
     latex_lines = []
     latex_lines.append(r"\begin{table}[h!]")
@@ -153,31 +132,22 @@ def main():
     latex_lines.append(r"        \toprule")
     latex_lines.append(r"        OpenML Dataset ID & " + " & ".join(df_pivot.columns) + r" \\")
     latex_lines.append(r"        \midrule")
-
     # Add table rows
     for dataset_id, row in formatted_df.iterrows():
         row_str = f"        {dataset_id} & " + " & ".join(row.values) + r" \\ \midrule"
         latex_lines.append(row_str)
-
     # Finish LaTeX code
     latex_lines.append(r"    \end{tabular*}")
     latex_lines.append(r"    \caption{Overview of time needed in seconds of \fe{} methods on the \OpenML{} datasets}")
     latex_lines.append(r"    \label{tab:overview-time-openfe}")
     latex_lines.append(r"\end{table}")
-
     # Join all lines into one LaTeX string
     latex_code = "\n".join(latex_lines)
-
     # Print LaTeX table
     print(latex_code)
 
-    time_per_method = times.groupby("SM")["Time"].sum().sort_values(ascending=False)
-    print(time_per_method)
-    average_best = time_per_method.values[0] / times[times["SM"] == "One-shot"]["Dataset"].nunique()
-    average_recursion = time_per_method.values[1] / times[times["SM"] == "Recursion"]["Dataset"].nunique()
-    average_openfe = time_per_method.values[2] / times[times["SM"] == "OpenFE"]["Dataset"].nunique()
-    average_time_per_method = pd.Series([average_recursion, average_best, average_openfe], index=["Recursion", "One-shot", "OpenFE"])
 
+def plot_time(average_time_per_method, time_per_method):
     # Plot
     plt.figure(figsize=(12, 7))
     time_per_method.plot(kind='bar', color='skyblue', label='Total Time per FE Method')
@@ -190,6 +160,33 @@ def main():
     plt.tight_layout()
     plt.savefig("Time_FE_methods.png")
     plt.show()
+
+
+def main():
+    times = get_data()
+
+    time_per_method = times.groupby("SM - Method")["Time"].sum().sort_values(ascending=False)
+    average_recursion = time_per_method.values[0] / times[times["SM"] == "Recursion"]["Dataset"].nunique()
+    average_best = time_per_method.values[1] / times[times["SM"] == "One-shot"]["Dataset"].nunique()
+    average_time_per_method = pd.Series([average_recursion, average_best], index=["Recursion", "One-shot"])
+
+    plot_time(average_time_per_method, time_per_method)
+
+    times = add_openfe_data(times)
+
+    df_pivot = times.pivot(index="Dataset", columns="SM - Method", values="Time")
+    df_pivot = df_pivot.sort_index()
+
+    print_latex_table(df_pivot)
+
+    time_per_method = times.groupby("SM")["Time"].sum().sort_values(ascending=False)
+    print(time_per_method)
+    average_best = time_per_method.values[0] / times[times["SM"] == "One-shot"]["Dataset"].nunique()
+    average_recursion = time_per_method.values[1] / times[times["SM"] == "Recursion"]["Dataset"].nunique()
+    average_openfe = time_per_method.values[2] / times[times["SM"] == "OpenFE"]["Dataset"].nunique()
+    average_time_per_method = pd.Series([average_recursion, average_best, average_openfe], index=["Recursion", "One-shot", "OpenFE"])
+
+    plot_time(average_time_per_method, time_per_method)
 
 
 if __name__ == "__main__":
