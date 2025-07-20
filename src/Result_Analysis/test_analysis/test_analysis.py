@@ -349,6 +349,8 @@ def test_analysis():
     baseline_col = "Original"
     result_files = glob.glob("test_results/Result_*.parquet")
     dataset_list_wrapped, df_pivot_test, df_pivot_val = get_data(result_files)
+    df_pivot_test.drop(columns="Best Random", inplace=True)
+    df_pivot_val.drop(columns="Best Random", inplace=True)
 
     # Plot
     plot_score_graph(dataset_list_wrapped, df_pivot_val, "Val")
