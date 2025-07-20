@@ -5,7 +5,7 @@ import pandas as pd
 from matplotlib import pyplot as plt
 
 def main():
-    times = pd.DataFrame(columns=["Method", "Dataset", "Task", "Time"])
+    times = pd.DataFrame(columns=["SM", "Method", "SM - Method", "Dataset", "Task", "Time"])
 
     log_files = os.listdir()
 
@@ -14,62 +14,76 @@ def main():
             with open(log_file, "r") as f:
                 lines = f.readlines()
 
-            method = log_file.split("_")[0]
-            if method == "Impr":
-                method = "Recursion"
-            elif method == "Best":
-                method = "One-shot"
-            dataset = log_file.split("_")[0].split("-")[-1]
-
-            comp_sentence = "Time for creating Comparison Result Matrix: "
+            sm = log_file.split("_")[0]
+            if sm == "Impr":
+                sm = "Recursion"
+            elif sm == "Best":
+                sm = "One-shot"
+            method_pattern = re.compile(r"=== Starting Method: (\w+) ===")
+            dataset_pattern = re.compile(r"Dataset: ([\w\-]+)")  # adjust if dataset is somewhere else
+            comparison_time_pattern = re.compile(r"Time for creating Comparison Result Matrix: ([\d.]+)")
             timeout_sentence = "[Monitor] Time limit exceeded"
-            meta_sentence = "Method:"
 
+            # Init variables
+            method = None
+            dataset = None
             comp_time = None
             timeout = False
 
+            # Go line by line
             for i, line in enumerate(lines):
+                # Detect method start
+                method_match = method_pattern.search(line)
+                if method_match:
+                    method = method_match.group(1)
+                    timeout = False  # reset for next method
+                    comp_time = None
+
+                # Detect dataset name (optional, only if needed)
+                dataset_match = dataset_pattern.search(line)
+                if dataset_match:
+                    dataset = dataset_match.group(1)
+
+                # Detect timeout
                 if timeout_sentence in line:
                     timeout = True
-                    break  # no need to continue reading if timed out
-                if line.startswith(meta_sentence):
-                    parts = line.strip().split(",")
-                    for part in parts:
-                        if "Dataset" in part:
-                            dataset = part.split(":")[1].strip()
 
-                if line.startswith(comp_sentence):
-                    # Check if the next line exists and starts with expected string
-                    if i + 1 < len(lines) and lines[i + 1].startswith("Allocated memory"):
-                        try:
-                            comp_time = float(line.split(comp_sentence)[1].strip())
-                        except ValueError:
-                            comp_time = None  # just in case parsing fails
+                # Detect valid comparison time
+                time_match = comparison_time_pattern.search(line)
+                if time_match:
+                    comp_time = float(time_match.group(1))
 
-            if timeout:
-                # Timeout case
-                new_row = pd.DataFrame([{
-                    "Method": method,
-                    "Dataset": dataset,
-                    "Task": "Calculate Comparison Matrix",
-                    "Time": 7200.0
-                }])
-                times = pd.concat([times, new_row], ignore_index=True)
-            elif comp_time is not None:
-                # Successful case with valid comp_time
-                new_row = pd.DataFrame([{
-                    "Method": method,
-                    "Dataset": dataset,
-                    "Task": "Calculate Comparison Matrix",
-                    "Time": comp_time
-                }])
-                times = pd.concat([times, new_row], ignore_index=True)
+                # On last line or if next method starts, log result
+                next_line_method = method_pattern.search(lines[i + 1]) if i + 1 < len(lines) else None
+                if next_line_method or i == len(lines) - 1:
+                    if method and dataset:
+                        if timeout:
+                            new_row = pd.DataFrame([{
+                                "SM": sm,
+                                "Method": method,
+                                "SM - Method": sm + ", " + method,
+                                "Dataset": dataset,
+                                "Task": "Calculate Comparison Matrix",
+                                "Time": 7200.0  # Timeout placeholder
+                            }])
+                        elif comp_time is not None:
+                            new_row = pd.DataFrame([{
+                                "SM": sm,
+                                "Method": method,
+                                "SM - Method": sm + ", " + method,
+                                "Dataset": dataset,
+                                "Task": "Calculate Comparison Matrix",
+                                "Time": comp_time
+                            }])
+                        else:
+                            continue  # skip if no valid result
+                        times = pd.concat([times, new_row], ignore_index=True)
+
     times = times.drop_duplicates()
-
-    time_per_method = times.groupby("Method")["Time"].sum().sort_values(ascending=False)
-    average_recursion = time_per_method.values[0] / times[times["Method"] == "Recursion"]["Dataset"].nunique()
-    average_best = time_per_method.values[1] / times[times["Method"] == "One-shot"]["Dataset"].nunique()
-    average_time_per_method = pd.Series([average_recursion, average_best], index=["Recursion", "Best"])
+    time_per_method = times.groupby("SM - Method")["Time"].sum().sort_values(ascending=False)
+    average_recursion = time_per_method.values[0] / times[times["SM"] == "Recursion"]["Dataset"].nunique()
+    average_best = time_per_method.values[1] / times[times["SM"] == "One-shot"]["Dataset"].nunique()
+    average_time_per_method = pd.Series([average_recursion, average_best], index=["Recursion", "One-shot"])
 
 
     # Plot
@@ -99,7 +113,9 @@ def main():
 
             # Mimic your pattern
             new_row = pd.DataFrame([{
-                "Method": method,
+                "SM": "OpenFE",
+                "Method": "OpenFE",
+                "SM - Method": "OpenFE",
                 "Dataset": dataset,
                 "Task": "FE",
                 "Time": time
@@ -113,7 +129,9 @@ def main():
 
                 # Mimic your pattern
                 new_row = pd.DataFrame([{
-                    "Method": method,
+                    "SM": "OpenFE",
+                    "Method": "OpenFE",
+                    "SM - Method": "OpenFE",
                     "Dataset": dataset,
                     "Task": "FE",
                     "Time": time
@@ -123,9 +141,9 @@ def main():
     times['Dataset'] = pd.to_numeric(times['Dataset'], errors='coerce').astype('Int64')
     times = times.drop_duplicates()
 
-    df_pivot = times.pivot(index="Dataset", columns="Method", values="Time")
+    df_pivot = times.pivot(index="Dataset", columns="SM - Method", values="Time")
     df_pivot = df_pivot.sort_index()
-    df_pivot = df_pivot[["Recursion", "One-shot", "OpenFE"]]
+    # df_pivot = df_pivot[["Recursion", "One-shot", "OpenFE"]]
 
     formatted_df = df_pivot.applymap(lambda x: f"{x:.2f}" if pd.notnull(x) else "/")
     latex_lines = []
@@ -153,11 +171,11 @@ def main():
     # Print LaTeX table
     print(latex_code)
 
-    time_per_method = times.groupby("Method")["Time"].sum().sort_values(ascending=False)
+    time_per_method = times.groupby("SM")["Time"].sum().sort_values(ascending=False)
     print(time_per_method)
-    average_best = time_per_method.values[0] / times[times["Method"] == "Recursion"]["Dataset"].nunique()
-    average_recursion = time_per_method.values[2] / times[times["Method"] == "Recursion"]["Dataset"].nunique()
-    average_openfe = time_per_method.values[1] / times[times["Method"] == "OpenFE"]["Dataset"].nunique()
+    average_best = time_per_method.values[0] / times[times["SM"] == "One-shot"]["Dataset"].nunique()
+    average_recursion = time_per_method.values[1] / times[times["SM"] == "Recursion"]["Dataset"].nunique()
+    average_openfe = time_per_method.values[2] / times[times["SM"] == "OpenFE"]["Dataset"].nunique()
     average_time_per_method = pd.Series([average_recursion, average_best, average_openfe], index=["Recursion", "One-shot", "OpenFE"])
 
     # Plot
