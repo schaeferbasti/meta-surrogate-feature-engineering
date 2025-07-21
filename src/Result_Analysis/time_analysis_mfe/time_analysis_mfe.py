@@ -80,10 +80,11 @@ def main():
 
     # Add table rows
     for dataset_id, row in formatted_df.iterrows():
-        row_str = f"        {dataset_id} & " + " & ".join(row.values) + r" \\ \midrule"
+        row_str = f"        {dataset_id} & " + " & ".join(row.values) + r" \\"
         latex_lines.append(row_str)
 
     # Finish LaTeX code
+    latex_lines.append(r"        \bottomrule")
     latex_lines.append(r"    \end{tabular*}")
     latex_lines.append(r"    \caption{Time in seconds elapsed for the calculation of \metafeatures{} of the tested extractors per dataset}")
     latex_lines.append(r"    \label{tab:overview-time-mfe}")
