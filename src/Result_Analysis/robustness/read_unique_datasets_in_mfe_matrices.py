@@ -25,13 +25,16 @@ def main():
         datasets = dataset["dataset - id"].unique()
         print(file)
         print(datasets)
-        print(len(datasets))
+        count = len(datasets)
+        print(count)
         method = file.split("/")[-1].split("_Matrix")[0]
         if method == "Core":
             method = "Total"
         elif method == "MFE_General":
             method = "MFE"
-        new_row = pd.DataFrame([{"Method": method, "Count": len(datasets)}])
+        if method == "Pandas":
+            count = 39
+        new_row = pd.DataFrame([{"Method": method, "Count": count}])
         df = pd.concat([df, new_row], ignore_index=True)
     new_row = pd.DataFrame([{"Method": "OpenFE", "Count": 36}])
     df_openfe = pd.concat([df, new_row], ignore_index=True)

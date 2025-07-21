@@ -101,13 +101,7 @@ def make_latex_tables_split(df_pivot, without_openfe, columns_per_table=6):
         latex_lines.append(r"    \footnotesize")
 
         column_format = "c|" + "c" * len(current_columns)
-        if without_openfe:
-            latex_lines.append(fr"    \begin{{tabular*}}{{\textwidth}}{{@{{\extracolsep{{0.2em}}}} {column_format} @{{}}}}")
-        else:
-            if table_idx == total_tables - 1:
-                latex_lines.append(fr"    \begin{{tabular*}}{{\textwidth}}{{@{{\extracolsep{{-0.5em}}}} {column_format} @{{}}}}")
-            else:
-                latex_lines.append(fr"    \begin{{tabular*}}{{\textwidth}}{{@{{\extracolsep{{0.2em}}}} {column_format} @{{}}}}")
+        latex_lines.append(fr"    \begin{{tabular*}}{{\textwidth}}{{@{{\extracolsep{{0.2em}}}} {column_format} @{{}}}}")
         latex_lines.append(r"        \toprule")
 
         header_cells = ["Dataset"]
@@ -134,6 +128,56 @@ def make_latex_tables_split(df_pivot, without_openfe, columns_per_table=6):
 
         print("\n".join(latex_lines))
 
+
+def make_latex_tables_as_one(df_pivot, without_openfe, columns_per_table=6):
+    from math import ceil
+
+    formatted_df = df_pivot.applymap(lambda x: f"{x:.2f}" if pd.notnull(x) else "/")
+    method_columns = df_pivot.columns.tolist()
+    total_tables = ceil(len(method_columns) / columns_per_table)
+
+    base_caption = "Test error of the model on the feature-engineered datasets..."
+    label = "tab:test_without_openfe" if without_openfe else "tab:test_with_openfe"
+
+    for table_idx in range(total_tables):
+        start_col = table_idx * columns_per_table
+        end_col = min(start_col + columns_per_table, len(method_columns))
+        current_columns = method_columns[start_col:end_col]
+
+        latex_lines = []
+        latex_lines.append(r"\begin{table}[h!]")
+        latex_lines.append(r"    \footnotesize")
+
+        column_format = "c|" + "c" * len(current_columns)
+        latex_lines.append(fr"    \begin{{tabular*}}{{\textwidth}}{{@{{\extracolsep{{0.2em}}}} {column_format} @{{}}}}")
+        latex_lines.append(r"        \toprule")
+
+        header_cells = ["Dataset"]
+        for col in current_columns:
+            escaped_col = col.replace(", ", ",\\\\").replace(" ", "\\\\")
+            header_cells.append(f"\\makecell{{{escaped_col}}}")
+        latex_lines.append("        " + " & ".join(header_cells) + r" \\")
+        latex_lines.append(r"        \midrule")
+
+        for dataset_id, row in formatted_df.iterrows():
+            values = [row[col] for col in current_columns]
+            row_str = f"        {dataset_id} & " + " & ".join(values) + r" \\"
+            latex_lines.append(row_str)
+
+        latex_lines.append(r"        \bottomrule")
+        latex_lines.append(r"    \end{tabular*}")
+
+        if table_idx == 0:
+            latex_lines.append(fr"    \caption{{{base_caption}}}")
+            latex_lines.append(fr"    \label{{{label}}}")
+        else:
+            latex_lines.append(r"    \ContinuedFloat")
+            latex_lines.append(fr"    \caption*{{{base_caption} (cont.)}}")
+
+        latex_lines.append(r"\end{table}")
+        latex_lines.append("")
+
+        print("\n".join(latex_lines))
 
 
 def get_data(result_files):
@@ -173,14 +217,23 @@ def get_data(result_files):
 
 
 def plot_score_graph(dataset_list_wrapped, df_pivot, name):
-    if "only_pandas" in name or "openfe_pandas" in name:
+    if "only_pandas" in name:
         score_type = name.split("_")[0]
         if score_type == "Val":
             score_type = "validation"
         else:
             score_type = "test"
+        without_openfe = True
         large_plot = False
-        without_openfe = False
+    elif "openfe_pandas" in name:
+        score_type = name.split("_")[0]
+        if score_type == "Val":
+            score_type = "validation"
+        else:
+            score_type = "test"
+        df_pivot.rename(columns={"Pandas, recursive SM": "MetaFE"}, inplace=True)
+        without_openfe = True
+        large_plot = False
     elif "without_OpenFE" in name:
         score_type = name.split("_")[0]
         if score_type == "Val":
@@ -190,8 +243,6 @@ def plot_score_graph(dataset_list_wrapped, df_pivot, name):
         large_plot = True
         without_openfe = True
         df_pivot = df_pivot.drop(columns=["OpenFE"])
-        if score_type == "test":
-            make_latex_tables_split(df_pivot, without_openfe)
     else:
         if name == "Val":
             score_type = "validation"
@@ -202,7 +253,7 @@ def plot_score_graph(dataset_list_wrapped, df_pivot, name):
         column_to_move = df_pivot.pop("OpenFE")
         df_pivot.insert(len(df_pivot.columns), "OpenFE", column_to_move)
         if score_type == "test":
-            make_latex_tables_split(df_pivot, without_openfe)
+            make_latex_tables_as_one(df_pivot, without_openfe)
     if without_openfe:
         colors = cm.get_cmap('nipy_spectral')
         color_list = [colors(i) for i in np.linspace(0, 0.95, len(df_pivot.columns))]
@@ -253,12 +304,22 @@ def plot_count_best(df_pivot_val, df_pivot_test, name):
 
 
 def plot_avg_percentage_impr(baseline_col, df_pivot, name, only_pandas=False):
-    if "only_pandas" in name or "openfe_pandas" in name:
+    if "only_pandas" in name:
         score_type = name.split("_")[0]
         if score_type == "Val":
             score_type = "validation"
         else:
             score_type = "test"
+    elif "openfe_pandas" in name:
+        score_type = name.split("_")[0]
+        if score_type == "Val":
+            score_type = "validation"
+        else:
+            score_type = "test"
+        try:
+            df_pivot.rename(columns={"Pandas, recursive SM": "MetaFE"}, inplace=True)
+        except KeyError:
+            print("")
     elif "without_OpenFE" in name:
         score_type = name.split("_")[0]
         if score_type == "Val":
@@ -305,12 +366,19 @@ def plot_avg_percentage_impr(baseline_col, df_pivot, name, only_pandas=False):
 
 
 def plot_boxplot_percentage_impr(baseline_col, df_pivot, name):
-    if "only_pandas" in name or "openfe_pandas" in name:
+    if "only_pandas" in name:
         score_type = name.split("_")[0]
         if score_type == "Val":
             score_type = "validation"
         else:
             score_type = "test"
+    elif "openfe_pandas" in name:
+        score_type = name.split("_")[0]
+        if score_type == "Val":
+            score_type = "validation"
+        else:
+            score_type = "test"
+        df_pivot.rename(columns={"Pandas, recursive SM": "MetaFE"}, inplace=True)
     elif "without_OpenFE" in name:
         score_type = name.split("_")[0]
         if score_type == "Val":
@@ -406,8 +474,8 @@ def test_analysis():
     plot_boxplot_percentage_impr(baseline_col, df_pivot_test_openfe, "Test_openfe_pandas")
 
     # Drop everything but pandas columns to compare SM approaches
-    df_pivot_val_openfe = df_pivot_val_openfe[["OpenFE", "Pandas, recursive SM"]]
-    df_pivot_test_openfe = df_pivot_test_openfe[["OpenFE", "Pandas, recursive SM"]]
+    df_pivot_val_openfe = df_pivot_val_openfe[["OpenFE", "MetaFE"]]
+    df_pivot_test_openfe = df_pivot_test_openfe[["OpenFE", "MetaFE"]]
     # Plot again
     plot_count_best(df_pivot_val_openfe, df_pivot_test_openfe, "openfe_pandas_")
     plot_score_graph(dataset_list_wrapped, df_pivot_val_openfe, "Val_openfe_pandas")
