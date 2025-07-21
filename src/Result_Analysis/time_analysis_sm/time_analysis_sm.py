@@ -134,9 +134,10 @@ def print_latex_table(df_pivot):
     latex_lines.append(r"        \midrule")
     # Add table rows
     for dataset_id, row in formatted_df.iterrows():
-        row_str = f"        {dataset_id} & " + " & ".join(row.values) + r" \\ \midrule"
+        row_str = f"        {dataset_id} & " + " & ".join(row.values) + r" \\"
         latex_lines.append(row_str)
     # Finish LaTeX code
+    latex_lines.append(r"        \bottomrule")
     latex_lines.append(r"    \end{tabular*}")
     latex_lines.append(r"    \caption{Overview of time needed in seconds of \fe{} methods on the \OpenML{} datasets}")
     latex_lines.append(r"    \label{tab:overview-time-openfe}")
