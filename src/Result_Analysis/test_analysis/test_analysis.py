@@ -246,6 +246,7 @@ def plot_count_best(df_pivot_val, df_pivot_test, name):
     plt.ylabel("Number of datasets")
     plt.title("Count of the lowest validation and test error of the model")
     plt.xticks(rotation=90, ha="right")
+    plt.grid(True)
     plt.tight_layout()
     plt.savefig("../Result_Analysis/test_analysis/Count_Best_" + name + "bar.png")
     plt.show()
