@@ -147,7 +147,7 @@ def print_latex_table(df_pivot):
     print(latex_code)
 
 
-def plot_time(average_time_per_method, time_per_method):
+def plot_time(average_time_per_method, time_per_method, name):
     # Plot
     plt.figure(figsize=(12, 7))
     time_per_method.plot(kind='bar', color='skyblue', label='Total Time per FE Method')
@@ -155,10 +155,11 @@ def plot_time(average_time_per_method, time_per_method):
     plt.legend()
     plt.xlabel("Method")
     plt.ylabel("Time in seconds")
+    plt.yscale('log')
     plt.title("Time Usage of FE Methods")
     plt.xticks(rotation=45, ha="right")
     plt.tight_layout()
-    plt.savefig("Time_FE_methods.png")
+    plt.savefig("Time_FE_methods_" + name + ".png")
     plt.show()
 
 
@@ -170,23 +171,23 @@ def main():
     average_best = time_per_method.values[1] / times[times["SM"] == "One-shot"]["Dataset"].nunique()
     average_time_per_method = pd.Series([average_recursion, average_best], index=["Recursion", "One-shot"])
 
-    plot_time(average_time_per_method, time_per_method)
+    plot_time(average_time_per_method, time_per_method, "SM")
 
     times = add_openfe_data(times)
+    times_filtered = times[times["Method"] != "d2v"]
 
-    df_pivot = times.pivot(index="Dataset", columns="SM - Method", values="Time")
+    df_pivot = times_filtered.pivot(index="Dataset", columns="SM - Method", values="Time")
     df_pivot = df_pivot.sort_index()
 
     print_latex_table(df_pivot)
 
-    time_per_method = times.groupby("SM")["Time"].sum().sort_values(ascending=False)
-    print(time_per_method)
-    average_best = time_per_method.values[0] / times[times["SM"] == "One-shot"]["Dataset"].nunique()
-    average_recursion = time_per_method.values[1] / times[times["SM"] == "Recursion"]["Dataset"].nunique()
-    average_openfe = time_per_method.values[2] / times[times["SM"] == "OpenFE"]["Dataset"].nunique()
-    average_time_per_method = pd.Series([average_recursion, average_best, average_openfe], index=["Recursion", "One-shot", "OpenFE"])
+    time_per_method = times_filtered.groupby("SM")["Time"].sum().sort_values(ascending=False)
+    time_per_method = time_per_method.reset_index("SM")
+    time_per_method.drop(index=1, inplace=True)
+    average_openfe = time_per_method["Time"].values[1] / times[times["SM"] == "OpenFE"]["Dataset"].nunique()
+    average_time_per_method = pd.Series([average_recursion, average_openfe], index=["MetaFE", "OpenFE"])
 
-    plot_time(average_time_per_method, time_per_method)
+    plot_time(average_time_per_method, time_per_method, "MetaFE_OpenFE")
 
 
 if __name__ == "__main__":
