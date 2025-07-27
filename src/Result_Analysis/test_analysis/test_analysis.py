@@ -414,7 +414,7 @@ def plot_boxplot_percentage_impr(baseline_col, df_pivot, name):
         improvement_test[method] = improvement
 
     # Sort methods by mean improvement (descending)
-    method_order = improvement_test.median().sort_values(ascending=False).index.tolist()
+    method_order = improvement_test.mean().sort_values(ascending=False).index.tolist()
     improvement_test = improvement_test[method_order]
 
     # Plot
