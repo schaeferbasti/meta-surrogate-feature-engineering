@@ -1,16 +1,19 @@
 import glob
 
+from brokenaxes import BrokenAxes
 import numpy as np
 import openml
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 
+from src.Result_Analysis.time_analysis_sm.time_analysis_sm import add_openfe_data, get_times
+
 
 def insert_line_breaks(name, max_len=20):
     if len(name) > max_len:
         # Split into chunks of `max_len`, preserving words if possible
-        parts = [name[i:i+max_len] for i in range(0, len(name), max_len)]
+        parts = [name[i:i + max_len] for i in range(0, len(name), max_len)]
         return '\n'.join(parts)
     else:
         return name
@@ -32,7 +35,8 @@ def make_model_name_nice(df_pivot):
         model_name = model_name.replace("MFE_{'info-theory', 'statistical'}", 'MFE (info-theory, statistical), ')
         model_name = model_name.replace("MFE_{'general', 'statistical'}", 'MFE (general, statistical), ')
         model_name = model_name.replace("MFE_{'statistical', 'general'}", 'MFE (statistical, general), ')
-        model_name = model_name.replace("MFE_{'general', 'statistical', 'info-theory'}", 'MFE (general, statistical, info-theory), ')
+        model_name = model_name.replace("MFE_{'general', 'statistical', 'info-theory'}",
+                                        'MFE (general, statistical, info-theory), ')
         model_name = model_name.replace('best', 'one-shot SM')
         model_name = model_name.replace('_one-shot', 'one-shot')
         model_name = model_name.replace('recursion', 'recursive SM')
@@ -48,14 +52,18 @@ def make_latex_table(df_pivot, without_openfe):
     latex_lines.append(r"\begin{table}[h!]")
     latex_lines.append(r"    \tiny")
     if without_openfe:
-        latex_lines.append(r"        \begin{tabular*}{\textwidth}{@{\extracolsep{0.4em}} c|cccccccccccccccccccccccc @{}}")
+        latex_lines.append(
+            r"        \begin{tabular*}{\textwidth}{@{\extracolsep{0.4em}} c|cccccccccccccccccccccccc @{}}")
         latex_lines.append(r"        \toprule")
-        latex_lines.append(r"        Dataset & \makecell{Best\\Random} & \makecell{MFE\\(general),\\one-shot SM} & \makecell{MFE\\(general),\\recursive SM} & \makecell{MFE\\(info-theory),\\one-shot SM} & \makecell{MFE\\(info-theory),\\recursive SM}  & \makecell{MFE\\(statistical),\\one-shot SM}  & \makecell{MFE\\(statistical),\\recursive SM}  & \makecell{MFE\\(general, info-theory),\\one-shot SM}  & \makecell{MFE\\(general, info-theory),\\recursive SM}  & \makecell{MFE\\(general, statistical),\\one-shot SM}  & \makecell{MFE\\(general, statistical),\\recursive SM}  & \makecell{MFE\\(info-theory, general),\\one-shot SM}  & \makecell{MFE\\(info-theory, general),\\recursive SM}  & \makecell{MFE\\(info-theory, statistical),\\one-shot SM}  & \makecell{MFE\\(info-theory, statistical),\\recursive SM}  & \makecell{MFE\\(statistical, general),\\one-shot SM}  & \makecell{MFE\\(statistical, general),\\recursive SM} & \makecell{MFE\\(statistical,info-theory),\\one-shot SM} & \makecell{MFE\\(statistical, info-theory),\\recursive SM} & \makecell{Original} & \makecell{Dataset2Vec,\\one-shot SM} & \makecell{Dataset2Vec,\\recursive SM} & \makecell{Pandas,\\one-shot SM} & \makecell{Pandas,\\recursive SM} \\")
+        latex_lines.append(
+            r"        Dataset & \makecell{Best\\Random} & \makecell{MFE\\(general),\\one-shot SM} & \makecell{MFE\\(general),\\recursive SM} & \makecell{MFE\\(info-theory),\\one-shot SM} & \makecell{MFE\\(info-theory),\\recursive SM}  & \makecell{MFE\\(statistical),\\one-shot SM}  & \makecell{MFE\\(statistical),\\recursive SM}  & \makecell{MFE\\(general, info-theory),\\one-shot SM}  & \makecell{MFE\\(general, info-theory),\\recursive SM}  & \makecell{MFE\\(general, statistical),\\one-shot SM}  & \makecell{MFE\\(general, statistical),\\recursive SM}  & \makecell{MFE\\(info-theory, general),\\one-shot SM}  & \makecell{MFE\\(info-theory, general),\\recursive SM}  & \makecell{MFE\\(info-theory, statistical),\\one-shot SM}  & \makecell{MFE\\(info-theory, statistical),\\recursive SM}  & \makecell{MFE\\(statistical, general),\\one-shot SM}  & \makecell{MFE\\(statistical, general),\\recursive SM} & \makecell{MFE\\(statistical,info-theory),\\one-shot SM} & \makecell{MFE\\(statistical, info-theory),\\recursive SM} & \makecell{Original} & \makecell{Dataset2Vec,\\one-shot SM} & \makecell{Dataset2Vec,\\recursive SM} & \makecell{Pandas,\\one-shot SM} & \makecell{Pandas,\\recursive SM} \\")
 
     else:
-        latex_lines.append(r"        \begin{tabular*}{\textwidth}{@{\extracolsep{0.4em}} c|ccccccccccccccccccccccccc @{}}")
+        latex_lines.append(
+            r"        \begin{tabular*}{\textwidth}{@{\extracolsep{0.4em}} c|ccccccccccccccccccccccccc @{}}")
         latex_lines.append(r"        \toprule")
-        latex_lines.append(r"        Dataset & \makecell{Best\\Random} & \makecell{MFE\\(general),\\one-shot SM} & \makecell{MFE\\(general),\\recursive SM} & \makecell{MFE\\(info-theory),\\one-shot SM} & \makecell{MFE\\(info-theory),\\recursive SM}  & \makecell{MFE\\(statistical),\\one-shot SM}  & \makecell{MFE\\(statistical),\\recursive SM}  & \makecell{MFE\\(general, info-theory),\\one-shot SM}  & \makecell{MFE\\(general, info-theory),\\recursive SM}  & \makecell{MFE\\(general, statistical),\\one-shot SM}  & \makecell{MFE\\(general, statistical),\\recursive SM}  & \makecell{MFE\\(info-theory, general),\\one-shot SM}  & \makecell{MFE\\(info-theory, general),\\recursive SM}  & \makecell{MFE\\(info-theory, statistical),\\one-shot SM}  & \makecell{MFE\\(info-theory, statistical),\\recursive SM}  & \makecell{MFE\\(statistical, general),\\one-shot SM}  & \makecell{MFE\\(statistical, general),\\recursive SM} & \makecell{MFE\\(statistical,info-theory),\\one-shot SM} & \makecell{MFE\\(statistical, info-theory),\\recursive SM} & \makecell{Original} & \makecell{Dataset2Vec,\\one-shot SM} & \makecell{Dataset2Vec,\\recursive SM} & \makecell{Pandas,\\one-shot SM} & \makecell{Pandas,\\recursive SM} & \makecell{OpenFE} \\")
+        latex_lines.append(
+            r"        Dataset & \makecell{Best\\Random} & \makecell{MFE\\(general),\\one-shot SM} & \makecell{MFE\\(general),\\recursive SM} & \makecell{MFE\\(info-theory),\\one-shot SM} & \makecell{MFE\\(info-theory),\\recursive SM}  & \makecell{MFE\\(statistical),\\one-shot SM}  & \makecell{MFE\\(statistical),\\recursive SM}  & \makecell{MFE\\(general, info-theory),\\one-shot SM}  & \makecell{MFE\\(general, info-theory),\\recursive SM}  & \makecell{MFE\\(general, statistical),\\one-shot SM}  & \makecell{MFE\\(general, statistical),\\recursive SM}  & \makecell{MFE\\(info-theory, general),\\one-shot SM}  & \makecell{MFE\\(info-theory, general),\\recursive SM}  & \makecell{MFE\\(info-theory, statistical),\\one-shot SM}  & \makecell{MFE\\(info-theory, statistical),\\recursive SM}  & \makecell{MFE\\(statistical, general),\\one-shot SM}  & \makecell{MFE\\(statistical, general),\\recursive SM} & \makecell{MFE\\(statistical,info-theory),\\one-shot SM} & \makecell{MFE\\(statistical, info-theory),\\recursive SM} & \makecell{Original} & \makecell{Dataset2Vec,\\one-shot SM} & \makecell{Dataset2Vec,\\recursive SM} & \makecell{Pandas,\\one-shot SM} & \makecell{Pandas,\\recursive SM} & \makecell{OpenFE} \\")
 
     latex_lines.append(r"        \midrule")
 
@@ -67,10 +75,12 @@ def make_latex_table(df_pivot, without_openfe):
     # Finish LaTeX code
     latex_lines.append(r"    \end{tabular*}")
     if without_openfe:
-        latex_lines.append(r"    \caption{Test error of the model on the feature-engineered datasets of the \sm{} approaches using \metafeatures{} of the tested extractors, on the best randomly feature-engineered datasets and on the original datasets}")
+        latex_lines.append(
+            r"    \caption{Test error of the model on the feature-engineered datasets of the \sm{} approaches using \metafeatures{} of the tested extractors, on the best randomly feature-engineered datasets and on the original datasets}")
         latex_lines.append(r"    \label{tab:test_without_openfe}")
     else:
-        latex_lines.append(r"    \caption{Test error of the model on the feature-engineered datasets of the \sm{} approaches using \metafeatures{} of the tested extractors, on the best randomly feature-engineered datasets, on the original datasets, and on the datasets feature-engineered with \gls{OpenFE}}")
+        latex_lines.append(
+            r"    \caption{Test error of the model on the feature-engineered datasets of the \sm{} approaches using \metafeatures{} of the tested extractors, on the best randomly feature-engineered datasets, on the original datasets, and on the datasets feature-engineered with \gls{OpenFE}}")
         latex_lines.append(r"    \label{tab:test}")
     latex_lines.append(r"\end{table}")
 
@@ -119,7 +129,7 @@ def make_latex_tables_split(df_pivot, without_openfe, columns_per_table=6):
         latex_lines.append(r"        \bottomrule")
         latex_lines.append(r"    \end{tabular*}")
 
-        base_caption = "Test error of the model on the feature-engineered datasets..."
+        base_caption = "Test error of the model on the feature-engineered datasets"
         label_prefix = "tab:test_without_openfe" if without_openfe else "tab:test_with_openfe"
         latex_lines.append(fr"    \caption{{{base_caption} (Part {table_idx + 1})}}")
         latex_lines.append(fr"    \label{{{label_prefix}_part{table_idx + 1}}}")
@@ -136,7 +146,7 @@ def make_latex_tables_as_one(df_pivot, without_openfe, columns_per_table=6):
     method_columns = df_pivot.columns.tolist()
     total_tables = ceil(len(method_columns) / columns_per_table)
 
-    base_caption = "Test error of the model on the feature-engineered datasets..."
+    base_caption = "Test error of the model on the feature-engineered datasets"
     label = "tab:test_without_openfe" if without_openfe else "tab:test_with_openfe"
 
     for table_idx in range(total_tables):
@@ -276,7 +286,8 @@ def plot_score_graph(dataset_list_wrapped, df_pivot, name):
     plt.xlabel("Dataset")
     plt.xticks(rotation=90)  # or 45
     plt.ylabel(score_type.title() + " error")
-    plt.title(score_type.title() + " error of the model on the feature-engineered datasets, the original and the randomly feature-engineered datasets")
+    plt.title(
+        score_type.title() + " error of the model on the feature-engineered datasets, the original and the randomly feature-engineered datasets")
     plt.legend()
     plt.yscale("log")
     plt.grid(True)
@@ -291,7 +302,8 @@ def plot_count_best(df_pivot_val, df_pivot_test, name):
     # Plot
     plt.figure(figsize=(12, 7))
     minValueIndex_val.plot(kind='bar', color='skyblue', label='Number of datasets with the lowest validation error')
-    minValueIndex_test.plot(kind='bar', width=0.3, color='darkblue', label='Number of datasets with the lowest test error')
+    minValueIndex_test.plot(kind='bar', width=0.3, color='darkblue',
+                            label='Number of datasets with the lowest test error')
     plt.legend()
     plt.xlabel("Method")
     plt.ylabel("Number of datasets")
@@ -355,9 +367,11 @@ def plot_avg_percentage_impr(baseline_col, df_pivot, name, only_pandas=False):
             y = -1 if val >= 0 else 0  # adjust offset for spacing
             plt.text(i, y, f"{val:.2f}%", ha='center', va='top' if val >= 0 else 'bottom', color='black')
     plt.axhline(0, color="black", linewidth=0.8)
-    plt.title("Average percentage error reduction of the " + score_type + " error of the model\nin relation to the " + score_type + " error of the model on the original datasets")
+    plt.title(
+        "Average percentage error reduction of the " + score_type + " error of the model\nin relation to the " + score_type + " error of the model on the original datasets")
     plt.xlabel("Method")
-    plt.ylabel("Percentage error reduction of the " + score_type + " error\nin relation to the " + score_type + " error on the original datasets")
+    plt.ylabel(
+        "Percentage error reduction of the " + score_type + " error\nin relation to the " + score_type + " error on the original datasets")
     plt.xticks(rotation=90, ha="right")
     plt.grid(True, linestyle="--", alpha=0.6)
     plt.tight_layout()
@@ -395,6 +409,13 @@ def plot_boxplot_percentage_impr(baseline_col, df_pivot, name):
         if method == baseline_col:
             continue
         improvement = (df_pivot[baseline_col] - df_pivot[method]) / df_pivot[baseline_col] * 100
+        # Clip outliers for better visualization (e.g., 5th and 95th percentile)
+        Q1 = improvement.quantile(0.25)
+        Q3 = improvement.quantile(0.75)
+        IQR = Q3 - Q1
+        lower = Q1 - 1.5 * IQR
+        upper = Q3 + 1.5 * IQR
+        improvement_clipped = improvement.clip(lower, upper)
         improvement_test[method] = improvement
 
     # Sort methods by mean improvement (descending)
@@ -404,7 +425,12 @@ def plot_boxplot_percentage_impr(baseline_col, df_pivot, name):
     # Plot
     plt.figure(figsize=(12, 7))
     improvement_test.boxplot(column=method_order, grid=True)
+    for i, method in enumerate(method_order):
+        y = improvement_test[method].dropna()
+        x = np.random.normal(loc=i + 1, scale=0.05, size=len(y))  # jitter around box center
+        plt.plot(x, y, 'o', alpha=0.4, markersize=4, color='blue')
     plt.axhline(0, color="black", linewidth=0.8, linestyle="--")
+    plt.yscale("symlog", linthresh=1)
     plt.title("Distribution of the percentage error reduction of the " + score_type + " error of the model\nin relation to the " + score_type + " error of the model on the original datasets")
     plt.xlabel("Method")
     plt.ylabel("Percentage error reduction of the " + score_type + " error\nin relation to the " + score_type + " error on the original datasets")
@@ -414,12 +440,86 @@ def plot_boxplot_percentage_impr(baseline_col, df_pivot, name):
     plt.show()
 
 
+def plot_pareto_front(df_pivot_test):
+
+    # Example usage
+    baseline = "Original"  # or however your baseline is called in df_pivot_test
+    performance = pd.DataFrame(columns=['SM - Method', 'Performance'])
+    performance = pd.concat([performance, pd.DataFrame(["OpenFE", 6.15])], ignore_index=True)
+    performance = pd.concat([performance, pd.DataFrame(["MetaFE Random", 16.50])], ignore_index=True)
+    performance = pd.concat([performance, pd.DataFrame(["MetaFE 3600", 15.146])], ignore_index=True)
+    performance = pd.concat([performance, pd.DataFrame(["MetaFE 1800", 14.48])], ignore_index=True)
+    performance = pd.concat([performance, pd.DataFrame(["MetaFE 300", 10.92])], ignore_index=True)
+    performance = pd.DataFrame([
+        {"SM - Method": "OpenFE", "Performance": 6.15},
+        {"SM - Method": "MetaFE Random", "Performance": 16.50},
+        {"SM - Method": "MetaFE 3600", "Performance": 14.55},
+        {"SM - Method": "MetaFE 1800", "Performance": 13.76},
+        {"SM - Method": "MetaFE 300", "Performance": 10.92}
+    ])
+
+
+    # === Step 2: Compute average runtime per method ===
+    avg_times = pd.DataFrame([
+        {"SM - Method": "OpenFE", "Runtime": 269.05},
+        {"SM - Method": "MetaFE Random", "Runtime": 5565.23},
+        {"SM - Method": "MetaFE 3600", "Runtime": 3102.12},
+        {"SM - Method": "MetaFE 1800", "Runtime": 1742.21},
+        {"SM - Method": "MetaFE 300", "Runtime": 300.01}
+    ])
+
+    # === Step 3: Merge performance + runtime ===
+    merged = pd.merge(performance, avg_times, on="SM - Method", how="inner")
+
+    # === Step 4: Identify Pareto front ===
+    def is_pareto_efficient(df):
+        is_efficient = np.ones(df.shape[0], dtype=bool)
+        for i, (perf_i, time_i) in enumerate(zip(df["Performance"], df["Runtime"])):
+            if is_efficient[i]:
+                is_efficient[is_efficient] = ~(
+                        (df["Performance"][is_efficient] > perf_i) &
+                        (df["Runtime"][is_efficient] < time_i)
+                )
+                is_efficient[i] = True
+        return is_efficient
+
+    merged["Pareto"] = is_pareto_efficient(merged)
+
+    # === Step 5: Plot ===
+    plt.figure(figsize=(10, 6))
+    for i, row in merged.iterrows():
+        plt.scatter(row["Runtime"], row["Performance"],
+                    color='red' if row["Pareto"] else 'gray',
+                    s=100, label=row["SM - Method"] if row["Pareto"] else "")
+
+    # Connect the Pareto front
+    pareto_front = merged[merged["Pareto"]].sort_values("Runtime")
+    plt.plot(pareto_front["Runtime"], pareto_front["Performance"], 'r--', label="Pareto Front")
+
+    # Annotate points
+    for i, row in merged.iterrows():
+        plt.text(row["Runtime"] * 1.01, row["Performance"], row["SM - Method"], fontsize=9)
+
+    # Labels
+    plt.xlabel("Average Runtime per Dataset (s)")
+    plt.ylabel("Average Test Error Reduction (%)")
+    plt.gca().invert_xaxis()
+    plt.title("Pareto Front: Performance vs Runtime")
+    plt.grid(True)
+    plt.tight_layout()
+    plt.legend()
+    plt.show()
+
+
 def test_analysis():
     baseline_col = "Original"
     result_files = glob.glob("test_results/Result_*.parquet")
     dataset_list_wrapped, df_pivot_test, df_pivot_val = get_data(result_files)
-    df_pivot_test.drop(columns="Best Random", inplace=True)
-    df_pivot_val.drop(columns="Best Random", inplace=True)
+    try:
+        df_pivot_test.drop(columns="Best Random", inplace=True)
+        df_pivot_val.drop(columns="Best Random", inplace=True)
+    except KeyError:
+        print("")
 
     # Plot
     plot_score_graph(dataset_list_wrapped, df_pivot_val, "Val")
@@ -431,6 +531,7 @@ def test_analysis():
     plot_count_best(df_pivot_val, df_pivot_test, "")
     plot_avg_percentage_impr(baseline_col, df_pivot_val, "Val")
     plot_avg_percentage_impr(baseline_col, df_pivot_test, "Test")
+
     plot_boxplot_percentage_impr(baseline_col, df_pivot_val, "Val")
     plot_boxplot_percentage_impr(baseline_col, df_pivot_test, "Test")
 
@@ -464,10 +565,11 @@ def test_analysis():
     plot_score_graph(dataset_list_wrapped, df_pivot_test_pandas, "Test_only_pandas")
 
     dataset_list_wrapped, df_pivot_test, df_pivot_val = get_data(result_files)
-
     df_pivot_val_openfe = df_pivot_val[["OpenFE", "Pandas, recursive SM", "Original"]]
     df_pivot_test_openfe = df_pivot_test[["OpenFE", "Pandas, recursive SM", "Original"]]
+    plot_pareto_front(df_pivot_test_openfe)
     # Plot
+    
     plot_avg_percentage_impr(baseline_col, df_pivot_val_openfe, "Val_openfe_pandas", True)
     plot_avg_percentage_impr(baseline_col, df_pivot_test_openfe, "Test_openfe_pandas", True)
     plot_boxplot_percentage_impr(baseline_col, df_pivot_val_openfe, "Val_openfe_pandas")
