@@ -14,6 +14,7 @@ from src.utils.run_models import get_model_score_origin_classification, get_mode
 
 
 def main(fold):
+    print(fold)
     target_label = 'target'
 
     result_files = glob.glob("test_data/FE_*.parquet")
@@ -139,7 +140,9 @@ def main(fold):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Run Surrogate Model with Metadata from Method')
-    parser.add_argument('--dataset', required=True, help='Dataset')
+    print("Hello World!")
+    parser = argparse.ArgumentParser(description='Run Test Folds')
+    parser.add_argument('--fold', required=True, help='Fold')
     args = parser.parse_args()
+    print("Hello World!")
     main(int(args.fold))

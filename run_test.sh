@@ -62,7 +62,7 @@ fold=${folds[$SLURM_ARRAY_TASK_ID]}
 start=`date +%s`
 
 # shellcheck disable=SC2048
-python3 src/Apply_and_Test/Test_FE.py --dataset "$fold" # "$SLURM_ARRAY_TASK_ID" "$*"
+python3 src/Apply_and_Test/Test_FE.py --fold "$fold" # "$SLURM_ARRAY_TASK_ID" "$*"
 
 # Print the allocated memory per node
 echo "Allocated memory per node: $SLURM_MEM_PER_NODE MB"
