@@ -4,8 +4,8 @@ from matplotlib import pyplot as plt
 
 def plot_count(df, name):
     # Plot
-    plt.figure(figsize=(12, 7))
-    df.plot(kind='bar', width=0.3, color='darkblue', label='Count of datasets')
+    #plt.figure(figsize=(12, 7))
+    df.plot(kind='bar', width=0.3, color='darkblue', label='Count of datasets', figsize=(12, 7))
     plt.legend()
     plt.xlabel("Method")
     plt.ylabel("Number of datasets")
