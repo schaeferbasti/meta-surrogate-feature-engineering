@@ -1,13 +1,10 @@
 import glob
 
-from brokenaxes import BrokenAxes
 import numpy as np
 import openml
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
-
-from src.Result_Analysis.time_analysis_sm.time_analysis_sm import add_openfe_data, get_times
 
 
 def insert_line_breaks(name, max_len=20):
@@ -90,8 +87,6 @@ def make_latex_table(df_pivot, without_openfe):
 
 
 def make_latex_tables_split(df_pivot, without_openfe, columns_per_table=6):
-    import math
-
     formatted_df = df_pivot.applymap(lambda x: f"{x:.2f}" if pd.notnull(x) else "/")
     method_columns = df_pivot.columns.tolist()
     total_tables = 4
@@ -452,20 +447,25 @@ def plot_pareto_front(df_pivot_test):
     performance = pd.concat([performance, pd.DataFrame(["MetaFE 300", 10.92])], ignore_index=True)
     performance = pd.DataFrame([
         {"SM - Method": "OpenFE", "Performance": 6.15},
-        {"SM - Method": "MetaFE Random", "Performance": 16.50},
+        {"SM - Method": "MetaFE 7200", "Performance": 16.50},
         {"SM - Method": "MetaFE 3600", "Performance": 14.55},
         {"SM - Method": "MetaFE 1800", "Performance": 13.76},
-        {"SM - Method": "MetaFE 300", "Performance": 10.92}
+        {"SM - Method": "MetaFE 1000", "Performance": 11.46},
+        {"SM - Method": "MetaFE 500", "Performance": 9.63},
+        {"SM - Method": "MetaFE 300", "Performance": 14.36},  # 24.43, 18.45
+        {"SM - Method": "MetaFE 100", "Performance": -2.48}
     ])
-
 
     # === Step 2: Compute average runtime per method ===
     avg_times = pd.DataFrame([
         {"SM - Method": "OpenFE", "Runtime": 269.05},
-        {"SM - Method": "MetaFE Random", "Runtime": 5565.23},
+        {"SM - Method": "MetaFE 7200", "Runtime": 5565.23},
         {"SM - Method": "MetaFE 3600", "Runtime": 3102.12},
         {"SM - Method": "MetaFE 1800", "Runtime": 1742.21},
-        {"SM - Method": "MetaFE 300", "Runtime": 300.01}
+        {"SM - Method": "MetaFE 1000", "Runtime": 994.12},
+        {"SM - Method": "MetaFE 500", "Runtime": 500.20},
+        {"SM - Method": "MetaFE 300", "Runtime": 300.01},
+        {"SM - Method": "MetaFE 100", "Runtime": 100.01}
     ])
 
     # === Step 3: Merge performance + runtime ===
@@ -476,17 +476,19 @@ def plot_pareto_front(df_pivot_test):
         is_efficient = np.ones(df.shape[0], dtype=bool)
         for i, (perf_i, time_i) in enumerate(zip(df["Performance"], df["Runtime"])):
             if is_efficient[i]:
-                is_efficient[is_efficient] = ~(
-                        (df["Performance"][is_efficient] > perf_i) &
-                        (df["Runtime"][is_efficient] < time_i)
+                # If another point has better performance *and* lower runtime, then i is not efficient
+                is_dominated = (
+                        (df["Performance"] > perf_i) &
+                        (df["Runtime"] < time_i)
                 )
-                is_efficient[i] = True
+                if is_dominated.any():
+                    is_efficient[i] = False
         return is_efficient
 
     merged["Pareto"] = is_pareto_efficient(merged)
 
     # === Step 5: Plot ===
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=(12, 7))
     for i, row in merged.iterrows():
         plt.scatter(row["Runtime"], row["Performance"],
                     color='red' if row["Pareto"] else 'gray',
@@ -502,12 +504,14 @@ def plot_pareto_front(df_pivot_test):
 
     # Labels
     plt.xlabel("Average Runtime per Dataset (s)")
+    plt.xscale("log")
     plt.ylabel("Average Test Error Reduction (%)")
-    plt.gca().invert_xaxis()
+    #plt.gca().invert_xaxis()
     plt.title("Pareto Front: Performance vs Runtime")
     plt.grid(True)
     plt.tight_layout()
     plt.legend()
+    plt.savefig(f"../Result_Analysis/test_analysis/Pareto_pandas_openfe.png")
     plt.show()
 
 
@@ -569,7 +573,7 @@ def test_analysis():
     df_pivot_test_openfe = df_pivot_test[["OpenFE", "Pandas, recursive SM", "Original"]]
     plot_pareto_front(df_pivot_test_openfe)
     # Plot
-    
+
     plot_avg_percentage_impr(baseline_col, df_pivot_val_openfe, "Val_openfe_pandas", True)
     plot_avg_percentage_impr(baseline_col, df_pivot_test_openfe, "Test_openfe_pandas", True)
     plot_boxplot_percentage_impr(baseline_col, df_pivot_val_openfe, "Val_openfe_pandas")
