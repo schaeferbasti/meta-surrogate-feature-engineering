@@ -7,7 +7,7 @@
 #SBATCH --job-name Test
 
 # Define the files to write the outputs of the job to.
-#SBATCH --output logs/%x-%A.out   # STDOUT  %x and %A will be replaced by the job name and job id, respectively. short: -o logs/%x-%A.out
+#SBATCH --output logs/%x-%A_%a.out   # STDOUT  %x and %A will be replaced by the job name and job id, respectively. short: -o logs/%x-%A.out
 
 # Define the amount of memory required per node
 #SBATCH --mem=96GB
@@ -18,6 +18,9 @@
 #SBATCH --time=1-00:00:00
 
 #SBATCH --propagate=NONE
+
+#SBATCH --array=0-8  # Adjust based on the number of methods
+
 
 echo "Workingdir: $PWD";
 echo "Started at $(date)";
@@ -49,12 +52,17 @@ pip install -r requirements.txt
 export PYTHONPATH=$PWD/src:$PYTHONPATH
 echo "PYTHONPATH set to $PYTHONPATH"
 
+
+folds=(1 2 3 4 5 6 7 8 9)
+fold=${folds[$SLURM_ARRAY_TASK_ID]}
+
+
 # Running the job
 # shellcheck disable=SC2006
 start=`date +%s`
 
 # shellcheck disable=SC2048
-python3 src/Apply_and_Test/Test_FE.py "$SLURM_ARRAY_TASK_ID" "$*"
+python3 src/Apply_and_Test/Test_FE.py --dataset "$fold" # "$SLURM_ARRAY_TASK_ID" "$*"
 
 # Print the allocated memory per node
 echo "Allocated memory per node: $SLURM_MEM_PER_NODE MB"

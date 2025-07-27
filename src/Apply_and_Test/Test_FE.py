@@ -1,3 +1,4 @@
+import argparse
 import glob
 import time
 
@@ -12,7 +13,7 @@ from src.utils.get_data import split_data, get_openml_dataset_split_and_metadata
 from src.utils.run_models import get_model_score_origin_classification, get_model_score_origin_regression
 
 
-def main():
+def main(fold):
     target_label = 'target'
 
     result_files = glob.glob("test_data/FE_*.parquet")
@@ -30,7 +31,7 @@ def main():
         print(task_type)
 
         # === ORIGINAL RESULTS ===
-        original_path = f"test_results/Original_Result_{dataset_id}.parquet"
+        original_path = f"test_results/Original_Result_{dataset_id}_{fold}.parquet"
         try:
             original_results = pd.read_parquet(original_path)
         except FileNotFoundError:
@@ -48,7 +49,7 @@ def main():
 
         # === OPENFE RESULTS ===
         if int(dataset_id) not in [2073, 359930, 359931, 359935, 359938, 359959, 359962, 359983]:
-            openfe_path = f"test_results/OpenFE_Result_{dataset_id}.parquet"
+            openfe_path = f"test_results/OpenFE_Result_{dataset_id}_{fold}.parquet"
             try:
                 openfe_results = pd.read_parquet(openfe_path)
                 print("OpenFE Results loaded.")
@@ -61,8 +62,8 @@ def main():
                     X_openfe_train, y_openfe_train, X_openfe_test, y_openfe_test = get_openfe_data(X_train, y_train, X_test, y_test)
                     end = time.time()
                     print(f"OpenFE Split Time: {end-start}")
-                    with open("../Result_Analysis/time_analysis_sm/openfe_times.txt", "a") as file:
-                        file.write(f"OpenFE on {dataset_id}: {end-start}\n")
+                    # with open("../Result_Analysis/time_analysis_sm/openfe_times.txt", "a") as file:
+                    #    file.write(f"OpenFE on {dataset_id}: {end-start}\n")
                     data = concat_data(X_openfe_train, y_openfe_train, X_openfe_test, y_openfe_test, "target")
                     data.to_parquet(f"test_data/FE_{dataset_id}_OpenFE.parquet")
                 X_openfe_train = X_openfe_train.rename(columns=lambda x: re.sub('[^A-Za-z0-9_]+', '', x))
@@ -95,19 +96,19 @@ def main():
                     fold = name.split("fold_")[1].split(".")[0]
                     method = name.split('_')[0] + f"_{fold}"
                     is_random = True
-                    result_path = f"test_results/{method}_Result_{dataset_id}.parquet"
+                    result_path = f"test_results/{method}_Result_{dataset_id}_{fold}.parquet"
                 elif "MFE" in name:
                     version = name.split('.parquet')[0].split("_")[-1]
                     name_info = name.replace("info_theory", "info-theory")
                     category = name_info.split("MFE_")[1].split("_")[0]
                     method = name.split('_')[0] + f"_{category}_{version}"
                     is_random = False  # e.g., pandas
-                    result_path = f"test_results/{method}_Result_{dataset_id}.parquet"
+                    result_path = f"test_results/{method}_Result_{dataset_id}_{fold}.parquet"
                 else:
                     version = name.split('.parquet')[0].split("_")[-1]
                     method = name.split('_')[0] + "_" + version
                     is_random = False  # e.g., pandas
-                    result_path = f"test_results/{method}_Result_{dataset_id}.parquet"
+                    result_path = f"test_results/{method}_Result_{dataset_id}_{fold}.parquet"
                 try:
                     results = pd.read_parquet(result_path)
                 except (FileNotFoundError, pyarrow.lib.ArrowInvalid):
@@ -133,9 +134,12 @@ def main():
             combined_results.append(best_random_result)
 
         all_results = pd.concat(combined_results, ignore_index=True).drop_duplicates()
-        all_results.to_parquet(f"test_results/Result_{dataset_id}.parquet")
-        print(f"Saved combined results for dataset {dataset_id}.")
+        all_results.to_parquet(f"test_results/Result_{dataset_id}_{fold}.parquet")
+        print(f"Saved combined results for dataset {dataset_id} and fold {fold}.")
 
 
 if __name__ == "__main__":
-    main() 
+    parser = argparse.ArgumentParser(description='Run Surrogate Model with Metadata from Method')
+    parser.add_argument('--dataset', required=True, help='Dataset')
+    args = parser.parse_args()
+    main(int(args.fold))
