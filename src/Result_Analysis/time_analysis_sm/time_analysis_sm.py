@@ -5,7 +5,7 @@ import pandas as pd
 from matplotlib import pyplot as plt
 
 
-def get_data():
+def get_times():
     times = pd.DataFrame(columns=["SM", "Method", "SM - Method", "Dataset", "Task", "Time"])
     log_files = os.listdir()
     for log_file in log_files:
@@ -165,7 +165,7 @@ def plot_time(average_time_per_method, time_per_method, name):
 
 
 def main():
-    times = get_data()
+    times = get_times()
 
     time_per_method = times.groupby("SM - Method")["Time"].sum().sort_values(ascending=False)
     average_recursion = time_per_method.values[0] / times[times["SM"] == "Recursion"]["Dataset"].nunique()
