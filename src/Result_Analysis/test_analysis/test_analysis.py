@@ -580,8 +580,8 @@ def test_analysis():
     plot_boxplot_percentage_impr(baseline_col, df_pivot_test_pandas, "Test_only_pandas")
 
     # Drop everything but pandas columns to compare SM approaches
-    df_pivot_val_pandas = df_pivot_val_pandas[["Pandas, one-shot SM", "Pandas, recursive SM"]]
-    df_pivot_test_pandas = df_pivot_test_pandas[["Pandas, one-shot SM", "Pandas, recursive SM"]]
+    df_pivot_val_pandas = df_pivot_val_pandas[["Pandas, one-shot SM", "Pandas, recursive SM", "Original"]]
+    df_pivot_test_pandas = df_pivot_test_pandas[["Pandas, one-shot SM", "Pandas, recursive SM", "Original"]]
     # Plot again
     plot_count_best(df_pivot_val_pandas, df_pivot_test_pandas, "only_pandas_")
     plot_score_graph(dataset_list_wrapped, df_pivot_val_pandas, df_pivot_val_std, "Val_only_pandas")
