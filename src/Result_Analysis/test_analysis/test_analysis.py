@@ -450,8 +450,7 @@ def plot_boxplot_percentage_impr(baseline_col, df_pivot, name):
     plt.show()
 
 
-def plot_pareto_front(df_pivot_test):
-
+def plot_pareto_front():
     # Example usage
     baseline = "Original"  # or however your baseline is called in df_pivot_test
     performance = pd.DataFrame(columns=['SM - Method', 'Performance'])
@@ -459,15 +458,15 @@ def plot_pareto_front(df_pivot_test):
     performance = pd.concat([performance, pd.DataFrame(["MetaFE Random", 16.50])], ignore_index=True)
     performance = pd.concat([performance, pd.DataFrame(["MetaFE 3600", 15.146])], ignore_index=True)
     performance = pd.concat([performance, pd.DataFrame(["MetaFE 1800", 14.48])], ignore_index=True)
-    performance = pd.concat([performance, pd.DataFrame(["MetaFE 300", 10.92])], ignore_index=True)
+    performance = pd.concat([performance, pd.DataFrame(["MetaFE 300", .92])], ignore_index=True)
     performance = pd.DataFrame([
         {"SM - Method": "OpenFE", "Performance": 6.15},
-        {"SM - Method": "MetaFE 7200", "Performance": 16.50},
+        {"SM - Method": "MetaFE 7200", "Performance": 14.19},
         {"SM - Method": "MetaFE 3600", "Performance": 14.55},
         {"SM - Method": "MetaFE 1800", "Performance": 13.76},
         {"SM - Method": "MetaFE 1000", "Performance": 11.46},
         {"SM - Method": "MetaFE 500", "Performance": 9.63},
-        {"SM - Method": "MetaFE 300", "Performance": 14.36},  # 24.43, 18.45
+        {"SM - Method": "MetaFE 300", "Performance": 16.68},  # 24.43, 18.45
         {"SM - Method": "MetaFE 100", "Performance": -2.48}
     ])
 
@@ -545,6 +544,8 @@ def test_analysis():
         print("")
 
     # Plot
+    plot_pareto_front()
+
     plot_score_graph(dataset_list_wrapped, df_pivot_val, df_pivot_val_std, "Val")
     plot_score_graph(dataset_list_wrapped, df_pivot_test, df_pivot_test_std, "Test")
 
@@ -592,7 +593,6 @@ def test_analysis():
     df_pivot_val_openfe_std = df_pivot_val_std[["OpenFE", "Pandas, recursive SM", "Original"]]
     df_pivot_test_openfe = df_pivot_test[["OpenFE", "Pandas, recursive SM", "Original"]]
     df_pivot_test_openfe_std = df_pivot_test_std[["OpenFE", "Pandas, recursive SM", "Original"]]
-    plot_pareto_front(df_pivot_test_openfe)
     # Plot
 
     plot_avg_percentage_impr(baseline_col, df_pivot_val_openfe, df_pivot_val_openfe_std, "Val_openfe_pandas", True)
