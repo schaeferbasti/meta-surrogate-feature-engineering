@@ -370,18 +370,18 @@ def plot_avg_percentage_impr(baseline_col, df_pivot, df_pivot_std, name, only_pa
     bars = avg_improvement.plot(kind="bar", color="skyblue")
     if only_pandas:
         for i, val in enumerate(avg_improvement):
-            y = 2  # adjust offset for spacing
+            y = 0.5  # adjust offset for spacing
             plt.text(i, y, f"{val:.2f}%", ha='center', va='top' if val >= 0 else 'bottom', color='black')
     else:
         for i, val in enumerate(avg_improvement):
-            y = -1 if val >= 0 else 0  # adjust offset for spacing
-            plt.text(i, y, f"{val:.2f}%", ha='center', va='top' if val >= 0 else 'bottom', color='black')
+            y = -0.1 if val >= 0 else 0  # adjust offset for spacing
+            plt.text(i, y, f"{val:.2f}%", ha='center', va='top' if val >= 0 else 'bottom', color='black', fontsize=8)
+            plt.yscale("symlog", linthresh=1)
     plt.axhline(0, color="black", linewidth=0.8)
     plt.title(
         "Average percentage error reduction of the " + score_type + " error of the model\nin relation to the " + score_type + " error of the model on the original datasets")
     plt.xlabel("Method")
     plt.ylabel("Percentage error reduction of the " + score_type + " error\nin relation to the " + score_type + " error on the original datasets")
-    plt.yscale("symlog", linthresh=1)
     plt.xticks(rotation=90, ha="right")
     plt.grid(True, linestyle="--", alpha=0.6)
     plt.tight_layout()
