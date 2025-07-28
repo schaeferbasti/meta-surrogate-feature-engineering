@@ -325,7 +325,7 @@ def plot_count_best(df_pivot_val, df_pivot_test, name):
     plt.show()
 
 
-def plot_avg_percentage_impr(baseline_col, df_pivot, name, only_pandas=False):
+def plot_avg_percentage_impr(baseline_col, df_pivot, df_pivot_std, name, only_pandas=False):
     if "only_pandas" in name:
         score_type = name.split("_")[0]
         if score_type == "Val":
@@ -380,8 +380,8 @@ def plot_avg_percentage_impr(baseline_col, df_pivot, name, only_pandas=False):
     plt.title(
         "Average percentage error reduction of the " + score_type + " error of the model\nin relation to the " + score_type + " error of the model on the original datasets")
     plt.xlabel("Method")
-    plt.ylabel(
-        "Percentage error reduction of the " + score_type + " error\nin relation to the " + score_type + " error on the original datasets")
+    plt.ylabel("Percentage error reduction of the " + score_type + " error\nin relation to the " + score_type + " error on the original datasets")
+    plt.yscale("symlog", linthresh=1)
     plt.xticks(rotation=90, ha="right")
     plt.grid(True, linestyle="--", alpha=0.6)
     plt.tight_layout()
