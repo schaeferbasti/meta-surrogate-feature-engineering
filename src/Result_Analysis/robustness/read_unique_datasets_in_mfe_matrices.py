@@ -5,6 +5,8 @@ from matplotlib import pyplot as plt
 def plot_count(df, name):
     # Plot
     #plt.figure(figsize=(12, 7))
+    if "openfe" in name:
+        df.index.values[1] = "MetaFE"
     df.plot(kind='bar', width=0.3, color='darkblue', label='Count of datasets', figsize=(12, 7))
     plt.legend()
     plt.xlabel("Method")
