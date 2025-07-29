@@ -77,7 +77,7 @@ def get_times():
                         else:
                             continue  # skip if no valid result
                         times = pd.concat([times, new_row], ignore_index=True)
-    times = times.drop_duplicates()
+    times = times.drop_duplicates(subset=["SM", "Method", "SM - Method", "Dataset", "Task"])
     return times
 
 
@@ -168,8 +168,10 @@ def main():
     times = get_times()
 
     time_per_method = times.groupby("SM - Method")["Time"].sum().sort_values(ascending=False)
-    average_recursion = time_per_method.values[0] / times[times["SM"] == "Recursion"]["Dataset"].nunique()
-    average_best = time_per_method.values[1] / times[times["SM"] == "One-shot"]["Dataset"].nunique()
+    value_x = times[times["SM - Method"] == "Recursion, pandas"]["Dataset"].nunique()
+    average_recursion = time_per_method.values[1] / times[times["SM"] == "Recursion"]["Dataset"].nunique()
+    value = times[times["SM - Method"] == "One-shot, pandas"]["Dataset"].nunique()
+    average_best = time_per_method.values[3] / times[times["SM"] == "One-shot"]["Dataset"].nunique()
     average_time_per_method = pd.Series([average_recursion, average_best], index=["Recursion", "One-shot"])
 
     plot_time(average_time_per_method, time_per_method, "SM")
@@ -184,9 +186,9 @@ def main():
 
     time_per_method = times_filtered.groupby("SM")["Time"].sum().sort_values(ascending=False)
     time_per_method = time_per_method.reset_index("SM")
-    time_per_method.drop(index=1, inplace=True)
+    time_per_method.drop(index=0, inplace=True)
     average_openfe = time_per_method["Time"].values[1] / times[times["SM"] == "OpenFE"]["Dataset"].nunique()
-    average_time_per_method = pd.Series([average_recursion, average_openfe], index=["MetaFE", "OpenFE"])
+    average_time_per_method = pd.Series([average_best, average_openfe], index=["MetaFE", "OpenFE"])
 
     plot_time(average_time_per_method, time_per_method, "MetaFE_OpenFE")
 
