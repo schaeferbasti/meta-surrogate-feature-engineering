@@ -460,7 +460,7 @@ def plot_pareto_front():
     performance = pd.concat([performance, pd.DataFrame(["MetaFE 1800", 14.48])], ignore_index=True)
     performance = pd.concat([performance, pd.DataFrame(["MetaFE 300", .92])], ignore_index=True)
     performance = pd.DataFrame([
-        {"SM - Method": "OpenFE", "Performance": 6.15},
+        {"SM - Method": "OpenFE", "Performance": 1.28},
         {"SM - Method": "MetaFE 7200", "Performance": 14.19},
         {"SM - Method": "MetaFE 3600", "Performance": 14.55},
         {"SM - Method": "MetaFE 1800", "Performance": 13.76},
@@ -545,7 +545,7 @@ def test_analysis():
 
     # Plot
     plot_pareto_front()
-
+    """
     plot_score_graph(dataset_list_wrapped, df_pivot_val, df_pivot_val_std, "Val")
     plot_score_graph(dataset_list_wrapped, df_pivot_test, df_pivot_test_std, "Test")
 
@@ -609,7 +609,7 @@ def test_analysis():
     plot_count_best(df_pivot_val_openfe, df_pivot_test_openfe, "openfe_pandas_")
     plot_score_graph(dataset_list_wrapped, df_pivot_val_openfe, df_pivot_val_openfe_std, "Val_openfe_pandas")
     plot_score_graph(dataset_list_wrapped, df_pivot_test_openfe, df_pivot_test_openfe_std, "Test_openfe_pandas")
-
+    """
 
 if __name__ == "__main__":
     test_analysis()
