@@ -4,18 +4,17 @@ from matplotlib import pyplot as plt
 
 def plot_count(df, name):
     # Plot
-    #plt.figure(figsize=(12, 7))
     if "openfe" in name:
         df.index.values[1] = "MetaFE"
-    df.plot(kind='bar', width=0.3, color='darkblue', label='Count of datasets', figsize=(12, 7))
-    plt.legend()
-    plt.xlabel("Method")
-    plt.ylabel("Number of datasets")
-    plt.title("Count of datasets with metafeatures per method")
-    plt.xticks(rotation=90, ha="right")
+    df.plot(kind='bar', width=0.3, color='darkblue', label='Count of datasets', figsize=(12, 8))
+    plt.legend(fontsize=16)
+    plt.ylabel("Number of datasets", fontsize=16)
+    plt.yticks(fontsize=16)
+    plt.xticks(rotation=90, ha="right", fontsize=16)
+    plt.xlabel("")
     plt.grid(True)
     plt.tight_layout()
-    plt.savefig("Count_datasets_per_method_" + name + "bar.png")
+    plt.savefig("Count_datasets_per_method_" + name + "bar.pdf")
     plt.show()
 
 

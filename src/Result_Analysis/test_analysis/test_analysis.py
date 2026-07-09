@@ -7,6 +7,53 @@ import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 
 
+id_to_name = {
+    146818: "australian",
+    146820: "wilt",
+    167120: "numerai28.6",
+    167210: "moneyball",
+    168350: "phoneme",
+    168757: "credit-g",
+    168784: "steel-plates-fault",
+    189354: "airlines",
+    190146: "vehicle",
+    2073:   "yeast",
+    233211: "diamonds",
+    359930: "quake",
+    359931: "sensory",
+    359932: "socmob",
+    359933: "space_ga",
+    359935: "wine_quality",
+    359936: "elevators",
+    359937: "black_friday",
+    359938: "brazilian_houses",
+    359944: "abalone",
+    359949: "house_sales",
+    359950: "boston",
+    359952: "house_16H",
+    359954: "eucalyptus",
+    359955: "blood_transfusion",
+    359956: "qsar_biodeg",
+    359958: "pc4",
+    359959: "cmc",
+    359960: "car",
+    359962: "kc1",
+    359963: "segment",
+    359965: "kr_vs_kp",
+    359968: "churn",
+    359971: "pishing_websites",
+    359972: "sylvine",
+    359974: "wine_quality_white",
+    359975: "satellite",
+    359979: "amazon_employee_access",
+    359981: "jungle_chess",
+    359982: "bank_marketing",
+    359983: "adult",
+    359987: "shuttle",
+    359992: "click_prediction_small",
+    359993: "okcupid_stem",
+}
+
 def insert_line_breaks(name, max_len=20):
     if len(name) > max_len:
         # Split into chunks of `max_len`, preserving words if possible
@@ -236,6 +283,103 @@ def get_data(result_files):
     return dataset_list_wrapped, df_pivot_val, df_pivot_val_std, df_pivot_test, df_pivot_test_std
 
 
+def plot_score_graph_improvement(dataset_list_wrapped, df_pivot, df_pivot_std, name):
+    if "only_pandas" in name:
+        score_type = name.split("_")[0]
+        if score_type == "Val":
+            score_type = "validation"
+        else:
+            score_type = "test"
+        without_openfe = True
+        large_plot = False
+    elif "openfe_pandas" in name:
+        score_type = name.split("_")[0]
+        if score_type == "Val":
+            score_type = "validation"
+        else:
+            score_type = "test"
+        df_pivot.rename(columns={"Pandas, recursive SM": "MetaFE"}, inplace=True)
+        without_openfe = True
+        large_plot = False
+    elif "without_OpenFE" in name:
+        score_type = name.split("_")[0]
+        if score_type == "Val":
+            score_type = "validation"
+        else:
+            score_type = "test"
+        large_plot = True
+        without_openfe = True
+        try:
+            df_pivot = df_pivot.drop(columns=["OpenFE"])
+        except KeyError:
+            print("OpenFE not found")
+    else:
+        if name == "Val":
+            score_type = "validation"
+        else:
+            score_type = "test"
+        large_plot = True
+        without_openfe = False
+        column_to_move = df_pivot.pop("OpenFE")
+        df_pivot.insert(len(df_pivot.columns), "OpenFE", column_to_move)
+        if score_type == "test":
+            make_latex_tables_as_one(df_pivot, df_pivot_std, without_openfe)
+    if without_openfe:
+        colors = cm.get_cmap('nipy_spectral')
+        color_list = [colors(i) for i in np.linspace(0, 0.95, len(df_pivot.columns))]
+    else:
+        colors = cm.get_cmap('nipy_spectral', len(df_pivot.columns))
+
+    baseline_col = "Original"
+    if baseline_col not in df_pivot.columns:
+        raise ValueError(f"Baseline column '{baseline_col}' not found in df_pivot")
+
+    baseline = df_pivot[baseline_col]
+    # relative improvement (percentage reduction), e.g. 0.2 = 20% better
+    df_improvement = df_pivot.copy()
+
+    for col in df_pivot.columns:
+        if col == baseline_col:
+            # baseline has 0% improvement by definition
+            df_improvement[col] = 0.0
+        else:
+            # 100 * (baseline - method) / baseline
+            df_improvement[col] = 100 * (baseline - df_pivot[col]) / baseline
+
+    # drop the baseline if you don't want to plot it
+    df_improvement = df_improvement.drop(columns=[baseline_col])
+
+    df_pivot = df_improvement
+
+    df_pivot.index = df_pivot.index.astype(int)
+
+    # map IDs to names; keep IDs for those not in the dict
+    dataset_names = [id_to_name.get(i, str(i)) for i in df_pivot.index]
+
+    dataset_list_wrapped = dataset_names
+
+    if large_plot:
+        plt.figure(figsize=(12, 8))
+        if without_openfe:
+            for idx, method in enumerate(df_pivot.columns):
+                plt.plot(dataset_list_wrapped, df_pivot[method], marker='o', label=method, color=color_list[idx], linestyle='None')
+        else:
+            for idx, method in enumerate(df_pivot.columns):
+                plt.plot(dataset_list_wrapped, df_pivot[method], marker='o', label=method, color=colors(idx), linestyle='None')
+    else:
+        plt.figure(figsize=(12, 8))
+        for method in df_pivot.columns:
+            plt.plot(dataset_list_wrapped, df_pivot[method], marker='o', label=method, linestyle='None')
+    plt.xticks(rotation=90, fontsize=16)
+    plt.yticks(fontsize=16)
+    plt.yscale("symlog")
+    plt.legend(fontsize=16)
+    plt.ylabel("Improvement over original dataset (%)", fontsize=18)
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig("Graph_" + name + ".pdf")
+    plt.show()
+
 def plot_score_graph(dataset_list_wrapped, df_pivot, df_pivot_std, name):
     if "only_pandas" in name:
         score_type = name.split("_")[0]
@@ -285,27 +429,28 @@ def plot_score_graph(dataset_list_wrapped, df_pivot, df_pivot_std, name):
 
     dataset_list_wrapped = df_pivot.index.tolist()
     if large_plot:
-        plt.figure(figsize=(12, 10))
+        plt.figure(figsize=(12, 8))
         if without_openfe:
             for idx, method in enumerate(df_pivot.columns):
-                plt.plot(dataset_list_wrapped, df_pivot[method], marker='o', label=method, color=color_list[idx])
+                plt.plot(dataset_list_wrapped, df_pivot[method], marker='o', label=method, color=color_list[idx], linestyle='None')
         else:
             for idx, method in enumerate(df_pivot.columns):
-                plt.plot(dataset_list_wrapped, df_pivot[method], marker='o', label=method, color=colors(idx))
+                plt.plot(dataset_list_wrapped, df_pivot[method], marker='o', label=method, color=colors(idx), linestyle='None')
     else:
-        plt.figure(figsize=(12, 7))
+        plt.figure(figsize=(12, 8))
         for method in df_pivot.columns:
-            plt.plot(dataset_list_wrapped, df_pivot[method], marker='o', label=method)
+            plt.plot(dataset_list_wrapped, df_pivot[method], marker='o', label=method, linestyle='None')
     plt.xlabel("Dataset")
-    plt.xticks(rotation=90)  # or 45
+    plt.xticks(rotation=90, fontsize=16)
+    plt.yticks(fontsize=16)
+    plt.legend(fontsize=16)
     plt.ylabel(score_type.title() + " error")
     plt.title(
-        score_type.title() + " error of the model on the feature-engineered datasets, the original and the randomly feature-engineered datasets")
-    plt.legend()
+        score_type.title() + " error of the model on the feature-engineered datasets", fontsize=16)
     plt.yscale("log")
     plt.grid(True)
     plt.tight_layout()
-    plt.savefig("Graph_" + name + ".png")
+    plt.savefig("Graph_" + name + ".pdf")
     plt.show()
 
 
@@ -313,18 +458,16 @@ def plot_count_best(df_pivot_val, df_pivot_test, name):
     minValueIndex_val = df_pivot_val.idxmin(axis=1).value_counts()
     minValueIndex_test = df_pivot_test.idxmin(axis=1).value_counts()
     # Plot
-    plt.figure(figsize=(12, 7))
+    plt.figure(figsize=(12, 8))
     minValueIndex_val.plot(kind='bar', color='skyblue', label='Number of datasets with the lowest validation error')
     minValueIndex_test.plot(kind='bar', width=0.3, color='darkblue',
                             label='Number of datasets with the lowest test error')
-    plt.legend()
-    plt.xlabel("Method")
-    plt.ylabel("Number of datasets")
-    plt.title("Count of the lowest validation and test error of the model")
-    plt.xticks(rotation=90, ha="right")
+    plt.legend(fontsize=16)
+    plt.ylabel("Number of datasets", fontsize=16)
+    plt.xticks(rotation=90, ha="right", fontsize=16)
     plt.grid(True)
     plt.tight_layout()
-    plt.savefig("Count_Best_" + name + "bar.png")
+    plt.savefig("Count_Best_" + name + "bar.pdf")
     plt.show()
 
 
@@ -368,7 +511,7 @@ def plot_avg_percentage_impr(baseline_col, df_pivot, df_pivot_std, name, only_pa
     avg_improvement = improvement.mean().sort_values(ascending=False)
     # for i, val in enumerate(avg_improvement_test):
     #    plt.text(i, val + (1 if val >= 0 else -1), f"{val:.2f}%", ha='center', va='bottom' if val >= 0 else 'top')
-    plt.figure(figsize=(12, 7))
+    plt.figure(figsize=(12, 8))
     # avg_improvement_test.plot(kind="bar", color="skyblue")
     bars = avg_improvement.plot(kind="bar", color="skyblue")
     if only_pandas:
@@ -381,14 +524,11 @@ def plot_avg_percentage_impr(baseline_col, df_pivot, df_pivot_std, name, only_pa
             plt.text(i, y, f"{val:.2f}%", ha='center', va='top' if val >= 0 else 'bottom', color='black', fontsize=8)
             plt.yscale("symlog", linthresh=1)
     plt.axhline(0, color="black", linewidth=0.8)
-    plt.title(
-        "Average percentage error reduction of the " + score_type + " error of the model\nin relation to the " + score_type + " error of the model on the original datasets")
-    plt.xlabel("Method")
-    plt.ylabel("Percentage error reduction of the " + score_type + " error\nin relation to the " + score_type + " error on the original datasets")
-    plt.xticks(rotation=90, ha="right")
+    plt.ylabel("Average improvement over original dataset (%)", fontsize=16)
+    plt.xticks(rotation=90, ha="right", fontsize=16)
     plt.grid(True, linestyle="--", alpha=0.6)
     plt.tight_layout()
-    plt.savefig("Average_Percentage_Improvement_" + name + ".png")
+    plt.savefig("Average_Percentage_Improvement_" + name + ".pdf")
     plt.show()
 
 
@@ -436,7 +576,7 @@ def plot_boxplot_percentage_impr(baseline_col, df_pivot, name):
     improvement_test = improvement_test[method_order]
 
     # Plot
-    plt.figure(figsize=(12, 7))
+    plt.figure(figsize=(12, 8))
     improvement_test.boxplot(column=method_order, grid=True)
     for i, method in enumerate(method_order):
         y = improvement_test[method].dropna()
@@ -444,12 +584,10 @@ def plot_boxplot_percentage_impr(baseline_col, df_pivot, name):
         plt.plot(x, y, 'o', alpha=0.4, markersize=4, color='blue')
     plt.axhline(0, color="black", linewidth=0.8, linestyle="--")
     plt.yscale("symlog", linthresh=1)
-    plt.title("Distribution of the percentage error reduction of the " + score_type + " error of the model\nin relation to the " + score_type + " error of the model on the original datasets")
-    plt.xlabel("Method")
-    plt.ylabel("Percentage error reduction of the " + score_type + " error\nin relation to the " + score_type + " error on the original datasets")
-    plt.xticks(rotation=90, ha="right")
+    plt.ylabel(score_type + " Error Improvement (%)", fontsize=16)
+    plt.xticks(rotation=90, ha="right", fontsize=16)
     plt.tight_layout()
-    plt.savefig(f"Boxplot_Percentage_Improvement_{name}.png")
+    plt.savefig(f"Boxplot_Percentage_Improvement_{name}.pdf")
     plt.show()
 
 
@@ -461,7 +599,7 @@ def plot_pareto_front():
     performance = pd.concat([performance, pd.DataFrame(["MetaFE Random", 16.50])], ignore_index=True)
     performance = pd.concat([performance, pd.DataFrame(["MetaFE 3600", 15.146])], ignore_index=True)
     performance = pd.concat([performance, pd.DataFrame(["MetaFE 1800", 14.48])], ignore_index=True)
-    performance = pd.concat([performance, pd.DataFrame(["MetaFE 300", .92])], ignore_index=True)
+    # performance = pd.concat([performance, pd.DataFrame(["MetaFE 300", .92])], ignore_index=True)
     performance = pd.DataFrame([
         {"SM - Method": "OpenFE", "Performance": 1.28},
         {"SM - Method": "MetaFE 7200", "Performance": 14.19},
@@ -469,7 +607,7 @@ def plot_pareto_front():
         {"SM - Method": "MetaFE 1800", "Performance": 13.76},
         {"SM - Method": "MetaFE 1000", "Performance": 11.46},
         {"SM - Method": "MetaFE 500", "Performance": 9.63},
-        {"SM - Method": "MetaFE 300", "Performance": 16.68},  # 24.43, 18.45
+        {"SM - Method": "MetaFE 300", "Performance": .92},  # 24.43, 18.45
         {"SM - Method": "MetaFE 100", "Performance": -2.48}
     ])
 
@@ -505,7 +643,7 @@ def plot_pareto_front():
     merged["Pareto"] = is_pareto_efficient(merged)
 
     # === Step 5: Plot ===
-    plt.figure(figsize=(12, 7))
+    plt.figure(figsize=(12, 8))
     for i, row in merged.iterrows():
         plt.scatter(row["Runtime"], row["Performance"],
                     color='red' if row["Pareto"] else 'gray',
@@ -520,15 +658,13 @@ def plot_pareto_front():
         plt.text(row["Runtime"] * 1.01, row["Performance"], row["SM - Method"], fontsize=9)
 
     # Labels
-    plt.xlabel("Average Runtime per Dataset (s)")
+    plt.xlabel("Average Runtime per Dataset (s)", fontsize=16)
     plt.xscale("log")
-    plt.ylabel("Average Test Error Reduction (%)")
-    #plt.gca().invert_xaxis()
-    plt.title("Pareto Front: Performance vs Runtime")
+    plt.ylabel("Average Improvement (%)", fontsize=16)
     plt.grid(True)
     plt.tight_layout()
-    plt.legend()
-    plt.savefig(f"Pareto_pandas_openfe.png")
+    plt.legend(fontsize=16)
+    plt.savefig(f"Pareto_pandas_openfe.pdf")
     plt.show()
 
 
@@ -546,14 +682,43 @@ def test_analysis():
     except KeyError:
         print("")
 
-    # Plot
+    df_pivot_val_without_OpenFE = df_pivot_val
+    df_pivot_test_without_OpenFE = df_pivot_test
+    df_pivot_val_without_OpenFE.drop(columns=["OpenFE"], inplace=True)
+    df_pivot_test_without_OpenFE.drop(columns=["OpenFE"], inplace=True)
+    # Drop everything but pandas columns to compare SM approaches
+
+    df_pivot_val_pandas = df_pivot_val[["Pandas, one-shot SM", "Pandas, recursive SM", "Original"]]
+    df_pivot_test_pandas = df_pivot_test[["Pandas, one-shot SM", "Pandas, recursive SM", "Original"]]
+
+    dataset_list_wrapped, df_pivot_val, df_pivot_val_std, df_pivot_test, df_pivot_test_std = get_data(result_files)
+    df_pivot_val_openfe = df_pivot_val[["OpenFE", "Pandas, recursive SM", "Pandas, fePFN", "Original"]]
+    df_pivot_val_openfe_std = df_pivot_val_std[["OpenFE", "Pandas, recursive SM", "Pandas, fePFN", "Original"]]
+    df_pivot_test_openfe = df_pivot_test[["OpenFE", "Pandas, recursive SM", "Pandas, fePFN", "Original"]]
+    df_pivot_test_openfe_std = df_pivot_test_std[["OpenFE", "Pandas, recursive SM", "Pandas, fePFN", "Original"]]
+
+    df_pivot_val_openfe = df_pivot_val_openfe[["OpenFE", "Pandas, recursive SM", "Original"]]
+    df_pivot_val_openfe_std = df_pivot_val_openfe_std[["OpenFE", "Pandas, recursive SM", "Original"]]
+    df_pivot_test_openfe = df_pivot_test_openfe[["OpenFE", "Pandas, recursive SM", "Original"]]
+    df_pivot_test_openfe_std = df_pivot_test_openfe_std[["OpenFE", "Pandas, recursive SM", "Original"]]
+    """
+    Including FePFN
+    df_pivot_val_openfe = df_pivot_val_openfe[["OpenFE", "Pandas, recursive SM", "Pandas, fePFN"]]
+    df_pivot_val_openfe_std = df_pivot_val_openfe_std[["OpenFE", "Pandas, recursive SM", "Pandas, fePFN"]]
+    df_pivot_test_openfe = df_pivot_test_openfe[["OpenFE", "Pandas, recursive SM", "Pandas, fePFN"]]
+    df_pivot_test_openfe_std = df_pivot_test_openfe_std[["OpenFE", "Pandas, recursive SM", "Pandas, fePFN"]]
+    """
+
     plot_pareto_front()
 
     plot_score_graph(dataset_list_wrapped, df_pivot_val, df_pivot_val_std, "Val")
     plot_score_graph(dataset_list_wrapped, df_pivot_test, df_pivot_test_std, "Test")
-
     plot_score_graph(dataset_list_wrapped, df_pivot_val, df_pivot_val_std, "Val_without_OpenFE")
     plot_score_graph(dataset_list_wrapped, df_pivot_test, df_pivot_test_std, "Test_without_OpenFE")
+
+    plot_count_best(df_pivot_val_openfe, df_pivot_test_openfe, "openfe_pandas_")
+    plot_score_graph_improvement(dataset_list_wrapped, df_pivot_val_openfe, df_pivot_val_openfe_std, "Val_openfe_pandas")
+    plot_score_graph_improvement(dataset_list_wrapped, df_pivot_test_openfe, df_pivot_test_openfe_std, "Test_openfe_pandas")
 
     plot_count_best(df_pivot_val, df_pivot_test, "")
     plot_avg_percentage_impr(baseline_col, df_pivot_val, df_pivot_val_std, "Val")
@@ -562,56 +727,29 @@ def test_analysis():
     plot_boxplot_percentage_impr(baseline_col, df_pivot_val, "Val")
     plot_boxplot_percentage_impr(baseline_col, df_pivot_test, "Test")
 
-    # Drop OpenFE column to compare MFE approaches
-    df_pivot_val_without_OpenFE = df_pivot_val
-    df_pivot_test_without_OpenFE = df_pivot_test
-    df_pivot_val_without_OpenFE.drop(columns=["OpenFE"], inplace=True)
-    df_pivot_test_without_OpenFE.drop(columns=["OpenFE"], inplace=True)
-    # Plot again
     plot_count_best(df_pivot_val_without_OpenFE, df_pivot_test_without_OpenFE, "without_OpenFE_")
     plot_avg_percentage_impr(baseline_col, df_pivot_val_without_OpenFE, df_pivot_val_std, "Val_without_OpenFE")
     plot_avg_percentage_impr(baseline_col, df_pivot_test_without_OpenFE, df_pivot_test_std, "Test_without_OpenFE")
     plot_boxplot_percentage_impr(baseline_col, df_pivot_val_without_OpenFE, "Val_without_OpenFE")
     plot_boxplot_percentage_impr(baseline_col, df_pivot_test_without_OpenFE, "Test_without_OpenFE")
 
-    # Drop everything but pandas & original columns to compare SM approaches
-    df_pivot_val_pandas = df_pivot_val[["Pandas, one-shot SM", "Pandas, recursive SM", "Original"]]
-    df_pivot_test_pandas = df_pivot_test[["Pandas, one-shot SM", "Pandas, recursive SM", "Original"]]
-    # Plot
     plot_avg_percentage_impr(baseline_col, df_pivot_val_pandas, df_pivot_val_std, "Val_only_pandas", True)
     plot_avg_percentage_impr(baseline_col, df_pivot_test_pandas, df_pivot_test_std, "Test_only_pandas", True)
     plot_boxplot_percentage_impr(baseline_col, df_pivot_val_pandas, "Val_only_pandas")
     plot_boxplot_percentage_impr(baseline_col, df_pivot_test_pandas, "Test_only_pandas")
 
-    # Drop everything but pandas columns to compare SM approaches
-    df_pivot_val_pandas = df_pivot_val_pandas[["Pandas, one-shot SM", "Pandas, recursive SM", "Pandas, fePFN", "Original"]]
-    df_pivot_test_pandas = df_pivot_test_pandas[["Pandas, one-shot SM", "Pandas, recursive SM", "Pandas, fePFN", "Original"]]
-    # Plot again
     plot_count_best(df_pivot_val_pandas, df_pivot_test_pandas, "only_pandas_")
     plot_score_graph(dataset_list_wrapped, df_pivot_val_pandas, df_pivot_val_std, "Val_only_pandas")
     plot_score_graph(dataset_list_wrapped, df_pivot_test_pandas, df_pivot_test_std, "Test_only_pandas")
-
-    dataset_list_wrapped, df_pivot_val, df_pivot_val_std, df_pivot_test, df_pivot_test_std = get_data(result_files)
-    df_pivot_val_openfe = df_pivot_val[["OpenFE", "Pandas, recursive SM", "Pandas, fePFN", "Original"]]
-    df_pivot_val_openfe_std = df_pivot_val_std[["OpenFE", "Pandas, recursive SM", "Pandas, fePFN", "Original"]]
-    df_pivot_test_openfe = df_pivot_test[["OpenFE", "Pandas, recursive SM", "Pandas, fePFN", "Original"]]
-    df_pivot_test_openfe_std = df_pivot_test_std[["OpenFE", "Pandas, recursive SM", "Pandas, fePFN", "Original"]]
-    # Plot
 
     plot_avg_percentage_impr(baseline_col, df_pivot_val_openfe, df_pivot_val_openfe_std, "Val_openfe_pandas", True)
     plot_avg_percentage_impr(baseline_col, df_pivot_test_openfe, df_pivot_test_openfe_std, "Test_openfe_pandas", True)
     plot_boxplot_percentage_impr(baseline_col, df_pivot_val_openfe, "Val_openfe_pandas")
     plot_boxplot_percentage_impr(baseline_col, df_pivot_test_openfe, "Test_openfe_pandas")
 
-    # Drop everything but pandas columns to compare SM approaches
-    df_pivot_val_openfe = df_pivot_val_openfe[["OpenFE", "Pandas, recursive SM", "Pandas, fePFN"]]
-    df_pivot_val_openfe_std = df_pivot_val_openfe_std[["OpenFE", "Pandas, recursive SM", "Pandas, fePFN"]]
-    df_pivot_test_openfe = df_pivot_test_openfe[["OpenFE", "Pandas, recursive SM", "Pandas, fePFN"]]
-    df_pivot_test_openfe_std = df_pivot_test_openfe_std[["OpenFE", "Pandas, recursive SM", "Pandas, fePFN"]]
-    # Plot again
     plot_count_best(df_pivot_val_openfe, df_pivot_test_openfe, "openfe_pandas_")
-    plot_score_graph(dataset_list_wrapped, df_pivot_val_openfe, df_pivot_val_openfe_std, "Val_openfe_pandas")
-    plot_score_graph(dataset_list_wrapped, df_pivot_test_openfe, df_pivot_test_openfe_std, "Test_openfe_pandas")
+    plot_score_graph_improvement(dataset_list_wrapped, df_pivot_val_openfe, df_pivot_val_openfe_std, "Val_openfe_pandas")
+    plot_score_graph_improvement(dataset_list_wrapped, df_pivot_test_openfe, df_pivot_test_openfe_std, "Test_openfe_pandas")
 
 
 if __name__ == "__main__":
