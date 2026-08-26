@@ -15,7 +15,7 @@ def main(fold):
     print(fold)
     target_label = 'target'
 
-    result_files = glob.glob("test_data/FE_*.parquet")
+    result_files = glob.glob("test_data/*FE_*.parquet")
     result_files.sort()
 
     dataset_files = defaultdict(list)
@@ -101,22 +101,31 @@ def main(fold):
                     name_info = name.replace("info_theory", "info-theory")
                     category = name_info.split("MFE_")[1].split("_")[0]
                     method = name.split('_')[0] + f"_{category}_{version}"
-                    is_random = False  # e.g., pandas
+                    is_random = False
                     result_path = f"test_results/{method}_Result_{dataset_id}_{fold}.parquet"
                 else:
-                    version = name.split('.parquet')[0].split("_")[-1]
-                    method = name.split('_')[0] + "_" + version
-                    is_random = False  # e.g., pandas
+                    prefix = data_file.split('/')[1].split('_')[0]
+                    if prefix.isdigit():
+                        time_limit = prefix
+                        base_name = name.split('_')[0]
+                        method = f"{time_limit}_{base_name}"
+                    else:
+                        version = name.split('.parquet')[0].split("_")[-1]
+                        method = name.split('_')[0] + "_" + version
+                    is_random = False
                     result_path = f"test_results/{method}_Result_{dataset_id}_{fold}.parquet"
+
                 try:
                     results = pd.read_parquet(result_path)
                 except (FileNotFoundError, pyarrow.lib.ArrowInvalid):
                     df = pd.read_parquet(data_file)
                     Xf_train, yf_train, Xf_test, yf_test = split_data(df, target_label)
                     if task_type == "Supervised Classification":
-                        results = get_model_score_origin_classification(Xf_train, yf_train, Xf_test, yf_test, dataset_id, method)
+                        results = get_model_score_origin_classification(Xf_train, yf_train, Xf_test, yf_test,
+                                                                        dataset_id, method)
                     else:
-                        results = get_model_score_origin_regression(Xf_train, yf_train, Xf_test, yf_test, dataset_id, method)
+                        results = get_model_score_origin_regression(Xf_train, yf_train, Xf_test, yf_test, dataset_id,
+                                                                    method)
                     results = results[results['model'] == "LightGBM_BAG_L1"]
                     results.to_parquet(result_path)
 
@@ -126,7 +135,7 @@ def main(fold):
                         best_score = score
                         best_random_result = results
                 else:
-                    combined_results.append(results)  # Only non-random (e.g. pandas)
+                    combined_results.append(results)
 
         # Append the best random result
         if best_random_result is not None:
