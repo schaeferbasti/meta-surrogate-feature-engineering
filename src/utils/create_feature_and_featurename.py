@@ -76,6 +76,7 @@ def create_binary_feature_and_featurename(feature1, feature2, operator):
         feature2_factorized = pd.factorize(feature2)[0]
         feature1_float_list = [float(x) for x in feature1_factorized]
         feature2_float_list = [float(x) for x in feature2_factorized]
+
     if operator == "+" or operator == "add":
         feature = [f1 + f2 for f1, f2 in zip(feature1_float_list, feature2_float_list)]
         featurename = "add(" + str(feature1.name) + ", " + str(feature2.name) + ")"
@@ -88,67 +89,71 @@ def create_binary_feature_and_featurename(feature1, feature2, operator):
     elif operator == "/" or operator == "divide":
         feature = [f1 / f2 if f2 != 0 else f1 for f1, f2 in zip(feature1_float_list, feature2_float_list)]
         featurename = "divide(" + str(feature1.name) + ", " + str(feature2.name) + ")"
+
     elif operator == "GroupByThenMin":
         temp = feature1.groupby(feature2).min()
-        temp.loc[np.nan] = np.nan
-        feature = feature2.apply(lambda x: temp.loc[x]).to_list()
+        # FIX: Use .get() or check membership instead of direct .loc[]
+        feature = feature2.apply(lambda x: temp.get(x, np.nan) if x in temp.index else np.nan).to_list()
         featurename = "GroupByThenMin(" + str(feature1.name) + ", " + str(feature2.name) + ")"
+
     elif operator == "GroupByThenMax":
         temp = feature1.groupby(feature2).max()
-        temp.loc[np.nan] = np.nan
-        feature = feature2.apply(lambda x: temp.loc[x]).to_list()
+        feature = feature2.apply(lambda x: temp.get(x, np.nan) if x in temp.index else np.nan).to_list()
         featurename = "GroupByThenMax(" + str(feature1.name) + ", " + str(feature2.name) + ")"
+
     elif operator == "GroupByThenMean":
         feature1 = pd.to_numeric(feature1, errors='coerce')
-        temp = feature1.groupby(feature2)
-        temp = temp.mean()
-        temp.loc[np.nan] = np.nan
-        feature = feature2.apply(lambda x: temp.loc[x]).to_list()
+        temp = feature1.groupby(feature2).mean()
+        feature = feature2.apply(lambda x: temp.get(x, np.nan) if x in temp.index else np.nan).to_list()
         featurename = "GroupByThenMean(" + str(feature1.name) + ", " + str(feature2.name) + ")"
+
     elif operator == "GroupByThenMedian":
         feature1 = pd.to_numeric(feature1, errors='coerce')
         temp = feature1.groupby(feature2).median()
-        temp.loc[np.nan] = np.nan
-        feature = feature2.apply(lambda x: temp.loc[x]).to_list()
+        feature = feature2.apply(lambda x: temp.get(x, np.nan) if x in temp.index else np.nan).to_list()
         featurename = "GroupByThenMedian(" + str(feature1.name) + ", " + str(feature2.name) + ")"
+
     elif operator == "GroupByThenStd":
         feature1 = pd.to_numeric(feature1, errors='coerce')
         temp = feature1.groupby(feature2).std()
-        temp.loc[np.nan] = np.nan
-        feature = feature2.apply(lambda x: temp.loc[x]).to_list()
+        feature = feature2.apply(lambda x: temp.get(x, np.nan) if x in temp.index else np.nan).to_list()
         featurename = "GroupByThenStd(" + str(feature1.name) + ", " + str(feature2.name) + ")"
+
     elif operator == 'GroupByThenRank':
         feature1 = pd.to_numeric(feature1, errors='coerce')
         feature = feature1.groupby(feature2).rank(ascending=True, pct=True).to_list()
         featurename = "GroupByThenRank(" + str(feature1.name) + ", " + str(feature2.name) + ")"
+
     elif operator == "GroupByThenFreq":
         def _f(x):
             value_counts = x.value_counts()
-            value_counts.loc[np.nan] = np.nan
-            return x.apply(lambda x: value_counts.loc[x])
+            return x.apply(lambda val: value_counts.get(val, np.nan) if val in value_counts.index else np.nan)
 
         feature = feature1.groupby(feature2).apply(_f).to_list()
         featurename = "GroupByThenFreq(" + str(feature1.name) + ", " + str(feature2.name) + ")"
+
     elif operator == "GroupByThenNUnique":
         nunique = feature1.groupby(feature2).nunique()
-        nunique.loc[np.nan] = np.nan
-        feature = feature2.apply(lambda x: nunique.loc[x]).to_list()
+        feature = feature2.apply(lambda x: nunique.get(x, np.nan) if x in nunique.index else np.nan).to_list()
         featurename = "GroupByThenNUnique(" + str(feature1.name) + ", " + str(feature2.name) + ")"
+
     elif operator == "Combine":
         temp = feature1.astype(str) + '_' + feature2.astype(str)
         temp[feature1.isna() | feature2.isna()] = np.nan
         temp, _ = temp.factorize()
         feature = pd.Series(temp, index=feature1.index).astype("float64").to_list()
         featurename = "Combine(" + str(feature1.name) + ", " + str(feature2.name) + ")"
+
     elif operator == "CombineThenFreq":
         temp = feature1.astype(str) + '_' + feature2.astype(str)
         temp[feature1.isna() | feature2.isna()] = np.nan
         value_counts = temp.value_counts()
-        value_counts.loc[np.nan] = np.nan
-        feature = temp.apply(lambda x: value_counts.loc[x]).to_list()
+        feature = temp.apply(lambda x: value_counts.get(x, np.nan) if x in value_counts.index else np.nan).to_list()
         featurename = "CombineThenFreq(" + str(feature1.name) + ", " + str(feature2.name) + ")"
+
     else:
         raise NotImplementedError(f"Unrecognized operator {operator}.")
+
     return feature, featurename
 
 

@@ -32,6 +32,12 @@ def safe_merge(left, right):
     return pd.merge(left, right, on=merge_keys, how="inner")
 
 
+def sanitize_column_name(name):
+    name = str(name).strip()
+    name = name.replace(',', '_').replace('(', '_').replace(')', '_')
+    return name
+
+
 def create_empty_core_matrix_for_dataset(X_train, model, dataset_id) -> pd.DataFrame:
     columns = get_matrix_core_columns()
     comparison_result_matrix = pd.DataFrame(columns=columns)
@@ -131,7 +137,7 @@ def recursive_feature_addition(X, y, X_test, y_test, model, method, dataset_meta
         except KeyError:
             print("")
         data = concat_data(X, y, X_test, y_test, "target")
-        data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_CatBoost_recursion.parquet")
+        data.to_parquet("1000_FE_" + str(dataset_id) + "_" + str(method) + "_CatBoost_recursion.parquet")
         return X, y
     else:
         try:
@@ -141,7 +147,7 @@ def recursive_feature_addition(X, y, X_test, y_test, model, method, dataset_meta
         except KeyError:
             print("")
         data = concat_data(X_new, y_new, X_test, y_test, "target")
-        data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_CatBoost_recursion.parquet")
+        data.to_parquet("1000_FE_" + str(dataset_id) + "_" + str(method) + "_CatBoost_recursion.parquet")
         return recursive_feature_addition(X_new, y_new, X_test, y_test, model, method, dataset_metadata, category_to_drop, wanted_min_relative_improvement, dataset_id)
 
 
@@ -282,7 +288,7 @@ def predict_improvement(result_matrix, comparison_result_matrix, category_or_met
 
     # Predict and score
     comparison_result_matrix.columns = comparison_result_matrix.columns.astype(str)
-    comparison_result_matrix = comparison_result_matrix[result_matrix.columns]
+    comparison_result_matrix = comparison_result_matrix.reindex(columns=result_matrix.columns)
     prediction = clf.predict(X=comparison_result_matrix)
     prediction_df = pd.DataFrame(prediction, columns=["predicted_improvement"])
     prediction_concat_df = pd.concat([comparison_result_matrix[["dataset - id", "feature - name", "model"]], prediction_df], axis=1)
@@ -304,17 +310,23 @@ def process_group(dataset_id, method, group, model, wanted_min_relative_improvem
         groupname = group
     print(f"[Processing Group] {groupname}")
     X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
+    X_train = X_train.rename(columns=sanitize_column_name)
+    X_test = X_test.rename(columns=sanitize_column_name)
     start = time.time()
     X_train, y_train, X_test, y_test = recursive_feature_addition_mfe_group(X_train, y_train, X_test, y_test, model, method, dataset_id, groupname, wanted_min_relative_improvement)
     end = time.time()
     print("Total Time SM: " + str(end - start))
     data = concat_data(X_train, y_train, X_test, y_test, "target")
-    data.to_parquet(f"FE_{dataset_id}_{method}_{groupname}_CatBoost_recursion.parquet")
+    data.to_parquet(f"1000_FE_{dataset_id}_{method}_{groupname}_CatBoost_recursion.parquet")
 
 
 def process_groups(dataset_id, method, groups, model, wanted_min_relative_improvement, last_reset_time):
     last_reset_time.value = time.time()
     X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
+    X_train = X_train.rename(columns=sanitize_column_name)
+    X_test = X_test.rename(columns=sanitize_column_name)
+    data = concat_data(X_train, y_train, X_test, y_test, "target")
+    data.to_parquet(f"FE_{dataset_id}_{method}_{str(groups)}_CatBoost_recursion.parquet")
     start = time.time()
     X_train, y_train, X_test, y_test = recursive_feature_addition_mfe_groups(X_train, y_train, X_test, y_test, model, method, dataset_id, groups, wanted_min_relative_improvement)
     end = time.time()
@@ -326,12 +338,16 @@ def process_groups(dataset_id, method, groups, model, wanted_min_relative_improv
 def process_method(dataset_id, method, model, wanted_min_relative_improvement, last_reset_time):
     last_reset_time.value = time.time()
     X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(dataset_id)
+    X_train = X_train.rename(columns=sanitize_column_name)
+    X_test = X_test.rename(columns=sanitize_column_name)
+    data = concat_data(X_train, y_train, X_test, y_test, "target")
+    data.to_parquet("1000_FE_" + str(dataset_id) + "_" + str(method) + "_CatBoost_recursion.parquet")
     start = time.time()
     X_train, y_train = recursive_feature_addition(X_train, y_train, X_test, y_test, model, method, dataset_metadata, None, wanted_min_relative_improvement, dataset_id)
     end = time.time()
     print("Total Time SM: " + str(end - start))
     data = concat_data(X_train, y_train, X_test, y_test, "target")
-    data.to_parquet("FE_" + str(dataset_id) + "_" + str(method) + "_CatBoost_recursion.parquet")
+    data.to_parquet("1000_FE_" + str(dataset_id) + "_" + str(method) + "_CatBoost_recursion.parquet")
 
 
 def main(dataset_id, method, wanted_min_relative_improvement):
@@ -343,7 +359,7 @@ def main(dataset_id, method, wanted_min_relative_improvement):
         for group in groups:
             print(f"\n=== Starting group: {group} ===")
             process_func = lambda: process_group(dataset_id, method, group, model, wanted_min_relative_improvement, last_reset_time)
-            exit_code = run_with_resource_limits(process_func, mem_limit_mb=64000, time_limit_sec=1800)
+            exit_code = run_with_resource_limits(process_func, mem_limit_mb=32000, time_limit_sec=1000)
             if exit_code != 0:
                 print(f"[Warning] Group {group} failed or was terminated. Skipping.\n")
                 continue
@@ -352,7 +368,7 @@ def main(dataset_id, method, wanted_min_relative_improvement):
         last_reset_time.value = time.time()
         print(f"\n=== Starting groups: {groupnames} ===")
         process_func = lambda: process_groups(dataset_id, method, groupnames, model, wanted_min_relative_improvement, last_reset_time)
-        exit_code = run_with_resource_limits(process_func, mem_limit_mb=64000, time_limit_sec=1800)
+        exit_code = run_with_resource_limits(process_func, mem_limit_mb=32000, time_limit_sec=1000)
         if exit_code != 0:
             print(f"[Warning] Groups {groupnames} failed or was terminated. Skipping.\n")
 
@@ -360,7 +376,7 @@ def main(dataset_id, method, wanted_min_relative_improvement):
         last_reset_time.value = time.time()
         print(f"\n=== Starting groups: {groupnames} ===")
         process_func = lambda: process_groups(dataset_id, method, groupnames, model, wanted_min_relative_improvement, last_reset_time)
-        exit_code = run_with_resource_limits(process_func, mem_limit_mb=64000, time_limit_sec=1800)
+        exit_code = run_with_resource_limits(process_func, mem_limit_mb=32000, time_limit_sec=1000)
         if exit_code != 0:
             print(f"[Warning] Groups {groupnames} failed or was terminated. Skipping.\n")
 
@@ -368,7 +384,7 @@ def main(dataset_id, method, wanted_min_relative_improvement):
         last_reset_time.value = time.time()
         print(f"\n=== Starting groups: {groupnames} ===")
         process_func = lambda: process_groups(dataset_id, method, groupnames, model, wanted_min_relative_improvement, last_reset_time)
-        exit_code = run_with_resource_limits(process_func, mem_limit_mb=64000, time_limit_sec=1800)
+        exit_code = run_with_resource_limits(process_func, mem_limit_mb=32000, time_limit_sec=1000)
         if exit_code != 0:
             print(f"[Warning] Groups {groupnames} failed or was terminated. Skipping.\n")
 
@@ -376,13 +392,13 @@ def main(dataset_id, method, wanted_min_relative_improvement):
         last_reset_time.value = time.time()
         print(f"\n=== Starting groups: {groupnames} ===")
         process_func = lambda: process_groups(dataset_id, method, groupnames, model, wanted_min_relative_improvement, last_reset_time)
-        exit_code = run_with_resource_limits(process_func, mem_limit_mb=64000, time_limit_sec=1800)
+        exit_code = run_with_resource_limits(process_func, mem_limit_mb=32000, time_limit_sec=1000)
         if exit_code != 0:
             print(f"[Warning] Groups {groupnames} failed or was terminated. Skipping.\n")
     else:
         print(f"\n=== Starting Method: {method} ===")
         process_func = lambda: process_method(dataset_id, method, model, wanted_min_relative_improvement, last_reset_time)
-        exit_code = run_with_resource_limits(process_func, mem_limit_mb=64000, time_limit_sec=1800)
+        exit_code = run_with_resource_limits(process_func, mem_limit_mb=32000, time_limit_sec=1000)
         if exit_code != 0:
             print(f"[Warning] Method {method} failed or was terminated. Skipping.\n")
 

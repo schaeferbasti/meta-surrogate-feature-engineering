@@ -62,8 +62,8 @@ def add_pandas_metadata_columns(dataset_metadata, X_train, result_matrix):
     unary_operators, binary_operators = get_operators()
     operators = unary_operators + binary_operators + ["without"]
     for row in result_matrix.iterrows():
-        dataset = row[1][0]
-        featurename = row[1][1]
+        dataset = row[1].iloc[0]
+        featurename = row[1].iloc[1]
         operator_count = get_operator_count(featurename, operators)
         X_train_copy = X_train.copy()
         if featurename.startswith("without"):

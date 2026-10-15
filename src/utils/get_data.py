@@ -5,7 +5,8 @@ import pandas as pd
 import openml
 from openfe import OpenFE, transform
 from sklearn.model_selection import train_test_split
-
+from sklearn.preprocessing import LabelEncoder
+from tabprep import TabPrepFeatureGenerator
 
 def get_all_amlb_dataset_ids():
     # Code from https://github.com/openml/automlbenchmark/blob/2c2a93dc3fc65fc3d6a77fe97ec9df1108551075/scripts/find_matching_datasets.py
@@ -127,6 +128,22 @@ def get_openfe_data(X_train, y_train, X_test, y_test):
     X_train_openfe, X_test_openfe = transform(X_train, X_test, features, n_jobs=1)
     return X_train_openfe, y_train, X_test_openfe, y_test
 
+def get_tabprep_data(X_train, y_train, X_test, y_test, task_type, random_state=0):
+    # TabPrep needs the problem type: "binary", "multiclass" or "regression"
+    if task_type == "Supervised Classification":
+        target_type = "binary" if y_train.nunique() == 2 else "multiclass"
+        # Target encoding needs numeric labels; only used for fitting TabPrep,
+        # the original labels are returned unchanged for your downstream models
+        y_fit = pd.Series(LabelEncoder().fit_transform(y_train), index=y_train.index)
+    else:
+        target_type = "regression"
+        y_fit = y_train.astype(float)
+
+    tabprep = TabPrepFeatureGenerator(target_type=target_type, random_state=random_state)
+    X_train_tabprep = tabprep.fit_transform(X_train, y_fit)  # fit on train only
+    X_test_tabprep = tabprep.transform(X_test)               # apply to test, no refit
+
+    return X_train_tabprep, y_train, X_test_tabprep, y_test
 
 def get_name_and_split_and_save_dataset(openml_task_id):
     name = str(openml_task_id)
