@@ -1,0 +1,36 @@
+#!/bin/bash
+#OAR -n SurrogateModel_TabArena_Recursion_Improvement_Parallel
+#OAR -l /nodes=1/core=8,walltime=24:00:00
+#OAR -O /nfs/home/lisic/bschafer/2_metafe/logs/out.out
+#OAR -E /nfs/home/lisic/bschafer/2_metafe/logs/err.err
+
+dataset=$1
+
+echo "Starting job for dataset: $dataset"
+
+pip install uv
+uv venv --seed --python 3.11 ~/.venvs/tabarena
+source ~/.venvs/tabarena
+echo "Virtual Environment Activated"
+
+if [ ! -d "tabrepo" ]; then
+    git clone --branch main https://github.com/autogluon/tabrepo.git
+pip install -r requirements.txt
+
+export PYTHONPATH=$PWD/src:$PYTHONPATH
+echo "PYTHONPATH set to $PYTHONPATH"
+
+start=`date +%s`
+
+# Use the parameter passed by OAR
+python3 /nfs/home/lisic/bschaefer/2_metafe/meta-surrogate-feature-engineering/src/SurrogateModel/SurrogateModel_TabArena_Recursion_Improvement_Parallel.py --dataset "$dataset"
+
+deactivate
+
+end=`date +%s`
+runtime=$((end-start))
+
+echo "Job execution complete."
+echo "Runtime: $runtime"
+
+exit

@@ -382,7 +382,7 @@ def main(dataset_id, method, wanted_min_relative_improvement):
     else:
         print(f"\n=== Starting Method: {method} ===")
         process_func = lambda: process_method(dataset_id, method, model, wanted_min_relative_improvement, last_reset_time)
-        exit_code = run_with_resource_limits(process_func, mem_limit_mb=64000, time_limit_sec=1800)
+        exit_code = run_with_resource_limits(process_func, mem_limit_mb=64000, time_limit_sec=7200)
         if exit_code != 0:
             print(f"[Warning] Method {method} failed or was terminated. Skipping.\n")
 
