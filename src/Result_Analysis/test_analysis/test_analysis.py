@@ -469,7 +469,7 @@ def plot_pareto_front():
     baseline = "Original"  # or however your baseline is called in df_pivot_test
     performance = pd.DataFrame(columns=['SM - Method', 'Performance'])
     performance = pd.concat([performance, pd.DataFrame(["OpenFE", 6.15])], ignore_index=True)
-    performance = pd.concat([performance, pd.DataFrame(["MetaFE Random", 16.50])], ignore_index=True)
+    performance = pd.concat([performance, pd.DataFrame(["MetaFE 7200", 16.50])], ignore_index=True)
     performance = pd.concat([performance, pd.DataFrame(["MetaFE 3600", 15.146])], ignore_index=True)
     performance = pd.concat([performance, pd.DataFrame(["MetaFE 1800", 14.48])], ignore_index=True)
     performance = pd.concat([performance, pd.DataFrame(["MetaFE 300", .92])], ignore_index=True)
@@ -599,7 +599,7 @@ def test_analysis():
     plot_score_graph(dataset_list_wrapped, df_pivot_test_pandas, df_pivot_test_std, "Test_only_pandas")
 
     dataset_list_wrapped, df_pivot_val, df_pivot_val_std, df_pivot_test, df_pivot_test_std = get_data(result_files)
-    openfe_columns = ["OpenFE", "TabPrep", "Pandas, recursive SM", "Pandas, fePFN", "Original"]
+    openfe_columns = ["OpenFE", "TabPrep", "Pandas, recursive SM", "Original"]
     df_pivot_val_openfe = df_pivot_val[openfe_columns]
     df_pivot_val_openfe_std = df_pivot_val_std[openfe_columns]
     df_pivot_test_openfe = df_pivot_test[openfe_columns]
@@ -612,7 +612,7 @@ def test_analysis():
     plot_boxplot_percentage_impr(baseline_col, df_pivot_test_openfe, "Test_openfe_pandas")
 
     # Drop the Original column to compare the FE methods directly
-    openfe_columns = ["OpenFE", "TabPrep", "Pandas, recursive SM", "Pandas, fePFN"]
+    openfe_columns = ["OpenFE", "TabPrep", "Pandas, recursive SM"]
     df_pivot_val_openfe = df_pivot_val_openfe[openfe_columns]
     df_pivot_val_openfe_std = df_pivot_val_openfe_std[openfe_columns]
     df_pivot_test_openfe = df_pivot_test_openfe[openfe_columns]
