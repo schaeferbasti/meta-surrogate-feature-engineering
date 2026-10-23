@@ -1,4 +1,6 @@
+import argparse
 import glob
+import os
 import re
 import time
 
@@ -7,14 +9,65 @@ from collections import defaultdict
 
 import pyarrow
 
-from src.utils.get_data import split_data, get_openml_dataset_split_and_metadata, get_openfe_data, concat_data, \
-    get_tabprep_data
+from src.utils.get_data import split_data_original, get_openml_dataset_split_and_metadata, get_openfe_data, \
+    concat_data, get_tabprep_data
 from src.utils.run_models import get_model_score_origin_classification, get_model_score_origin_regression
+
+# All methods (incl. Original) are evaluated on the original OpenML train/test split.
+# Results computed with the old random re-split live in test_results/ and must not be reused as cache.
+RESULTS_DIR = "test_results_same_split"
+
+# Datasets on which OpenFE did not finish
+NO_OPENFE_DATASETS = [2073, 359930, 359931, 359935, 359938, 359959, 359962, 359983]
+
+
+def clean_column_names(X):
+    return X.rename(columns=lambda x: re.sub('[^A-Za-z0-9_]+', '', str(x)))
+
+
+def get_scores(X_train, y_train, X_test, y_test, task_type, dataset_id, origin):
+    # AutoGluon adds the target column to the passed frames, so always hand over copies
+    X_train, y_train, X_test, y_test = X_train.copy(), y_train.copy(), X_test.copy(), y_test.copy()
+    if task_type == "Supervised Classification":
+        results = get_model_score_origin_classification(X_train, y_train, X_test, y_test, dataset_id, origin)
+    else:
+        results = get_model_score_origin_regression(X_train, y_train, X_test, y_test, dataset_id, origin)
+    return results[results['model'] == "LightGBM_BAG_L1"]
+
+
+def get_baseline_fe_results(name, get_fe_data, dataset_id, fold, X_train, y_train, X_test, y_test, task_type):
+    # FE methods that are run directly by this script (OpenFE, TabPrep)
+    result_path = f"{RESULTS_DIR}/{name}_Result_{dataset_id}_{fold}.parquet"
+    try:
+        results = pd.read_parquet(result_path)
+        print(f"{name} Results loaded.")
+        return results
+    except FileNotFoundError:
+        pass
+    data_path = f"test_data/FE_{dataset_id}_{name}.parquet"
+    try:
+        data = pd.read_parquet(data_path)
+        X_fe_train, y_fe_train, X_fe_test, y_fe_test = split_data_original(data, "target", X_train, X_test)
+    except FileNotFoundError:
+        start = time.time()
+        X_fe_train, y_fe_train, X_fe_test, y_fe_test = get_fe_data(X_train.copy(), y_train.copy(), X_test.copy(),
+                                                                   y_test.copy())
+        end = time.time()
+        print(f"{name} Time: {end - start}")
+        data = concat_data(X_fe_train, y_fe_train, X_fe_test, y_fe_test, "target")
+        data.to_parquet(data_path)
+    X_fe_train = clean_column_names(X_fe_train)
+    X_fe_test = clean_column_names(X_fe_test)
+    results = get_scores(X_fe_train, y_fe_train, X_fe_test, y_fe_test, task_type, dataset_id, name)
+    results.to_parquet(result_path)
+    print(f"{name} Results calculated.")
+    return results
 
 
 def main(fold):
     print(fold)
     target_label = 'target'
+    os.makedirs(RESULTS_DIR, exist_ok=True)
 
     result_files = glob.glob("test_data/*FE_*.parquet")
     result_files.sort()
@@ -31,124 +84,51 @@ def main(fold):
         print(task_type)
 
         # === ORIGINAL RESULTS ===
-        original_path = f"test_results/Original_Result_{dataset_id}_{fold}.parquet"
+        original_path = f"{RESULTS_DIR}/Original_Result_{dataset_id}_{fold}.parquet"
         try:
             original_results = pd.read_parquet(original_path)
         except FileNotFoundError:
-            X_train_copy = X_train.copy()
-            y_train_copy = y_train.copy()
-            X_test_copy = X_test.copy()
-            y_test_copy = y_test.copy()
-            if task_type == "Supervised Classification":
-                original_results = get_model_score_origin_classification(X_train_copy, y_train_copy, X_test_copy,
-                                                                         y_test_copy, dataset_id, "Original")
-            else:
-                original_results = get_model_score_origin_regression(X_train, y_train, X_test, y_test, dataset_id,
-                                                                     "Original")
-            original_results = original_results[original_results['model'] == "LightGBM_BAG_L1"]
+            original_results = get_scores(X_train, y_train, X_test, y_test, task_type, dataset_id, "Original")
             original_results.to_parquet(original_path)
         print("Original Results loaded.")
+        combined_results = [original_results]
 
         # === OPENFE RESULTS ===
-        if int(dataset_id) not in [2073, 359930, 359931, 359935, 359938, 359959, 359962, 359983]:
-            openfe_path = f"test_results/OpenFE_Result_{dataset_id}_{fold}.parquet"
-            try:
-                openfe_results = pd.read_parquet(openfe_path)
-                print("OpenFE Results loaded.")
-            except FileNotFoundError:
-                try:
-                    data = pd.read_parquet(f"test_data/FE_{dataset_id}_OpenFE.parquet")
-                    X_openfe_train, y_openfe_train, X_openfe_test, y_openfe_test = split_data(data, "target")
-                except FileNotFoundError:
-                    start = time.time()
-                    X_openfe_train, y_openfe_train, X_openfe_test, y_openfe_test = get_openfe_data(X_train, y_train,
-                                                                                                   X_test, y_test)
-                    end = time.time()
-                    print(f"OpenFE Split Time: {end - start}")
-                    # with open("../Result_Analysis/time_analysis_sm/openfe_times.txt", "a") as file:
-                    #    file.write(f"OpenFE on {dataset_id}: {end-start}\n")
-                    data = concat_data(X_openfe_train, y_openfe_train, X_openfe_test, y_openfe_test, "target")
-                    data.to_parquet(f"test_data/FE_{dataset_id}_OpenFE.parquet")
-                X_openfe_train = X_openfe_train.rename(columns=lambda x: re.sub('[^A-Za-z0-9_]+', '', x))
-                X_openfe_test = X_openfe_test.rename(columns=lambda x: re.sub('[^A-Za-z0-9_]+', '', x))
-
-                if task_type == "Supervised Classification":
-                    openfe_results = get_model_score_origin_classification(X_openfe_train, y_openfe_train,
-                                                                           X_openfe_test, y_openfe_test, dataset_id,
-                                                                           "OpenFE")
-                else:
-                    openfe_results = get_model_score_origin_regression(X_openfe_train, y_openfe_train, X_openfe_test,
-                                                                       y_openfe_test, dataset_id, "OpenFE")
-                openfe_results = openfe_results[openfe_results['model'] == "LightGBM_BAG_L1"]
-                openfe_results.to_parquet(openfe_path)
-                print("OpenFE Results calculated.")
-            combined_results = [original_results, openfe_results]
+        if int(dataset_id) not in NO_OPENFE_DATASETS:
+            combined_results.append(get_baseline_fe_results(
+                "OpenFE", get_openfe_data, dataset_id, fold, X_train, y_train, X_test, y_test, task_type))
         else:
             print("No OpenFE")
-            combined_results = [original_results]
 
         # === TabPrep RESULTS ===
-        if int(dataset_id) not in [2073, 359930, 359931, 359935, 359938, 359959, 359962, 359983]:
-            tabprep_path = f"test_results/TabPrep_Result_{dataset_id}_{fold}.parquet"
-            try:
-                tabprep_results = pd.read_parquet(tabprep_path)
-                print("TabPrep Results loaded.")
-            except FileNotFoundError:
-                try:
-                    data = pd.read_parquet(f"test_data/FE_{dataset_id}_TabPrep.parquet")
-                    X_tabprep_train, y_tabprep_train, X_tabprep_test, y_tabprep_test = split_data(data, "target")
-                except FileNotFoundError:
-                    start = time.time()
-                    X_tabprep_train, y_tabprep_train, X_tabprep_test, y_tabprep_test = get_tabprep_data(
-                        X_train, y_train, X_test, y_test, task_type)
-                    end = time.time()
-                    print(f"TabPrep Split Time: {end - start}")
-                    # with open("../Result_Analysis/time_analysis_sm/openfe_times.txt", "a") as file:
-                    #    file.write(f"OpenFE on {dataset_id}: {end-start}\n")
-                    data = concat_data(X_tabprep_train, y_tabprep_train, X_tabprep_test, y_tabprep_test, "target")
-                    data.to_parquet(f"test_data/FE_{dataset_id}_TabPrep.parquet")
-                X_tabprep_train = X_tabprep_train.rename(columns=lambda x: re.sub('[^A-Za-z0-9_]+', '', x))
-                X_tabprep_train = X_tabprep_train.rename(columns=lambda x: re.sub('[^A-Za-z0-9_]+', '', x))
-
-                if task_type == "Supervised Classification":
-                    tabprep_results = get_model_score_origin_classification(X_tabprep_train, y_tabprep_train,
-                                                                            X_tabprep_test, y_tabprep_test, dataset_id,
-                                                                            "TabPrep")
-                else:
-                    tabprep_results = get_model_score_origin_regression(X_tabprep_train, y_tabprep_train,
-                                                                        X_tabprep_test, y_tabprep_test, dataset_id,
-                                                                        "TabPrep")
-                tabprep_results = tabprep_results[tabprep_results['model'] == "LightGBM_BAG_L1"]
-                tabprep_results.to_parquet(tabprep_path)
-                print("TabPrep Results calculated.")
-            combined_results = [original_results, tabprep_results]
-        else:
-            print("No TabPrep")
-            combined_results = [original_results]
+        get_tabprep = lambda X_tr, y_tr, X_te, y_te: get_tabprep_data(X_tr, y_tr, X_te, y_te, task_type)
+        combined_results.append(get_baseline_fe_results(
+            "TabPrep", get_tabprep, dataset_id, fold, X_train, y_train, X_test, y_test, task_type))
 
         # === METHOD RESULTS (Random/pandas/MFE/d2v) ===
         best_random_result = None
         best_score = float('-inf')
 
         for data_file in files:
-            if "OpenFE" in data_file:
+            # OpenFE and TabPrep are handled above
+            if "OpenFE" in data_file or "TabPrep" in data_file:
                 print("Skip")
             else:
                 print(f"  Processing file: {data_file}")
                 name = data_file.split(f'FE_{dataset_id}_')[1]
 
                 if "fold" in name:
-                    fold = name.split("fold_")[1].split(".")[0]
-                    method = name.split('_')[0] + f"_{fold}"
+                    random_fold = name.split("fold_")[1].split(".")[0]
+                    method = name.split('_')[0] + f"_{random_fold}"
                     is_random = True
-                    result_path = f"test_results/{method}_Result_{dataset_id}_{fold}.parquet"
+                    result_path = f"{RESULTS_DIR}/{method}_Result_{dataset_id}_{fold}.parquet"
                 elif "MFE" in name:
                     version = name.split('.parquet')[0].split("_")[-1]
                     name_info = name.replace("info_theory", "info-theory")
                     category = name_info.split("MFE_")[1].split("_")[0]
                     method = name.split('_')[0] + f"_{category}_{version}"
                     is_random = False
-                    result_path = f"test_results/{method}_Result_{dataset_id}_{fold}.parquet"
+                    result_path = f"{RESULTS_DIR}/{method}_Result_{dataset_id}_{fold}.parquet"
                 else:
                     prefix = data_file.split('/')[1].split('_')[0]
                     if prefix.isdigit():
@@ -159,20 +139,18 @@ def main(fold):
                         version = name.split('.parquet')[0].split("_")[-1]
                         method = name.split('_')[0] + "_" + version
                     is_random = False
-                    result_path = f"test_results/{method}_Result_{dataset_id}_{fold}.parquet"
+                    result_path = f"{RESULTS_DIR}/{method}_Result_{dataset_id}_{fold}.parquet"
 
                 try:
                     results = pd.read_parquet(result_path)
                 except (FileNotFoundError, pyarrow.lib.ArrowInvalid):
                     df = pd.read_parquet(data_file)
-                    Xf_train, yf_train, Xf_test, yf_test = split_data(df, target_label)
-                    if task_type == "Supervised Classification":
-                        results = get_model_score_origin_classification(Xf_train, yf_train, Xf_test, yf_test,
-                                                                        dataset_id, method)
-                    else:
-                        results = get_model_score_origin_regression(Xf_train, yf_train, Xf_test, yf_test, dataset_id,
-                                                                    method)
-                    results = results[results['model'] == "LightGBM_BAG_L1"]
+                    try:
+                        Xf_train, yf_train, Xf_test, yf_test = split_data_original(df, target_label, X_train, X_test)
+                    except ValueError as e:
+                        print(f"[Warning] Skipping {data_file}: {e}")
+                        continue
+                    results = get_scores(Xf_train, yf_train, Xf_test, yf_test, task_type, dataset_id, method)
                     results.to_parquet(result_path)
 
                 if is_random:
@@ -188,10 +166,14 @@ def main(fold):
             combined_results.append(best_random_result)
 
         all_results = pd.concat(combined_results, ignore_index=True).drop_duplicates()
-        all_results.to_parquet(f"test_results/Result_{dataset_id}_{fold}.parquet")
+        all_results.to_parquet(f"{RESULTS_DIR}/Result_{dataset_id}_{fold}.parquet")
         print(f"Saved combined results for dataset {dataset_id} and fold {fold}.")
 
 
 if __name__ == "__main__":
-    for fold in range(10):
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--fold", type=int, default=None, help="Run a single fold (default: all 10 folds)")
+    args = parser.parse_args()
+    folds = range(10) if args.fold is None else [args.fold]
+    for fold in folds:
         main(fold)

@@ -113,6 +113,30 @@ def split_data(data, target_label) -> tuple[
     return X_train, y_train, X_test, y_test
 
 
+def split_data_original(data, target_label, X_train, X_test) -> tuple[
+    pd.DataFrame,
+    pd.DataFrame,
+    pd.DataFrame,
+    pd.DataFrame
+]:
+    # Split feature-engineered data (written with concat_data: train rows first, then test rows) back into the
+    # original OpenML train/test split, so that all methods are evaluated on the same test rows as "Original"
+    y = data[target_label]
+    X = data.drop(target_label, axis=1)
+    n_train, n_test = len(X_train), len(X_test)
+    if len(X) != n_train + n_test:
+        raise ValueError(f"FE data has {len(X)} rows, but the original split has {n_train} train + {n_test} test rows")
+    if X.index.is_unique and X.index.isin(X_train.index.append(X_test.index)).all():
+        # Original row labels are kept (in any row order, e.g. Random_Model.py re-shuffles the rows)
+        test_mask = X.index.isin(X_test.index)
+    elif not X.index.is_unique:
+        # Index of train and test part was reset by the FE method; rely on the row order of concat_data
+        test_mask = np.arange(len(X)) >= n_train
+    else:
+        raise ValueError("Cannot map FE data rows to the original train/test split")
+    return X[~test_mask], y[~test_mask], X[test_mask], y[test_mask]
+
+
 def concat_data(X_train, y_train, X_test, y_test, target_label):
     y_train = y_train.to_frame(target_label)
     train_data = pd.concat([X_train, y_train], axis=1)

@@ -2,8 +2,11 @@ import glob
 import pandas as pd
 from collections import defaultdict
 
+# Same directory as RESULTS_DIR in Test_FE.py
+RESULTS_DIR = "test_results_same_split"
+
 # Step 1: Find all files
-result_fold_files = glob.glob("test_results/Result_*_*.parquet")
+result_fold_files = glob.glob(f"{RESULTS_DIR}/Result_*_*.parquet")
 
 # Step 2: Group by dataset_id
 datasets = defaultdict(list)
@@ -28,10 +31,11 @@ for dataset_id, dfs in datasets.items():
         score_val_mean=("score_val", "mean"),
         score_val_std=("score_val", "std"),
         score_test_mean=("score_test", "mean"),
-        score_test_std=("score_test", "std")
+        score_test_std=("score_test", "std"),
+        n_folds=("score_test", "count")
     )
 
     # Save result
-    grouped.to_parquet(f"test_results/Result_{dataset_id}.parquet", index=False)
+    grouped.to_parquet(f"{RESULTS_DIR}/Result_{dataset_id}.parquet", index=False)
 
     print(f"Averaged result saved for dataset {dataset_id}")

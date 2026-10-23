@@ -2,9 +2,7 @@ import glob
 import os
 import re
 
-import pandas as pd
-
-from src.utils.get_data import split_data, get_tabprep_data, concat_data
+from src.utils.get_data import get_openml_dataset_split_and_metadata, get_tabprep_data, concat_data
 
 
 def main():
@@ -13,10 +11,12 @@ def main():
         out_path = f"test_data/FE_{dataset_id}_TabPrep.parquet"
         if os.path.exists(out_path):
             continue
-        X_train, y_train, X_test, y_test = split_data(pd.read_parquet(raw_path), "target")
-        X_tr, y_tr, X_te, y_te = get_tabprep_data(X_train, y_train, X_test, y_test, task_type)
+        # Use the original OpenML train/test split (same rows as "Original" in Test_FE.py)
+        X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(int(dataset_id))
+        X_tr, y_tr, X_te, y_te = get_tabprep_data(X_train, y_train, X_test, y_test, dataset_metadata["task_type"])
         X_tr, X_te = clean_columns(X_tr, X_te)
         concat_data(X_tr, y_tr, X_te, y_te, "target").to_parquet(out_path)
+
 
 def clean_columns(X_train, X_test):
     mapping, seen = {}, {}
@@ -32,12 +32,4 @@ def clean_columns(X_train, X_test):
 
 
 if __name__ == "__main__":
-    TASK_TYPES = {
-        1: "classification",
-        2: "regression",
-        3: "multilabel_classification",
-        4: "learning_to_rank",
-        5: "clustering",
-        6: "survival_analysis",
-    }
     main()

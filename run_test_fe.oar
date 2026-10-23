@@ -1,0 +1,34 @@
+#!/bin/bash
+#OAR -n Test_FE_same_split
+#OAR -l core=8,walltime=24:00:00
+#OAR -q default
+#OAR -O /nfs/home/lisic/bschafer/2_metafe/logs/test_fe.%jobid%.out
+#OAR -E /nfs/home/lisic/bschafer/2_metafe/logs/test_fe.%jobid%.err
+
+# Evaluate all FE methods (incl. Original) on the original OpenML split, one fold per array job:
+#   oarsub --array 10 -S ./run_test_fe.oar
+# Needs the FE data in src/Apply_and_Test/test_data/ and the venv below
+# (python3.11 -m venv ~/venvs/metafe && ~/venvs/metafe/bin/pip install -r requirements.txt, plus the TabPrep
+# package providing `from tabprep import TabPrepFeatureGenerator`, which is not in requirements.txt).
+# If OpenFE / TabPrep data is not in test_data/ yet, run fold 0 alone first: parallel folds would each
+# generate (and overwrite) their own FE_<id>_OpenFE / FE_<id>_TabPrep.parquet.
+# Afterwards: cd src/Apply_and_Test && python merge_result_folds.py
+
+. /nfs/opt/env/env.sh
+
+REPO=/nfs/home/lisic/bschafer/2_metafe/meta-surrogate-feature-engineering
+source ~/venvs/metafe/bin/activate
+
+# Fold from the first argument (oarsub -S "./run_test_fe.oar 0"), else from the array index (starts at 1)
+fold=${1:-$((OAR_ARRAY_INDEX - 1))}
+echo "Starting fold $fold on $(hostname) at $(date)"
+
+export PYTHONPATH=$REPO:$PYTHONPATH
+cd $REPO/src/Apply_and_Test
+
+start=$(date +%s)
+python3 Test_FE.py --fold "$fold"
+end=$(date +%s)
+
+deactivate
+echo "Fold $fold done. Runtime: $((end - start)) s"
