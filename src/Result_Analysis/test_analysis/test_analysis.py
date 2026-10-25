@@ -8,9 +8,9 @@ import matplotlib.cm as cm
 
 # MetaFE run (time limit in s) that is compared against OpenFE / TabPrep
 METAFE_METHOD = "1000_pandas"
-# Aggregated results to analyse; switch to "test_results_same_split" once Test_FE.py + merge_result_folds.py
-# were re-run (all methods evaluated on the original OpenML split)
-RESULTS_DIR = "../../Apply_and_Test/test_results"
+# Aggregated results to analyse: all methods on the original OpenML split, 3 folds = AutoGluon seeds 0-2
+# (Test_FE.py --results_dir test_results_same_split_seeds + merge_result_folds.py test_results_same_split_seeds)
+RESULTS_DIR = "../../Apply_and_Test/test_results_same_split_seeds"
 
 id_to_name = {
     146818: "australian",
@@ -901,8 +901,13 @@ def test_analysis():
     df_pivot_test_without_OpenFE = df_pivot_test.drop(columns=["OpenFE", "TabPrep"], errors="ignore")
 
     # Drop everything but pandas columns to compare SM approaches
-    df_pivot_val_pandas = df_pivot_val[["Pandas, one-shot SM", METAFE_METHOD, "Original"]]
-    df_pivot_test_pandas = df_pivot_test[["Pandas, one-shot SM", METAFE_METHOD, "Original"]]
+    # Only possible if the one-shot SM results were evaluated as well (not part of the same-split rerun)
+    if "Pandas, one-shot SM" in df_pivot_test.columns:
+        df_pivot_val_pandas = df_pivot_val[["Pandas, one-shot SM", METAFE_METHOD, "Original"]]
+        df_pivot_test_pandas = df_pivot_test[["Pandas, one-shot SM", METAFE_METHOD, "Original"]]
+    else:
+        print("No one-shot SM results, only_pandas plots skipped")
+        df_pivot_val_pandas = df_pivot_test_pandas = None
 
     # Compare MetaFE with the other FE methods (TabPrep only once its results are available)
     openfe_columns = [c for c in ["OpenFE", "TabPrep", METAFE_METHOD, "Original"] if c in df_pivot_test.columns]
@@ -943,14 +948,15 @@ def test_analysis():
     plot_boxplot_percentage_impr(baseline_col, df_pivot_val_without_OpenFE, "Val_without_OpenFE")
     plot_boxplot_percentage_impr(baseline_col, df_pivot_test_without_OpenFE, "Test_without_OpenFE")
 
-    plot_avg_percentage_impr(baseline_col, df_pivot_val_pandas, df_pivot_val_std, "Val_only_pandas", True)
-    plot_avg_percentage_impr(baseline_col, df_pivot_test_pandas, df_pivot_test_std, "Test_only_pandas", True)
-    plot_boxplot_percentage_impr(baseline_col, df_pivot_val_pandas, "Val_only_pandas")
-    plot_boxplot_percentage_impr(baseline_col, df_pivot_test_pandas, "Test_only_pandas")
+    if df_pivot_val_pandas is not None:
+        plot_avg_percentage_impr(baseline_col, df_pivot_val_pandas, df_pivot_val_std, "Val_only_pandas", True)
+        plot_avg_percentage_impr(baseline_col, df_pivot_test_pandas, df_pivot_test_std, "Test_only_pandas", True)
+        plot_boxplot_percentage_impr(baseline_col, df_pivot_val_pandas, "Val_only_pandas")
+        plot_boxplot_percentage_impr(baseline_col, df_pivot_test_pandas, "Test_only_pandas")
 
-    plot_count_best(df_pivot_val_pandas, df_pivot_test_pandas, "only_pandas_")
-    plot_score_graph(dataset_list_wrapped, df_pivot_val_pandas, df_pivot_val_std, "Val_only_pandas")
-    plot_score_graph(dataset_list_wrapped, df_pivot_test_pandas, df_pivot_test_std, "Test_only_pandas")
+        plot_count_best(df_pivot_val_pandas, df_pivot_test_pandas, "only_pandas_")
+        plot_score_graph(dataset_list_wrapped, df_pivot_val_pandas, df_pivot_val_std, "Val_only_pandas")
+        plot_score_graph(dataset_list_wrapped, df_pivot_test_pandas, df_pivot_test_std, "Test_only_pandas")
 
     plot_avg_percentage_impr(baseline_col, df_pivot_val_openfe, df_pivot_val_openfe_std, "Val_openfe_pandas", True)
     plot_avg_percentage_impr(baseline_col, df_pivot_test_openfe, df_pivot_test_openfe_std, "Test_openfe_pandas", True)
