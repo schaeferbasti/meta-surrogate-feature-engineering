@@ -1,12 +1,13 @@
+import contextlib
 import os
+import shutil
+import tempfile
 
 import numpy as np
 import pandas as pd
 import openml
-from openfe import OpenFE, transform
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
-from tabprep import TabPrepFeatureGenerator
 
 def get_all_amlb_dataset_ids():
     # Code from https://github.com/openml/automlbenchmark/blob/2c2a93dc3fc65fc3d6a77fe97ec9df1108551075/scripts/find_matching_datasets.py
@@ -146,13 +147,25 @@ def concat_data(X_train, y_train, X_test, y_test, target_label):
     return data
 
 
-def get_openfe_data(X_train, y_train, X_test, y_test):
+def get_openfe_data(X_train, y_train, X_test, y_test, n_jobs=1):
+    # Imported here so that environments without OpenFE (e.g. the TabPrep env) can still use this module
+    from openfe import OpenFE, transform
     openFE = OpenFE()
-    features = openFE.fit(data=X_train, label=y_train, n_jobs=1)  # generate new features
-    X_train_openfe, X_test_openfe = transform(X_train, X_test, features, n_jobs=1)
+    # OpenFE writes ./openfe_tmp_data.feather (transform() ignores tmp_save_path), which parallel jobs in the same
+    # directory overwrite, so run it inside a private temporary working directory
+    tmp_dir = tempfile.mkdtemp()
+    try:
+        with contextlib.chdir(tmp_dir):
+            features = openFE.fit(data=X_train, label=y_train, n_jobs=n_jobs,
+                                  tmp_save_path=os.path.join(tmp_dir, "openfe_tmp_data.feather"))  # generate new features
+            X_train_openfe, X_test_openfe = transform(X_train, X_test, features, n_jobs=n_jobs)
+    finally:
+        shutil.rmtree(tmp_dir, ignore_errors=True)
     return X_train_openfe, y_train, X_test_openfe, y_test
 
 def get_tabprep_data(X_train, y_train, X_test, y_test, task_type, random_state=0):
+    # Imported here: TabPrep needs AutoGluon from source (master), which differs from the pinned evaluation env
+    from tabprep import TabPrepFeatureGenerator
     # TabPrep needs the problem type: "binary", "multiclass" or "regression"
     if task_type == "Supervised Classification":
         target_type = "binary" if y_train.nunique() == 2 else "multiclass"

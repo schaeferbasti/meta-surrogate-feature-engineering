@@ -1,3 +1,4 @@
+import argparse
 import glob
 import os
 import re
@@ -5,9 +6,10 @@ import re
 from src.utils.get_data import get_openml_dataset_split_and_metadata, get_tabprep_data, concat_data
 
 
-def main():
-    for raw_path in glob.glob("test_data/RAW_*.parquet"):
-        dataset_id = re.match(r".*RAW_(\d+)\.parquet", raw_path).group(1)
+def main(dataset_ids=None):
+    if dataset_ids is None:
+        dataset_ids = [re.match(r".*RAW_(\d+)\.parquet", p).group(1) for p in glob.glob("test_data/RAW_*.parquet")]
+    for dataset_id in dataset_ids:
         out_path = f"test_data/FE_{dataset_id}_TabPrep.parquet"
         if os.path.exists(out_path):
             continue
@@ -15,7 +17,9 @@ def main():
         X_train, y_train, X_test, y_test, dataset_metadata = get_openml_dataset_split_and_metadata(int(dataset_id))
         X_tr, y_tr, X_te, y_te = get_tabprep_data(X_train, y_train, X_test, y_test, dataset_metadata["task_type"])
         X_tr, X_te = clean_columns(X_tr, X_te)
-        concat_data(X_tr, y_tr, X_te, y_te, "target").to_parquet(out_path)
+        # Write to a temporary file first, so that an interrupted job leaves no truncated FE data behind
+        concat_data(X_tr, y_tr, X_te, y_te, "target").to_parquet(out_path + ".tmp")
+        os.replace(out_path + ".tmp", out_path)
 
 
 def clean_columns(X_train, X_test):
@@ -32,4 +36,8 @@ def clean_columns(X_train, X_test):
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--dataset", type=int, nargs="+", default=None,
+                        help="Dataset IDs to generate (default: all test_data/RAW_*.parquet)")
+    args = parser.parse_args()
+    main(args.dataset)

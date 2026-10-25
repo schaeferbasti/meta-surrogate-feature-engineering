@@ -1,0 +1,33 @@
+#!/bin/bash
+#OAR -n FE_TabPrep
+#OAR -l core=4,walltime=4:00:00
+#OAR -q default
+#OAR -O /nfs/home/lisic/bschafer/2_metafe/logs/fe_tabprep.%jobid%.out
+#OAR -E /nfs/home/lisic/bschafer/2_metafe/logs/fe_tabprep.%jobid%.err
+
+# Generate missing TabPrep data (original OpenML split): oarsub -S "./run_fe_tabprep.oar <dataset_id> [<dataset_id> ...]"
+# Writes src/Apply_and_Test/test_data/FE_<id>_TabPrep.parquet.
+# Needs its own venv, because TabPrep needs AutoGluon from source (master), not the pinned AutoGluon of ~/venvs/metafe:
+#   git clone https://github.com/autogluon/autogluon.git ~/venvs/src/autogluon
+#   python3.11 -m venv ~/venvs/tabprep
+#   ~/venvs/tabprep/bin/pip install -e ~/venvs/src/autogluon/{common,core,features} openml pyarrow
+#   cp tabprep.py (https://github.com/atschalz/tabprep) ~/venvs/tabprep/lib/python3.11/site-packages/
+
+. /nfs/opt/env/env.sh
+
+REPO=/nfs/home/lisic/bschafer/2_metafe/meta-surrogate-feature-engineering
+source ~/venvs/tabprep/bin/activate
+
+echo "Starting TabPrep for datasets $* on $(hostname) ($(lscpu | grep 'Model name' | sed 's/.*: *//')) at $(date)"
+
+export PYTHONPATH=$REPO:$PYTHONPATH
+cd $REPO/src/Apply_and_Test
+
+start=$(date +%s)
+python3 $REPO/tabprep_env/tabprep_data_generation.py --dataset "$@"
+status=$?
+end=$(date +%s)
+
+deactivate
+echo "TabPrep for datasets $* done (exit $status). Runtime: $((end - start)) s"
+exit $status

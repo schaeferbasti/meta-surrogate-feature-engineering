@@ -1,3 +1,4 @@
+import copy
 import pandas as pd
 import logging
 import os
@@ -42,7 +43,7 @@ def run_autogluon_lgbm(X_train, y_train, X_test, y_test, zeroshot=False):
     lb = predictor.leaderboard(test_data)
     return lb
 
-def run_autogluon_lgbm_classification(X_train, y_train, X_test, y_test, zeroshot=False):
+def run_autogluon_lgbm_classification(X_train, y_train, X_test, y_test, zeroshot=False, seed=0):
     label = "target"
     train_data = X_train
     train_data[label] = y_train
@@ -53,12 +54,12 @@ def run_autogluon_lgbm_classification(X_train, y_train, X_test, y_test, zeroshot
 
     zeroshot2024 = get_zeroshot_models(allowed_models, zeroshot)
     # -- Run AutoGluon
-    predictor = init_and_fit_improvement_predictor_classification(label, train_data, zeroshot2024)
+    predictor = init_and_fit_improvement_predictor_classification(label, train_data, zeroshot2024, seed)
     lb = predictor.leaderboard(test_data)
     return lb
 
 
-def run_autogluon_lgbm_regression(X_train, y_train, X_test, y_test, zeroshot=False):
+def run_autogluon_lgbm_regression(X_train, y_train, X_test, y_test, zeroshot=False, seed=0):
     label = "target"
     train_data = X_train
     train_data[label] = y_train
@@ -69,7 +70,7 @@ def run_autogluon_lgbm_regression(X_train, y_train, X_test, y_test, zeroshot=Fal
 
     zeroshot2024 = get_zeroshot_models(allowed_models, zeroshot)
     # -- Run AutoGluon
-    predictor = init_and_fit_improvement_predictor_regression(label, train_data, zeroshot2024)
+    predictor = init_and_fit_improvement_predictor_regression(label, train_data, zeroshot2024, seed)
     lb = predictor.leaderboard(test_data)
     return lb
 
@@ -158,8 +159,8 @@ def get_model_score(X_train, y_train, X_test, y_test, dataset_id):
     return new_results
 
 
-def get_model_score_origin_classification(X_train, y_train, X_test, y_test, dataset_id, origin):
-    lb = run_autogluon_lgbm_classification(X_train, y_train, X_test, y_test)
+def get_model_score_origin_classification(X_train, y_train, X_test, y_test, dataset_id, origin, seed=0):
+    lb = run_autogluon_lgbm_classification(X_train, y_train, X_test, y_test, seed=seed)
     models = lb["model"]
     new_results = pd.DataFrame(columns=['origin', 'task_type', 'dataset', 'model', 'score_val', 'score_test'])
     for model in models:
@@ -169,8 +170,8 @@ def get_model_score_origin_classification(X_train, y_train, X_test, y_test, data
     return new_results
 
 
-def get_model_score_origin_regression(X_train, y_train, X_test, y_test, dataset_id, origin):
-    lb = run_autogluon_lgbm_regression(X_train, y_train, X_test, y_test)
+def get_model_score_origin_regression(X_train, y_train, X_test, y_test, dataset_id, origin, seed=0):
+    lb = run_autogluon_lgbm_regression(X_train, y_train, X_test, y_test, seed=seed)
     models = lb["model"]
     new_results = pd.DataFrame(columns=['origin', 'task_type', 'dataset', 'model', 'score_val', 'score_test'])
     for model in models:
@@ -219,13 +220,14 @@ def init_and_fit_predictor(label, train_data, zeroshot2024):
     return predictor
 
 
-def init_and_fit_improvement_predictor_classification(label, train_data, zeroshot2024):
+def init_and_fit_improvement_predictor_classification(label, train_data, zeroshot2024, seed=0):
     predictor = TabularPredictor(
         label=label,
         eval_metric="log_loss",  # roc_auc (binary), log_loss (multiclass)
         problem_type="multiclass",  # binary, multiclass
         verbosity=0,
         path=tempfile.mkdtemp() + os.sep,
+        learner_kwargs={"random_state": seed},  # seed of the bagging fold split (AutoGluon default 0)
     )
     predictor.fit(
         time_limit=int(60 * 60 * 4),
@@ -235,7 +237,7 @@ def init_and_fit_improvement_predictor_classification(label, train_data, zerosho
         train_data=train_data,
         presets="best_quality",
         dynamic_stacking=False,
-        hyperparameters=zeroshot2024,
+        hyperparameters=with_seed(zeroshot2024, seed),
         num_bag_folds=8,
         num_bag_sets=1,
         num_stack_levels=0,
@@ -244,13 +246,14 @@ def init_and_fit_improvement_predictor_classification(label, train_data, zerosho
     return predictor
 
 
-def init_and_fit_improvement_predictor_regression(label, train_data, zeroshot2024):
+def init_and_fit_improvement_predictor_regression(label, train_data, zeroshot2024, seed=0):
     predictor = TabularPredictor(
         label=label,
         eval_metric="root_mean_squared_error",  # roc_auc (binary), log_loss (multiclass)
         problem_type="regression",  # binary, multiclass
         verbosity=0,
         path=tempfile.mkdtemp() + os.sep,
+        learner_kwargs={"random_state": seed},  # seed of the bagging fold split (AutoGluon default 0)
     )
     predictor.fit(
         time_limit=int(60 * 60 * 4),
@@ -260,13 +263,22 @@ def init_and_fit_improvement_predictor_regression(label, train_data, zeroshot202
         train_data=train_data,
         presets="best_quality",
         dynamic_stacking=False,
-        hyperparameters=zeroshot2024,
+        hyperparameters=with_seed(zeroshot2024, seed),
         num_bag_folds=8,
         num_bag_sets=1,
         num_stack_levels=0,
         fit_weighted_ensemble=False
     )
     return predictor
+
+
+def with_seed(hyperparameters, seed):
+    # Model seed of every config (LightGBM "seed_value", AutoGluon default 0); copied, the global configs stay unchanged
+    hyperparameters = copy.deepcopy(hyperparameters)
+    for configs in hyperparameters.values():
+        for config in (configs if isinstance(configs, list) else [configs]):
+            config["seed_value"] = seed
+    return hyperparameters
 
 
 def get_zeroshot_models(allowed_models, zeroshot):

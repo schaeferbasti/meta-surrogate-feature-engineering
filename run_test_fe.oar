@@ -1,17 +1,18 @@
 #!/bin/bash
 #OAR -n Test_FE_same_split
-#OAR -l core=8,walltime=24:00:00
+#OAR -l core=8,walltime=6:00:00
 #OAR -q default
 #OAR -O /nfs/home/lisic/bschafer/2_metafe/logs/test_fe.%jobid%.out
 #OAR -E /nfs/home/lisic/bschafer/2_metafe/logs/test_fe.%jobid%.err
 
-# Evaluate all FE methods (incl. Original) on the original OpenML split, one fold per array job:
-#   oarsub --array 10 -S ./run_test_fe.oar
+# Evaluate all FE methods (incl. Original) on the original OpenML split for one dataset and one fold (repeat):
+#   oarsub -S "./run_test_fe.oar <dataset_id> <fold> [extra Test_FE.py options, e.g. --skip-openfe --results_dir <dir>]"
+# All jobs (FE generation + 3 folds per dataset) are submitted by submit_same_split.sh.
+# core=8 matches num_cpus=8 (num_gpus=0) of the AutoGluon fits in src/utils/run_models.py.
 # Needs the FE data in src/Apply_and_Test/test_data/ and the venv below
-# (python3.11 -m venv ~/venvs/metafe && ~/venvs/metafe/bin/pip install -r requirements.txt, plus the TabPrep
-# package providing `from tabprep import TabPrepFeatureGenerator`, which is not in requirements.txt).
-# If OpenFE / TabPrep data is not in test_data/ yet, run fold 0 alone first: parallel folds would each
-# generate (and overwrite) their own FE_<id>_OpenFE / FE_<id>_TabPrep.parquet.
+# (python3.11 -m venv ~/venvs/metafe; torch==2.6.0/torchvision==0.21.0 from https://download.pytorch.org/whl/cpu;
+# then pip install --no-deps -r requirements.txt without causalnex and the "@ file://" pins).
+# Missing OpenFE / TabPrep data is skipped (--skip-missing-fe), not generated: parallel jobs would overwrite it.
 # Afterwards: cd src/Apply_and_Test && python merge_result_folds.py
 
 . /nfs/opt/env/env.sh
@@ -19,16 +20,18 @@
 REPO=/nfs/home/lisic/bschafer/2_metafe/meta-surrogate-feature-engineering
 source ~/venvs/metafe/bin/activate
 
-# Fold from the first argument (oarsub -S "./run_test_fe.oar 0"), else from the array index (starts at 1)
-fold=${1:-$((OAR_ARRAY_INDEX - 1))}
-echo "Starting fold $fold on $(hostname) at $(date)"
+dataset=$1
+fold=$2
+echo "Starting dataset $dataset fold $fold on $(hostname) ($(lscpu | grep 'Model name' | sed 's/.*: *//')) at $(date)"
 
 export PYTHONPATH=$REPO:$PYTHONPATH
 cd $REPO/src/Apply_and_Test
 
 start=$(date +%s)
-python3 Test_FE.py --fold "$fold"
+python3 Test_FE.py --dataset "$dataset" --fold "$fold" --skip-missing-fe "${@:3}"
+status=$?
 end=$(date +%s)
 
 deactivate
-echo "Fold $fold done. Runtime: $((end - start)) s"
+echo "Dataset $dataset fold $fold done (exit $status). Runtime: $((end - start)) s"
+exit $status

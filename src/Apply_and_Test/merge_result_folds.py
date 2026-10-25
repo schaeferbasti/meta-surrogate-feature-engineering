@@ -1,9 +1,10 @@
 import glob
+import sys
 import pandas as pd
 from collections import defaultdict
 
-# Same directory as RESULTS_DIR in Test_FE.py
-RESULTS_DIR = "test_results_same_split"
+# Same directory as RESULTS_DIR in Test_FE.py (or its --results_dir), e.g. python merge_result_folds.py test_results_same_split_seeds
+RESULTS_DIR = sys.argv[1] if len(sys.argv) > 1 else "test_results_same_split"
 
 # Step 1: Find all files
 result_fold_files = glob.glob(f"{RESULTS_DIR}/Result_*_*.parquet")
