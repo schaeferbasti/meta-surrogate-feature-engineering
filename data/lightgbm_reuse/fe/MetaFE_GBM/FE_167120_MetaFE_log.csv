@@ -1,0 +1,8 @@
+step,feature,predicted_improvement,elapsed_s
+surrogate,,,63.45
+0,,,0.0
+1,"GroupByThenStd(attribute_8, attribute_0)",0.072189,259.49
+2,"GroupByThenMean(GroupByThenStd(attribute_8, attribute_0), attribute_0)",0.072189,542.58
+3,"GroupByThenStd(attribute_18, GroupByThenStd(attribute_8, attribute_0))",0.072141,861.43
+4,"GroupByThenStd(GroupByThenStd(attribute_18, GroupByThenStd(attribute_8, attribute_0)), attribute_2)",0.091565,1197.92
+5,"GroupByThenMean(GroupByThenStd(GroupByThenStd(attribute_18, GroupByThenStd(attribute_8, attribute_0)), attribute_2), GroupByThenStd(GroupByThenStd(attribute_18, GroupByThenStd(attribute_8, attribute_0)), attribute_2))",0.091565,1564.16

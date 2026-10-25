@@ -1,0 +1,18 @@
+# Environment of the multimodel experiment (AutoGluon 1.6.3); install with scripts/setup_venv_multimodel.sh
+# (torch is installed first, from the PyTorch index matching the cluster's CUDA version).
+autogluon.tabular[lightgbm,catboost,realmlp,tabicl]==1.6.3
+autogluon.common==1.6.3
+autogluon.core==1.6.3
+autogluon.features==1.6.3
+catboost==1.2.10
+lightgbm==4.7.0
+pytabkit==1.7.3
+tabicl==2.1.1
+scikit-learn==1.9.1
+pandas==2.3.3
+numpy==2.4.6
+openml==0.15.1
+pyarrow==24.0.0
+psutil==7.2.2
+matplotlib==3.11.2
+adjustText==1.4.0

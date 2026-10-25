@@ -1,0 +1,27 @@
+step,feature,predicted_improvement,elapsed_s
+surrogate,,,64.76
+0,,,0.0
+1,"GroupByThenStd(P1, H10p1)",0.233785,50.84
+2,"GroupByThenMedian(GroupByThenStd(P1, H10p1), P15p3)",0.311898,108.05
+3,"subtract(GroupByThenMedian(GroupByThenStd(P1, H10p1), P15p3), H10p1)",0.335724,171.49
+4,"subtract(subtract(GroupByThenMedian(GroupByThenStd(P1, H10p1), P15p3), H10p1), H10p1)",0.366761,240.79
+5,"round(subtract(subtract(GroupByThenMedian(GroupByThenStd(P1, H10p1), P15p3), H10p1), H10p1))",0.38179,317.42
+6,"add(P6p2, round(subtract(subtract(GroupByThenMedian(GroupByThenStd(P1, H10p1), P15p3), H10p1), H10p1)))",0.386908,400.57
+7,"divide(add(P6p2, round(subtract(subtract(GroupByThenMedian(GroupByThenStd(P1, H10p1), P15p3), H10p1), H10p1))), H10p1)",0.387245,491.27
+8,"GroupByThenMean(divide(add(P6p2, round(subtract(subtract(GroupByThenMedian(GroupByThenStd(P1, H10p1), P15p3), H10p1), H10p1))), H10p1), P15p3)",0.394241,590.46
+9,"GroupByThenMean(divide(add(P6p2, round(subtract(subtract(GroupByThenMedian(GroupByThenStd(P1, H10p1), P15p3), H10p1), H10p1))), H10p1), GroupByThenMean(divide(add(P6p2, round(subtract(subtract(GroupByThenMedian(GroupByThenStd(P1, H10p1), P15p3), H10p1), H10p1))), H10p1), P15p3))",0.394241,698.57
+10,"add(GroupByThenMean(divide(add(P6p2, round(subtract(subtract(GroupByThenMedian(GroupByThenStd(P1, H10p1), P15p3), H10p1), H10p1))), H10p1), P15p3), H8p2)",0.394241,814.56
+11,"GroupByThenMedian(add(GroupByThenMean(divide(add(P6p2, round(subtract(subtract(GroupByThenMedian(GroupByThenStd(P1, H10p1), P15p3), H10p1), H10p1))), H10p1), P15p3), H8p2), P15p3)",0.394241,939.76
+12,"add(H40p4, GroupByThenMean(divide(add(P6p2, round(subtract(subtract(GroupByThenMedian(GroupByThenStd(P1, H10p1), P15p3), H10p1), H10p1))), H10p1), GroupByThenMean(divide(add(P6p2, round(subtract(subtract(GroupByThenMedian(GroupByThenStd(P1, H10p1), P15p3), H10p1), H10p1))), H10p1), P15p3)))",0.394241,1074.18
+13,"subtract(add(GroupByThenMean(divide(add(P6p2, round(subtract(subtract(GroupByThenMedian(GroupByThenStd(P1, H10p1), P15p3), H10p1), H10p1))), H10p1), P15p3), H8p2), H8p2)",0.394241,1218.83
+14,"add(P18p2, GroupByThenMean(divide(add(P6p2, round(subtract(subtract(GroupByThenMedian(GroupByThenStd(P1, H10p1), P15p3), H10p1), H10p1))), H10p1), P15p3))",0.394241,1373.52
+15,"add(subtract(add(GroupByThenMean(divide(add(P6p2, round(subtract(subtract(GroupByThenMedian(GroupByThenStd(P1, H10p1), P15p3), H10p1), H10p1))), H10p1), P15p3), H8p2), H8p2), P18p2)",0.394241,1538.39
+16,"GroupByThenMedian(add(H40p4, GroupByThenMean(divide(add(P6p2, round(subtract(subtract(GroupByThenMedian(GroupByThenStd(P1, H10p1), P15p3), H10p1), H10p1))), H10p1), GroupByThenMean(divide(add(P6p2, round(subtract(subtract(GroupByThenMedian(GroupByThenStd(P1, H10p1), P15p3), H10p1), H10p1))), H10p1), P15p3))), GroupByThenMedian(add(GroupByThenMean(divide(add(P6p2, round(subtract(subtract(GroupByThenMedian(GroupByThenStd(P1, H10p1), P15p3), H10p1), H10p1))), H10p1), P15p3), H8p2), P15p3))",0.394241,1713.18
+17,"GroupByThenMean(subtract(add(GroupByThenMean(divide(add(P6p2, round(subtract(subtract(GroupByThenMedian(GroupByThenStd(P1, H10p1), P15p3), H10p1), H10p1))), H10p1), P15p3), H8p2), H8p2), GroupByThenMean(divide(add(P6p2, round(subtract(subtract(GroupByThenMedian(GroupByThenStd(P1, H10p1), P15p3), H10p1), H10p1))), H10p1), P15p3))",0.394241,1899.74
+18,"multiply(H10p1, add(H40p4, GroupByThenMean(divide(add(P6p2, round(subtract(subtract(GroupByThenMedian(GroupByThenStd(P1, H10p1), P15p3), H10p1), H10p1))), H10p1), GroupByThenMean(divide(add(P6p2, round(subtract(subtract(GroupByThenMedian(GroupByThenStd(P1, H10p1), P15p3), H10p1), H10p1))), H10p1), P15p3))))",0.394241,2096.0
+19,"GroupByThenMax(add(P18p2, GroupByThenMean(divide(add(P6p2, round(subtract(subtract(GroupByThenMedian(GroupByThenStd(P1, H10p1), P15p3), H10p1), H10p1))), H10p1), P15p3)), GroupByThenMean(divide(add(P6p2, round(subtract(subtract(GroupByThenMedian(GroupByThenStd(P1, H10p1), P15p3), H10p1), H10p1))), H10p1), P15p3))",0.394241,2306.35
+20,"add(H40p4, multiply(H10p1, add(H40p4, GroupByThenMean(divide(add(P6p2, round(subtract(subtract(GroupByThenMedian(GroupByThenStd(P1, H10p1), P15p3), H10p1), H10p1))), H10p1), GroupByThenMean(divide(add(P6p2, round(subtract(subtract(GroupByThenMedian(GroupByThenStd(P1, H10p1), P15p3), H10p1), H10p1))), H10p1), P15p3)))))",0.394241,2527.93
+21,"add(H40p4, GroupByThenMax(add(P18p2, GroupByThenMean(divide(add(P6p2, round(subtract(subtract(GroupByThenMedian(GroupByThenStd(P1, H10p1), P15p3), H10p1), H10p1))), H10p1), P15p3)), GroupByThenMean(divide(add(P6p2, round(subtract(subtract(GroupByThenMedian(GroupByThenStd(P1, H10p1), P15p3), H10p1), H10p1))), H10p1), P15p3)))",0.394241,2762.69
+22,"GroupByThenMedian(subtract(add(GroupByThenMean(divide(add(P6p2, round(subtract(subtract(GroupByThenMedian(GroupByThenStd(P1, H10p1), P15p3), H10p1), H10p1))), H10p1), P15p3), H8p2), H8p2), divide(add(P6p2, round(subtract(subtract(GroupByThenMedian(GroupByThenStd(P1, H10p1), P15p3), H10p1), H10p1))), H10p1))",0.394241,3009.49
+23,"GroupByThenMean(subtract(add(GroupByThenMean(divide(add(P6p2, round(subtract(subtract(GroupByThenMedian(GroupByThenStd(P1, H10p1), P15p3), H10p1), H10p1))), H10p1), P15p3), H8p2), H8p2), P15p3)",0.394241,3268.94
+24,"add(H40p4, add(GroupByThenMean(divide(add(P6p2, round(subtract(subtract(GroupByThenMedian(GroupByThenStd(P1, H10p1), P15p3), H10p1), H10p1))), H10p1), P15p3), H8p2))",0.394241,3539.98

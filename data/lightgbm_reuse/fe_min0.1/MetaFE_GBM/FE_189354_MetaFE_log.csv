@@ -1,0 +1,12 @@
+step,feature,predicted_improvement,elapsed_s
+surrogate,,,72.55
+0,,,0.0
+1,"GroupByThenMin(AirportFrom, AirportTo)",0.220121,131.51
+2,"GroupByThenMax(AirportTo, GroupByThenMin(AirportFrom, AirportTo))",0.220121,300.33
+3,"GroupByThenMin(AirportTo, GroupByThenMax(AirportTo, GroupByThenMin(AirportFrom, AirportTo)))",0.220121,516.54
+4,"Combine(DayOfWeek, AirportFrom)",0.140951,816.69
+5,"GroupByThenMin(AirportTo, Combine(DayOfWeek, AirportFrom))",0.174276,1121.78
+6,"GroupByThenMax(AirportTo, GroupByThenMin(AirportTo, Combine(DayOfWeek, AirportFrom)))",0.174276,1481.07
+7,"GroupByThenMin(AirportFrom, GroupByThenMin(AirportTo, Combine(DayOfWeek, AirportFrom)))",0.174276,1903.23
+8,"GroupByThenMax(GroupByThenMin(AirportFrom, GroupByThenMin(AirportTo, Combine(DayOfWeek, AirportFrom))), AirportFrom)",0.174276,2395.24
+9,"GroupByThenMax(GroupByThenMin(AirportTo, Combine(DayOfWeek, AirportFrom)), AirportFrom)",0.174276,3015.5
