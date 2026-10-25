@@ -26,3 +26,5 @@ surrogate,,,65.17
 23,"GroupByThenMedian(round(divide(GroupByThenMax(GroupByThenMedian(GroupByThenStd(GroupByThenMin(V8, V9), V7), V9), V2), V23)), GroupByThenMax(add(V23, divide(GroupByThenMax(GroupByThenMedian(GroupByThenStd(GroupByThenMin(V8, V9), V7), V9), V2), V23)), V8))",0.401549,1357.13
 24,"GroupByThenMean(add(V17, add(V23, divide(GroupByThenMax(GroupByThenMedian(GroupByThenStd(GroupByThenMin(V8, V9), V7), V9), V2), V23))), round(divide(GroupByThenMax(GroupByThenMedian(GroupByThenStd(GroupByThenMin(V8, V9), V7), V9), V2), V23)))",0.401549,1458.09
 25,"add(V27, round(add(V23, divide(GroupByThenMax(GroupByThenMedian(GroupByThenStd(GroupByThenMin(V8, V9), V7), V9), V2), V23))))",0.401549,1563.96
+26,"add(V12, add(V23, divide(GroupByThenMax(GroupByThenMedian(GroupByThenStd(GroupByThenMin(V8, V9), V7), V9), V2), V23)))",0.401549,1674.34
+27,"round(GroupByThenMedian(round(divide(GroupByThenMax(GroupByThenMedian(GroupByThenStd(GroupByThenMin(V8, V9), V7), V9), V2), V23)), GroupByThenMax(add(V23, divide(GroupByThenMax(GroupByThenMedian(GroupByThenStd(GroupByThenMin(V8, V9), V7), V9), V2), V23)), V8)))",0.401549,1789.11
