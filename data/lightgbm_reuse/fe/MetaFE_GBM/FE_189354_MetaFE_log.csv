@@ -7,3 +7,6 @@ surrogate,,,70.38
 4,"Combine(DayOfWeek, AirportFrom)",0.140951,848.45
 5,"GroupByThenMin(AirportTo, Combine(DayOfWeek, AirportFrom))",0.174276,1164.84
 6,"GroupByThenMax(AirportTo, GroupByThenMin(AirportTo, Combine(DayOfWeek, AirportFrom)))",0.174276,1541.12
+7,"GroupByThenMin(AirportFrom, GroupByThenMin(AirportTo, Combine(DayOfWeek, AirportFrom)))",0.174276,1986.26
+8,"GroupByThenMax(GroupByThenMin(AirportFrom, GroupByThenMin(AirportTo, Combine(DayOfWeek, AirportFrom))), AirportFrom)",0.174276,2503.09
+9,"GroupByThenMax(GroupByThenMin(AirportTo, Combine(DayOfWeek, AirportFrom)), AirportFrom)",0.174276,3152.39

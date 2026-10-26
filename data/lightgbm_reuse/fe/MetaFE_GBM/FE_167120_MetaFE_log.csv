@@ -6,3 +6,7 @@ surrogate,,,63.45
 3,"GroupByThenStd(attribute_18, GroupByThenStd(attribute_8, attribute_0))",0.072141,861.43
 4,"GroupByThenStd(GroupByThenStd(attribute_18, GroupByThenStd(attribute_8, attribute_0)), attribute_2)",0.091565,1197.92
 5,"GroupByThenMean(GroupByThenStd(GroupByThenStd(attribute_18, GroupByThenStd(attribute_8, attribute_0)), attribute_2), GroupByThenStd(GroupByThenStd(attribute_18, GroupByThenStd(attribute_8, attribute_0)), attribute_2))",0.091565,1564.16
+6,"GroupByThenMin(GroupByThenStd(GroupByThenStd(attribute_18, GroupByThenStd(attribute_8, attribute_0)), attribute_2), GroupByThenStd(attribute_18, GroupByThenStd(attribute_8, attribute_0)))",0.091235,1967.87
+7,"GroupByThenMedian(GroupByThenMin(GroupByThenStd(GroupByThenStd(attribute_18, GroupByThenStd(attribute_8, attribute_0)), attribute_2), GroupByThenStd(attribute_18, GroupByThenStd(attribute_8, attribute_0))), attribute_3)",0.092493,2392.88
+8,"GroupByThenNUnique(attribute_3, GroupByThenMedian(GroupByThenMin(GroupByThenStd(GroupByThenStd(attribute_18, GroupByThenStd(attribute_8, attribute_0)), attribute_2), GroupByThenStd(attribute_18, GroupByThenStd(attribute_8, attribute_0))), attribute_3))",0.101665,2841.13
+9,"subtract(GroupByThenNUnique(attribute_3, GroupByThenMedian(GroupByThenMin(GroupByThenStd(GroupByThenStd(attribute_18, GroupByThenStd(attribute_8, attribute_0)), attribute_2), GroupByThenStd(attribute_18, GroupByThenStd(attribute_8, attribute_0))), attribute_3)), attribute_14)",0.114576,3314.8

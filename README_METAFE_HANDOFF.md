@@ -14,7 +14,7 @@ pipeline, and MetaFE has to be fixed and rerun (including parts of the surrogate
 
 | Experiment | What | Where / how | Status |
 |---|---|---|---|
-| `lightgbm_reuse` | LightGBM only, AutoGluon 1.2.1. Knowledge base = only the old labels whose training feature is identical with the fixed operators (75–93 %, no new fits); `Combine`/`CombineThenFreq` etc. have no labels and are never proposed. MetaFE up to 1 h. | calculco (OAR): `scripts/submit_oar.sh` | run with `MIN_IMPROVEMENT` 0.01 submitted 2026-10-25 21:05 (jobs 76943–77118), results in `results/lightgbm_reuse/` (check whether they are in git). An earlier run with 0.1 is in `results/lightgbm_reuse_min0.1/` and `data/lightgbm_reuse/fe_min0.1/`: see below |
+| `lightgbm_reuse` | LightGBM only, AutoGluon 1.2.1. Knowledge base = only the old labels whose training feature is identical with the fixed operators (75–93 %, no new fits); `Combine`/`CombineThenFreq` etc. have no labels and are never proposed. MetaFE up to 1 h. | calculco (OAR): `scripts/submit_oar.sh` | run with `MIN_IMPROVEMENT` 0.01 done (see below), results in `results/lightgbm_reuse/` (check whether they are in git). An earlier run with 0.1 is in `results/lightgbm_reuse_min0.1/` and `data/lightgbm_reuse/fe_min0.1/`: see below |
 | `lightgbm` | Same, but the missing labels (mainly `Combine`) are computed with LightGBM: the full, clean LightGBM experiment. Completes the OpenFE/TabPrep comparison (same setup, cached results). | SLURM: `scripts/submit_lightgbm.sh` | not run |
 | `multimodel` | LinearModel, RandomForest, LightGBM, TabICLv2, RealMLP (exactly these; the user does not want TabM, Mitra, CatBoost, ...), AutoGluon 1.6.3; TabICL and RealMLP on GPU. MetaFE per target model; evaluation with every model, averaged over the models. | SLURM: `scripts/setup_venv_multimodel.sh`, `scripts/submit_pilot.sh`, `python -m metafe.pilot summary`, then `scripts/submit_multimodel.sh` | not run; `max_candidates=500`, `max_label_rows=50000` are placeholders to set from the pilot |
 
@@ -36,7 +36,17 @@ datasets**; the other 23 took 39 steps on average (deeply nested GroupBy chains)
 | MetaFE (500–3600 s) | −0.14 … −0.37 % | 0.00 % | 12–15 / 44 |
 | OpenFE | −7.78 % (one outlier) | +1.21 % | 26 / 36 |
 
-Hence the rerun with 0.01 (now the experiment default). Things to look at next: the surrogate keeps stacking
+Hence the rerun with 0.01 (now the experiment default).
+
+### Result of `lightgbm_reuse` with `MIN_IMPROVEMENT = 0.01` (finished 2026-10-26 02:24, all jobs exit 0)
+
+MetaFE took steps on all 44 datasets (38 on average). Test improvement over Original: MetaFE mean −21.6 % (100 s)
+to −30.2 % (250 s), median ≈ 0 % at every time limit, better than Original on 21–25 / 44 datasets (TabPrep, OpenFE
+unchanged). The mean is ruined by a few datasets (MetaFE 1000 s: wilt −1157 %, car −110 %, phoneme −33 %, socmob
+−14 %); without the 3 worst, mean +0.21 %, median +0.01 %. Best: kr_vs_kp +21 %, jungle_chess +10 %, shuttle
++6 %, yeast +5 %. So with clean labels MetaFE is currently about neutral, with rare catastrophic failures, far
+behind TabPrep. The failures (deeply nested features; log loss explodes on wilt/car) are the first thing to
+investigate, in the step logs `data/lightgbm_reuse/fe/MetaFE_GBM/FE_<id>_MetaFE_log.csv`. Things to look at next: the surrogate keeps stacking
 nested features (more time hurts); the threshold is a relative improvement and maybe should be compared with the
 label distribution per dataset; the surrogate's inputs include `dataset - id` and `feature - name`.
 
