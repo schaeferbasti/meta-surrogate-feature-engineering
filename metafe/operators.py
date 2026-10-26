@@ -6,7 +6,9 @@ A candidate feature is named like a function call, e.g. "add(a, b)", "freq(a)", 
 All statistics (min/max, counts, group statistics, category codes) come from the training rows only, and all codes are
 assigned in sorted order, so a feature never depends on the row order. (The first implementation numbered categories
 by order of appearance; OpenML returns the training rows grouped by class, so those codes leaked the target.)
-Test values never seen in the training rows (unseen category, combination or group) become NaN, counts become 0.
+Test values never seen in the training rows (unseen category or combination) become NaN, counts become 0. A test
+row whose numeric group key does not occur in the training rows gets the statistic of the nearest training key value
+(continuous keys: almost every test value is unseen, so NaN would empty the feature on the test rows).
 """
 import re
 
@@ -56,10 +58,21 @@ def parse_featurename(name):
     return canonical_operator(match.group(1)), operands
 
 
-def candidate_featurenames(columns):
-    """All candidate features for the given columns: delete each column, every binary and every unary operator."""
+def is_categorical(column):
+    """Non-numeric (category, object, string) or boolean column."""
+    return not pd.api.types.is_numeric_dtype(column) or pd.api.types.is_bool_dtype(column)
+
+
+def candidate_featurenames(X):
+    """All candidate features for the columns of X: delete each column, every binary and every unary operator.
+    GroupBy operators only group by a categorical column (second operand), like TabPrep and OpenFE: grouping by a
+    numeric column gives about one group per value, i.e. noise on the training rows and unseen groups on the test
+    rows."""
+    columns = list(X.columns)
+    categorical = {c for c in columns if is_categorical(X[c])}
     names = [featurename(DELETE, c) for c in columns]
-    names += [featurename(op, a, b) for a in columns for b in columns for op in BINARY_OPERATORS]
+    names += [featurename(op, a, b) for a in columns for b in columns for op in BINARY_OPERATORS
+              if not op.startswith("GroupBy") or b in categorical]
     names += [featurename(op, c) for c in columns for op in UNARY_OPERATORS]
     return names
 
@@ -92,10 +105,31 @@ def _keys(s):
     return s.astype(object)
 
 
+def _nearest_train_keys(train_key, test_key):
+    """Test keys with every numeric value that does not occur in the training rows replaced by the nearest training
+    key value (only training values are used); non-numeric keys are returned unchanged."""
+    if test_key is None or isinstance(train_key.dtype, pd.CategoricalDtype) \
+            or not pd.api.types.is_numeric_dtype(train_key) or pd.api.types.is_bool_dtype(train_key):
+        return test_key
+    known = np.unique(train_key.dropna().to_numpy(dtype="float64"))
+    values = test_key.to_numpy(dtype="float64")
+    if len(known) == 0:
+        return test_key
+    right = np.clip(np.searchsorted(known, values), 0, len(known) - 1)
+    left = np.clip(right - 1, 0, len(known) - 1)
+    with np.errstate(invalid="ignore"):
+        nearest = np.where(np.abs(values - known[left]) <= np.abs(known[right] - values), known[left], known[right])
+    nearest[np.isnan(values)] = np.nan
+    # Keep the training dtype, so that the keys hash like the training keys
+    return pd.Series(nearest, index=test_key.index).astype(train_key.dtype if not train_key.isna().any()
+                                                         and not np.isnan(nearest).any() else "float64")
+
+
 def _map_group_statistic(stat, train_key, test_key):
     stat = stat.copy()
     stat.index = stat.index.astype(object)
     mapping = stat.to_dict()
+    test_key = _nearest_train_keys(train_key, test_key)
     return _keys(train_key).map(mapping), (None if test_key is None else _keys(test_key).map(mapping))
 
 
@@ -103,6 +137,7 @@ def _rank_against_train(train_values, train_key, test_values, test_key):
     # Percentile of each test value within the training values of its group (mid-rank, like rank(pct=True))
     result = pd.Series(np.nan, index=test_values.index, dtype="float64")
     train_groups = {k: np.sort(v.dropna().to_numpy()) for k, v in train_values.groupby(_keys(train_key))}
+    test_key = _nearest_train_keys(train_key, test_key)
     for key, idx in test_values.groupby(_keys(test_key)).groups.items():
         sorted_values = train_groups.get(key)
         if sorted_values is None or len(sorted_values) == 0:

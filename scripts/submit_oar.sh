@@ -7,7 +7,9 @@
 # Afterwards, on the login node (seconds):
 #   python -m metafe.evaluation.merge_folds --experiment lightgbm_reuse
 #   python -m metafe.evaluation.plots --experiment lightgbm_reuse
-# Usage: DRY_RUN=1 scripts/submit_oar.sh; options: FROM=metafe|evaluate (earlier stages done), DATASETS,
+# FROM=replay: instead of kb + metafe, 1 job rebuilds the MetaFE files from the step logs (metafe.metafe --replay),
+# then the evaluation jobs run after it.
+# Usage: DRY_RUN=1 scripts/submit_oar.sh; options: FROM=metafe|replay|evaluate (earlier stages done), DATASETS,
 # EXPERIMENT (default lightgbm_reuse), VENV (default ~/venvs/metafe), PROPERTIES (node filter).
 set -euo pipefail
 
@@ -45,9 +47,14 @@ if [ "$FROM" = kb ]; then
     kb=$(submit "kb_$EXPERIMENT" core=16,walltime=3:00:00 "" scripts/build_knowledge_base.sh "$EXPERIMENT")
     echo "knowledge base: $kb"
 fi
+replay=""
+if [ "$FROM" = replay ]; then
+    replay=$(submit "replay_$EXPERIMENT" core=16,walltime=1:00:00 "" scripts/replay_metafe.sh "$EXPERIMENT")
+    echo "MetaFE replay: $replay"
+fi
 for d in $DATASETS; do
-    metafe=""
-    if [ "$FROM" != evaluate ]; then
+    metafe=$replay
+    if [ "$FROM" = kb ] || [ "$FROM" = metafe ]; then
         metafe=$(submit "metafe_$d" "core=8,walltime=$METAFE_WALLTIME" "$kb" \
             python -m metafe.metafe --experiment "$EXPERIMENT" --dataset "$d")
     fi

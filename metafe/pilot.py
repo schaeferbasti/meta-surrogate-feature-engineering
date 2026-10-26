@@ -36,7 +36,7 @@ def device(model_key):
 def run(dataset_id, model_key, experiment, n_candidates):
     X_train, y_train, metadata = label_data(dataset_id, experiment)
     classification = is_classification(metadata)
-    candidates = sample_candidates(candidate_featurenames(X_train.columns), n_candidates, seed=1)
+    candidates = sample_candidates(candidate_featurenames(X_train), n_candidates, seed=1)
     out_path = os.path.join(experiment.pilot_dir, f"{model_key}_{dataset_id}.csv")
     os.makedirs(experiment.pilot_dir, exist_ok=True)
     rows, original = [], None

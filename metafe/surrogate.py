@@ -30,7 +30,7 @@ class Surrogate:
         """Metafeature rows of all candidate features of X_train, except features that are already columns, the
         names in exclude (e.g. features added or deleted before) and operators the surrogate has no label of."""
         exclude = set(exclude) | set(X_train.columns)
-        names = [n for n in candidate_featurenames(X_train.columns)
+        names = [n for n in candidate_featurenames(X_train)
                  if n not in exclude and parse_featurename(n)[0] in self.operators]
         if X_train.shape[1] <= 1:  # never delete the last column
             names = [n for n in names if parse_featurename(n)[0] != "delete"]

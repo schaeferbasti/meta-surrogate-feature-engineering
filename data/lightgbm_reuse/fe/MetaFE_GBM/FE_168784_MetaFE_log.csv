@@ -1,42 +1,32 @@
 step,feature,predicted_improvement,elapsed_s
-surrogate,,,65.17
+surrogate,,,54.64
 0,,,0.0
-1,"GroupByThenMin(V8, V9)",0.327798,28.32
-2,"GroupByThenStd(GroupByThenMin(V8, V9), V7)",0.361858,58.87
-3,"GroupByThenMedian(GroupByThenStd(GroupByThenMin(V8, V9), V7), V9)",0.369361,91.53
-4,"GroupByThenMax(GroupByThenMedian(GroupByThenStd(GroupByThenMin(V8, V9), V7), V9), V2)",0.399107,126.77
-5,"divide(GroupByThenMax(GroupByThenMedian(GroupByThenStd(GroupByThenMin(V8, V9), V7), V9), V2), V23)",0.401549,163.81
-6,"add(V23, divide(GroupByThenMax(GroupByThenMedian(GroupByThenStd(GroupByThenMin(V8, V9), V7), V9), V2), V23))",0.401549,203.45
-7,"round(add(V23, divide(GroupByThenMax(GroupByThenMedian(GroupByThenStd(GroupByThenMin(V8, V9), V7), V9), V2), V23)))",0.401549,246.17
-8,"subtract(divide(GroupByThenMax(GroupByThenMedian(GroupByThenStd(GroupByThenMin(V8, V9), V7), V9), V2), V23), V23)",0.401549,291.21
-9,"GroupByThenMax(add(V23, divide(GroupByThenMax(GroupByThenMedian(GroupByThenStd(GroupByThenMin(V8, V9), V7), V9), V2), V23)), V8)",0.401549,339.27
-10,"GroupByThenMean(round(add(V23, divide(GroupByThenMax(GroupByThenMedian(GroupByThenStd(GroupByThenMin(V8, V9), V7), V9), V2), V23))), GroupByThenMax(add(V23, divide(GroupByThenMax(GroupByThenMedian(GroupByThenStd(GroupByThenMin(V8, V9), V7), V9), V2), V23)), V8))",0.401549,390.6
-11,"add(V23, subtract(divide(GroupByThenMax(GroupByThenMedian(GroupByThenStd(GroupByThenMin(V8, V9), V7), V9), V2), V23), V23))",0.401549,444.74
-12,"add(V22, add(V23, subtract(divide(GroupByThenMax(GroupByThenMedian(GroupByThenStd(GroupByThenMin(V8, V9), V7), V9), V2), V23), V23)))",0.401549,502.57
-13,"round(subtract(divide(GroupByThenMax(GroupByThenMedian(GroupByThenStd(GroupByThenMin(V8, V9), V7), V9), V2), V23), V23))",0.401549,562.56
-14,"round(GroupByThenMax(add(V23, divide(GroupByThenMax(GroupByThenMedian(GroupByThenStd(GroupByThenMin(V8, V9), V7), V9), V2), V23)), V8))",0.401549,625.27
-15,"round(divide(GroupByThenMax(GroupByThenMedian(GroupByThenStd(GroupByThenMin(V8, V9), V7), V9), V2), V23))",0.401549,691.36
-16,"add(V22, GroupByThenMax(add(V23, divide(GroupByThenMax(GroupByThenMedian(GroupByThenStd(GroupByThenMin(V8, V9), V7), V9), V2), V23)), V8))",0.401549,760.79
-17,"add(V17, add(V23, divide(GroupByThenMax(GroupByThenMedian(GroupByThenStd(GroupByThenMin(V8, V9), V7), V9), V2), V23)))",0.401549,834.61
-18,"add(V13, add(V23, divide(GroupByThenMax(GroupByThenMedian(GroupByThenStd(GroupByThenMin(V8, V9), V7), V9), V2), V23)))",0.401549,912.25
-19,"round(add(V17, add(V23, divide(GroupByThenMax(GroupByThenMedian(GroupByThenStd(GroupByThenMin(V8, V9), V7), V9), V2), V23))))",0.401549,993.94
-20,"round(add(V22, GroupByThenMax(add(V23, divide(GroupByThenMax(GroupByThenMedian(GroupByThenStd(GroupByThenMin(V8, V9), V7), V9), V2), V23)), V8)))",0.401549,1078.65
-21,"add(V25, subtract(divide(GroupByThenMax(GroupByThenMedian(GroupByThenStd(GroupByThenMin(V8, V9), V7), V9), V2), V23), V23))",0.401549,1166.4
-22,"round(add(V25, subtract(divide(GroupByThenMax(GroupByThenMedian(GroupByThenStd(GroupByThenMin(V8, V9), V7), V9), V2), V23), V23)))",0.401549,1259.66
-23,"GroupByThenMedian(round(divide(GroupByThenMax(GroupByThenMedian(GroupByThenStd(GroupByThenMin(V8, V9), V7), V9), V2), V23)), GroupByThenMax(add(V23, divide(GroupByThenMax(GroupByThenMedian(GroupByThenStd(GroupByThenMin(V8, V9), V7), V9), V2), V23)), V8))",0.401549,1357.13
-24,"GroupByThenMean(add(V17, add(V23, divide(GroupByThenMax(GroupByThenMedian(GroupByThenStd(GroupByThenMin(V8, V9), V7), V9), V2), V23))), round(divide(GroupByThenMax(GroupByThenMedian(GroupByThenStd(GroupByThenMin(V8, V9), V7), V9), V2), V23)))",0.401549,1458.09
-25,"add(V27, round(add(V23, divide(GroupByThenMax(GroupByThenMedian(GroupByThenStd(GroupByThenMin(V8, V9), V7), V9), V2), V23))))",0.401549,1563.96
-26,"add(V12, add(V23, divide(GroupByThenMax(GroupByThenMedian(GroupByThenStd(GroupByThenMin(V8, V9), V7), V9), V2), V23)))",0.401549,1674.34
-27,"round(GroupByThenMedian(round(divide(GroupByThenMax(GroupByThenMedian(GroupByThenStd(GroupByThenMin(V8, V9), V7), V9), V2), V23)), GroupByThenMax(add(V23, divide(GroupByThenMax(GroupByThenMedian(GroupByThenStd(GroupByThenMin(V8, V9), V7), V9), V2), V23)), V8)))",0.401549,1789.11
-28,"add(V13, round(divide(GroupByThenMax(GroupByThenMedian(GroupByThenStd(GroupByThenMin(V8, V9), V7), V9), V2), V23)))",0.401549,1907.91
-29,"GroupByThenMax(round(divide(GroupByThenMax(GroupByThenMedian(GroupByThenStd(GroupByThenMin(V8, V9), V7), V9), V2), V23)), round(GroupByThenMax(add(V23, divide(GroupByThenMax(GroupByThenMedian(GroupByThenStd(GroupByThenMin(V8, V9), V7), V9), V2), V23)), V8)))",0.401549,2032.21
-30,"add(V22, round(add(V23, divide(GroupByThenMax(GroupByThenMedian(GroupByThenStd(GroupByThenMin(V8, V9), V7), V9), V2), V23))))",0.401549,2160.03
-31,"round(add(V22, round(add(V23, divide(GroupByThenMax(GroupByThenMedian(GroupByThenStd(GroupByThenMin(V8, V9), V7), V9), V2), V23)))))",0.401549,2293.23
-32,"add(GroupByThenMean(round(add(V23, divide(GroupByThenMax(GroupByThenMedian(GroupByThenStd(GroupByThenMin(V8, V9), V7), V9), V2), V23))), GroupByThenMax(add(V23, divide(GroupByThenMax(GroupByThenMedian(GroupByThenStd(GroupByThenMin(V8, V9), V7), V9), V2), V23)), V8)), V15)",0.401549,2429.4
-33,"round(add(V27, round(add(V23, divide(GroupByThenMax(GroupByThenMedian(GroupByThenStd(GroupByThenMin(V8, V9), V7), V9), V2), V23)))))",0.401549,2570.5
-34,"GroupByThenMean(subtract(divide(GroupByThenMax(GroupByThenMedian(GroupByThenStd(GroupByThenMin(V8, V9), V7), V9), V2), V23), V23), add(V23, divide(GroupByThenMax(GroupByThenMedian(GroupByThenStd(GroupByThenMin(V8, V9), V7), V9), V2), V23)))",0.401549,2718.19
-35,"subtract(add(V23, divide(GroupByThenMax(GroupByThenMedian(GroupByThenStd(GroupByThenMin(V8, V9), V7), V9), V2), V23)), V9)",0.401549,2869.94
-36,"GroupByThenMedian(round(add(V23, divide(GroupByThenMax(GroupByThenMedian(GroupByThenStd(GroupByThenMin(V8, V9), V7), V9), V2), V23))), round(add(V22, GroupByThenMax(add(V23, divide(GroupByThenMax(GroupByThenMedian(GroupByThenStd(GroupByThenMin(V8, V9), V7), V9), V2), V23)), V8))))",0.401549,3027.7
-37,"round(GroupByThenMedian(round(add(V23, divide(GroupByThenMax(GroupByThenMedian(GroupByThenStd(GroupByThenMin(V8, V9), V7), V9), V2), V23))), round(add(V22, GroupByThenMax(add(V23, divide(GroupByThenMax(GroupByThenMedian(GroupByThenStd(GroupByThenMin(V8, V9), V7), V9), V2), V23)), V8)))))",0.401549,3190.74
-38,"round(add(GroupByThenMean(round(add(V23, divide(GroupByThenMax(GroupByThenMedian(GroupByThenStd(GroupByThenMin(V8, V9), V7), V9), V2), V23))), GroupByThenMax(add(V23, divide(GroupByThenMax(GroupByThenMedian(GroupByThenStd(GroupByThenMin(V8, V9), V7), V9), V2), V23)), V8)), V15))",0.401549,3360.23
-39,"GroupByThenMax(add(V23, subtract(divide(GroupByThenMax(GroupByThenMedian(GroupByThenStd(GroupByThenMin(V8, V9), V7), V9), V2), V23), V23)), GroupByThenMean(round(add(V23, divide(GroupByThenMax(GroupByThenMedian(GroupByThenStd(GroupByThenMin(V8, V9), V7), V9), V2), V23))), GroupByThenMax(add(V23, divide(GroupByThenMax(GroupByThenMedian(GroupByThenStd(GroupByThenMin(V8, V9), V7), V9), V2), V23)), V8)))",0.401549,3534.21
+1,"multiply(V13, V3)",0.18222,13.88
+2,"divide(multiply(V13, V3), V20)",0.216253,28.53
+3,"add(V18, divide(multiply(V13, V3), V20))",0.217976,44.44
+4,"add(V13, add(V18, divide(multiply(V13, V3), V20)))",0.217976,61.43
+5,"add(V13, add(V13, add(V18, divide(multiply(V13, V3), V20))))",0.217976,79.64
+6,"divide(add(V18, divide(multiply(V13, V3), V20)), V21)",0.217976,99.06
+7,"divide(add(V13, add(V18, divide(multiply(V13, V3), V20))), V21)",0.217976,119.8
+8,"divide(divide(add(V18, divide(multiply(V13, V3), V20)), V21), V21)",0.217976,141.93
+9,"divide(divide(divide(add(V18, divide(multiply(V13, V3), V20)), V21), V21), V24)",0.223615,165.26
+10,"divide(divide(divide(divide(add(V18, divide(multiply(V13, V3), V20)), V21), V21), V24), V24)",0.224453,190.24
+11,"divide(divide(divide(divide(divide(add(V18, divide(multiply(V13, V3), V20)), V21), V21), V24), V24), V23)",0.224529,216.63
+12,"divide(divide(divide(divide(divide(divide(add(V18, divide(multiply(V13, V3), V20)), V21), V21), V24), V24), V23), V23)",0.224603,244.6
+13,"multiply(divide(divide(divide(divide(divide(divide(add(V18, divide(multiply(V13, V3), V20)), V21), V21), V24), V24), V23), V23), V20)",0.271063,274.08
+14,"add(V13, multiply(divide(divide(divide(divide(divide(divide(add(V18, divide(multiply(V13, V3), V20)), V21), V21), V24), V24), V23), V23), V20))",0.271063,305.2
+15,"divide(multiply(divide(divide(divide(divide(divide(divide(add(V18, divide(multiply(V13, V3), V20)), V21), V21), V24), V24), V23), V23), V20), V21)",0.271063,338.1
+16,"add(add(V13, multiply(divide(divide(divide(divide(divide(divide(add(V18, divide(multiply(V13, V3), V20)), V21), V21), V24), V24), V23), V23), V20)), V13)",0.271063,372.49
+17,"add(divide(multiply(divide(divide(divide(divide(divide(divide(add(V18, divide(multiply(V13, V3), V20)), V21), V21), V24), V24), V23), V23), V20), V21), V13)",0.271063,408.57
+18,"subtract(divide(multiply(divide(divide(divide(divide(divide(divide(add(V18, divide(multiply(V13, V3), V20)), V21), V21), V24), V24), V23), V23), V20), V21), V13)",0.271063,446.45
+19,"subtract(subtract(divide(multiply(divide(divide(divide(divide(divide(divide(add(V18, divide(multiply(V13, V3), V20)), V21), V21), V24), V24), V23), V23), V20), V21), V13), V13)",0.271063,486.35
+20,"add(add(add(V13, multiply(divide(divide(divide(divide(divide(divide(add(V18, divide(multiply(V13, V3), V20)), V21), V21), V24), V24), V23), V23), V20)), V13), V13)",0.271063,528.28
+21,"subtract(multiply(divide(divide(divide(divide(divide(divide(add(V18, divide(multiply(V13, V3), V20)), V21), V21), V24), V24), V23), V23), V20), V13)",0.271063,571.86
+22,"add(add(add(add(V13, multiply(divide(divide(divide(divide(divide(divide(add(V18, divide(multiply(V13, V3), V20)), V21), V21), V24), V24), V23), V23), V20)), V13), V13), V13)",0.271063,617.77
+23,"add(add(divide(multiply(divide(divide(divide(divide(divide(divide(add(V18, divide(multiply(V13, V3), V20)), V21), V21), V24), V24), V23), V23), V20), V21), V13), V13)",0.271063,665.63
+24,"divide(divide(divide(divide(divide(divide(divide(add(V18, divide(multiply(V13, V3), V20)), V21), V21), V24), V24), V23), V23), V23)",0.271063,715.68
+25,"divide(subtract(multiply(divide(divide(divide(divide(divide(divide(add(V18, divide(multiply(V13, V3), V20)), V21), V21), V24), V24), V23), V23), V20), V13), V21)",0.271063,768.0
+26,"add(V13, divide(divide(divide(divide(divide(divide(divide(add(V18, divide(multiply(V13, V3), V20)), V21), V21), V24), V24), V23), V23), V23))",0.271063,822.35
+27,"subtract(divide(subtract(multiply(divide(divide(divide(divide(divide(divide(add(V18, divide(multiply(V13, V3), V20)), V21), V21), V24), V24), V23), V23), V20), V13), V21), V13)",0.271063,878.93
+28,"divide(add(V13, multiply(divide(divide(divide(divide(divide(divide(add(V18, divide(multiply(V13, V3), V20)), V21), V21), V24), V24), V23), V23), V20)), V21)",0.271063,937.4
+29,"divide(add(add(add(add(V13, multiply(divide(divide(divide(divide(divide(divide(add(V18, divide(multiply(V13, V3), V20)), V21), V21), V24), V24), V23), V23), V20)), V13), V13), V13), V21)",0.271063,998.41

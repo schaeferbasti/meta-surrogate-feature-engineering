@@ -112,7 +112,7 @@ def build(dataset_id, model_key, experiment, dry_run=False):
     if result is None:
         result = pd.DataFrame(columns=COLUMNS)
     done = set(result["feature - name"])
-    all_candidates = candidate_featurenames(X_train.columns)
+    all_candidates = candidate_featurenames(X_train)
     candidates = sample_candidates(all_candidates, experiment.max_candidates)
     print(f"Dataset {dataset_id} ({metadata['task_type']}, {len(X_train)} label rows), model {model}: "
           f"{len(candidates)} of {len(all_candidates)} candidates, {len(old_labels)} old labels, "

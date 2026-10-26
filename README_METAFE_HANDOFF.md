@@ -50,6 +50,23 @@ investigate, in the step logs `data/lightgbm_reuse/fe/MetaFE_GBM/FE_<id>_MetaFE_
 nested features (more time hurts); the threshold is a relative improvement and maybe should be compared with the
 label distribution per dataset; the surrogate's inputs include `dataset - id` and `feature - name`.
 
+### Why MetaFE failed with 0.01, and the third run (2026-10-26 morning)
+
+The catastrophic datasets (wilt −1157 %, car, phoneme) came from GroupBy features with a **continuous group key**:
+on the training rows almost every key value is its own group, on the test rows almost every key value is unseen,
+so the features were 86–89 % NaN on the test rows (fit-on-train mapping of group statistics). Two changes:
+1. `candidate_featurenames(X)` allows GroupBy operators only with a categorical (non-numeric or boolean) group key,
+   like TabPrep (`GroupByFeatureGenerator`: keys = category/object columns) and OpenFE.
+2. Unseen numeric group keys on the test rows get the statistic of the nearest training key value (not
+   transductive). With change 1 this only matters for features built before.
+(A replay of the logged steps with change 2 alone fixed wilt: test log loss 0.711 → 0.073, Original 0.065.)
+
+Third run, submitted 2026-10-26 07:15 (jobs 77128–77304): knowledge base rebuilt without numeric-key GroupBy labels,
+MetaFE with `MIN_IMPROVEMENT` 0.01 and time limits 100–1000 s (calculco deadline), LightGBM on 3 seeds. Results in
+`results/lightgbm_reuse/`. Earlier runs are kept: `results/lightgbm_reuse_min0.1/`,
+`results/lightgbm_reuse_min0.01_testnan/`, `data/lightgbm_reuse_numeric_keys/`. `metafe.metafe --replay` rebuilds
+MetaFE files from the step logs after changes that only affect the test rows.
+
 ### What to do on the new (SLURM, GPU) cluster
 
 1. Clone, `git lfs pull`. Check `results/lightgbm_reuse/` (plots in `results/lightgbm_reuse/plots/LightGBM/`,

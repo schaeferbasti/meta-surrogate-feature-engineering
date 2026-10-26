@@ -1,36 +1,23 @@
 step,feature,predicted_improvement,elapsed_s
-surrogate,,,63.46
+surrogate,,,49.6
 0,,,0.0
-1,"CombineThenFreq(SaTime1, SaTime2)",0.139039,26.77
-2,"add(diffRollRate, CombineThenFreq(SaTime1, SaTime2))",0.139882,54.45
-3,"add(diffSaTime4, add(diffRollRate, CombineThenFreq(SaTime1, SaTime2)))",0.139882,85.79
-4,"GroupByThenMin(add(diffRollRate, CombineThenFreq(SaTime1, SaTime2)), CombineThenFreq(SaTime1, SaTime2))",0.139882,120.96
-5,"add(diffSaTime1, add(diffRollRate, CombineThenFreq(SaTime1, SaTime2)))",0.139882,158.98
-6,"subtract(GroupByThenMin(add(diffRollRate, CombineThenFreq(SaTime1, SaTime2)), CombineThenFreq(SaTime1, SaTime2)), Sa)",0.139882,201.41
-7,"add(add(diffSaTime1, add(diffRollRate, CombineThenFreq(SaTime1, SaTime2))), SaTime4)",0.139882,248.44
-8,"GroupByThenMean(add(diffSaTime1, add(diffRollRate, CombineThenFreq(SaTime1, SaTime2))), add(diffSaTime1, add(diffRollRate, CombineThenFreq(SaTime1, SaTime2))))",0.139882,299.83
-9,"GroupByThenMedian(GroupByThenMean(add(diffSaTime1, add(diffRollRate, CombineThenFreq(SaTime1, SaTime2))), add(diffSaTime1, add(diffRollRate, CombineThenFreq(SaTime1, SaTime2)))), subtract(GroupByThenMin(add(diffRollRate, CombineThenFreq(SaTime1, SaTime2)), CombineThenFreq(SaTime1, SaTime2)), Sa))",0.139882,356.19
-10,"add(SaTime2, GroupByThenMedian(GroupByThenMean(add(diffSaTime1, add(diffRollRate, CombineThenFreq(SaTime1, SaTime2))), add(diffSaTime1, add(diffRollRate, CombineThenFreq(SaTime1, SaTime2)))), subtract(GroupByThenMin(add(diffRollRate, CombineThenFreq(SaTime1, SaTime2)), CombineThenFreq(SaTime1, SaTime2)), Sa)))",0.139882,417.39
-11,"add(SaTime4, GroupByThenMean(add(diffSaTime1, add(diffRollRate, CombineThenFreq(SaTime1, SaTime2))), add(diffSaTime1, add(diffRollRate, CombineThenFreq(SaTime1, SaTime2)))))",0.139882,482.29
-12,"add(GroupByThenMin(add(diffRollRate, CombineThenFreq(SaTime1, SaTime2)), CombineThenFreq(SaTime1, SaTime2)), Sa)",0.139882,553.47
-13,"GroupByThenMean(GroupByThenMin(add(diffRollRate, CombineThenFreq(SaTime1, SaTime2)), CombineThenFreq(SaTime1, SaTime2)), add(diffRollRate, CombineThenFreq(SaTime1, SaTime2)))",0.139882,630.9
-14,"add(diffSaTime1, GroupByThenMean(add(diffSaTime1, add(diffRollRate, CombineThenFreq(SaTime1, SaTime2))), add(diffSaTime1, add(diffRollRate, CombineThenFreq(SaTime1, SaTime2)))))",0.139882,712.14
-15,"add(diffSaTime2, subtract(GroupByThenMin(add(diffRollRate, CombineThenFreq(SaTime1, SaTime2)), CombineThenFreq(SaTime1, SaTime2)), Sa))",0.139882,799.45
-16,"GroupByThenMedian(GroupByThenMedian(GroupByThenMean(add(diffSaTime1, add(diffRollRate, CombineThenFreq(SaTime1, SaTime2))), add(diffSaTime1, add(diffRollRate, CombineThenFreq(SaTime1, SaTime2)))), subtract(GroupByThenMin(add(diffRollRate, CombineThenFreq(SaTime1, SaTime2)), CombineThenFreq(SaTime1, SaTime2)), Sa)), add(diffSaTime4, add(diffRollRate, CombineThenFreq(SaTime1, SaTime2))))",0.139882,892.68
-17,"add(SaTime4, GroupByThenMin(add(diffRollRate, CombineThenFreq(SaTime1, SaTime2)), CombineThenFreq(SaTime1, SaTime2)))",0.139882,991.46
-18,"GroupByThenMean(add(add(diffSaTime1, add(diffRollRate, CombineThenFreq(SaTime1, SaTime2))), SaTime4), GroupByThenMean(add(diffSaTime1, add(diffRollRate, CombineThenFreq(SaTime1, SaTime2))), add(diffSaTime1, add(diffRollRate, CombineThenFreq(SaTime1, SaTime2)))))",0.139882,1096.38
-19,"add(Sa, add(diffRollRate, CombineThenFreq(SaTime1, SaTime2)))",0.139882,1206.86
-20,"add(SaTime1, add(diffRollRate, CombineThenFreq(SaTime1, SaTime2)))",0.139882,1326.0
-21,"add(SaTime2, add(SaTime1, add(diffRollRate, CombineThenFreq(SaTime1, SaTime2))))",0.139882,1450.99
-22,"GroupByThenMedian(add(SaTime4, GroupByThenMin(add(diffRollRate, CombineThenFreq(SaTime1, SaTime2)), CombineThenFreq(SaTime1, SaTime2))), add(diffSaTime1, add(diffRollRate, CombineThenFreq(SaTime1, SaTime2))))",0.139882,1583.95
-23,"add(SaTime2, GroupByThenMin(add(diffRollRate, CombineThenFreq(SaTime1, SaTime2)), CombineThenFreq(SaTime1, SaTime2)))",0.139882,1722.99
-24,"GroupByThenMax(add(diffSaTime1, GroupByThenMean(add(diffSaTime1, add(diffRollRate, CombineThenFreq(SaTime1, SaTime2))), add(diffSaTime1, add(diffRollRate, CombineThenFreq(SaTime1, SaTime2))))), add(diffSaTime2, subtract(GroupByThenMin(add(diffRollRate, CombineThenFreq(SaTime1, SaTime2)), CombineThenFreq(SaTime1, SaTime2)), Sa)))",0.139882,1869.6
-25,"add(SaTime4, add(diffSaTime2, subtract(GroupByThenMin(add(diffRollRate, CombineThenFreq(SaTime1, SaTime2)), CombineThenFreq(SaTime1, SaTime2)), Sa)))",0.139882,2023.26
-26,"subtract(CombineThenFreq(SaTime1, SaTime2), diffRollRate)",0.139882,2183.89
-27,"subtract(subtract(CombineThenFreq(SaTime1, SaTime2), diffRollRate), p)",0.140769,2352.89
-28,"add(subtract(subtract(CombineThenFreq(SaTime1, SaTime2), diffRollRate), p), diffSaTime4)",0.140769,2534.2
-29,"GroupByThenMax(add(subtract(subtract(CombineThenFreq(SaTime1, SaTime2), diffRollRate), p), diffSaTime4), add(diffRollRate, CombineThenFreq(SaTime1, SaTime2)))",0.140769,2727.25
-30,"GroupByThenMedian(GroupByThenMax(add(subtract(subtract(CombineThenFreq(SaTime1, SaTime2), diffRollRate), p), diffSaTime4), add(diffRollRate, CombineThenFreq(SaTime1, SaTime2))), subtract(GroupByThenMin(add(diffRollRate, CombineThenFreq(SaTime1, SaTime2)), CombineThenFreq(SaTime1, SaTime2)), Sa))",0.140769,2929.51
-31,"add(GroupByThenMax(add(subtract(subtract(CombineThenFreq(SaTime1, SaTime2), diffRollRate), p), diffSaTime4), add(diffRollRate, CombineThenFreq(SaTime1, SaTime2))), SaTime4)",0.140769,3140.08
-32,"GroupByThenMin(GroupByThenMedian(GroupByThenMax(add(subtract(subtract(CombineThenFreq(SaTime1, SaTime2), diffRollRate), p), diffSaTime4), add(diffRollRate, CombineThenFreq(SaTime1, SaTime2))), subtract(GroupByThenMin(add(diffRollRate, CombineThenFreq(SaTime1, SaTime2)), CombineThenFreq(SaTime1, SaTime2)), Sa)), add(SaTime4, GroupByThenMin(add(diffRollRate, CombineThenFreq(SaTime1, SaTime2)), CombineThenFreq(SaTime1, SaTime2))))",0.140769,3359.18
-33,"GroupByThenMin(add(subtract(subtract(CombineThenFreq(SaTime1, SaTime2), diffRollRate), p), diffSaTime4), add(SaTime4, GroupByThenMean(add(diffSaTime1, add(diffRollRate, CombineThenFreq(SaTime1, SaTime2))), add(diffSaTime1, add(diffRollRate, CombineThenFreq(SaTime1, SaTime2))))))",0.140769,3586.85
+1,"Combine(diffRollRate, curRoll)",0.247964,17.66
+2,"subtract(Combine(diffRollRate, curRoll), absRoll)",0.251416,37.15
+3,"subtract(subtract(Combine(diffRollRate, curRoll), absRoll), absRoll)",0.262573,59.09
+4,"add(subtract(subtract(Combine(diffRollRate, curRoll), absRoll), absRoll), diffDiffClb)",0.305126,83.68
+5,"add(SaTime2, add(subtract(subtract(Combine(diffRollRate, curRoll), absRoll), absRoll), diffDiffClb))",0.305126,110.9
+6,"add(SaTime2, add(SaTime2, add(subtract(subtract(Combine(diffRollRate, curRoll), absRoll), absRoll), diffDiffClb)))",0.305126,141.4
+7,"subtract(add(SaTime2, add(SaTime2, add(subtract(subtract(Combine(diffRollRate, curRoll), absRoll), absRoll), diffDiffClb))), SaTime1)",0.305126,175.14
+8,"add(subtract(add(SaTime2, add(SaTime2, add(subtract(subtract(Combine(diffRollRate, curRoll), absRoll), absRoll), diffDiffClb))), SaTime1), diffSaTime2)",0.305126,212.56
+9,"add(add(subtract(subtract(Combine(diffRollRate, curRoll), absRoll), absRoll), diffDiffClb), p)",0.305126,253.6
+10,"add(diffSaTime2, add(SaTime2, add(SaTime2, add(subtract(subtract(Combine(diffRollRate, curRoll), absRoll), absRoll), diffDiffClb))))",0.305126,298.7
+11,"round(add(SaTime2, add(subtract(subtract(Combine(diffRollRate, curRoll), absRoll), absRoll), diffDiffClb)))",0.305126,347.55
+12,"round(add(subtract(add(SaTime2, add(SaTime2, add(subtract(subtract(Combine(diffRollRate, curRoll), absRoll), absRoll), diffDiffClb))), SaTime1), diffSaTime2))",0.305126,400.15
+13,"round(add(add(subtract(subtract(Combine(diffRollRate, curRoll), absRoll), absRoll), diffDiffClb), p))",0.305126,456.57
+14,"add(diffSaTime1, add(SaTime2, add(subtract(subtract(Combine(diffRollRate, curRoll), absRoll), absRoll), diffDiffClb)))",0.305126,516.99
+15,"round(add(subtract(subtract(Combine(diffRollRate, curRoll), absRoll), absRoll), diffDiffClb))",0.305126,582.46
+16,"add(add(diffSaTime2, add(SaTime2, add(SaTime2, add(subtract(subtract(Combine(diffRollRate, curRoll), absRoll), absRoll), diffDiffClb)))), SaTime1)",0.305126,651.21
+17,"add(diffRollRate, round(add(subtract(subtract(Combine(diffRollRate, curRoll), absRoll), absRoll), diffDiffClb)))",0.305126,724.8
+18,"subtract(round(add(add(subtract(subtract(Combine(diffRollRate, curRoll), absRoll), absRoll), diffDiffClb), p)), Sa)",0.305126,802.81
+19,"add(diffSaTime2, add(add(subtract(subtract(Combine(diffRollRate, curRoll), absRoll), absRoll), diffDiffClb), p))",0.305126,885.7
+20,"add(add(subtract(subtract(Combine(diffRollRate, curRoll), absRoll), absRoll), diffDiffClb), Sa)",0.305126,973.98

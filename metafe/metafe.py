@@ -23,6 +23,7 @@ The surrogate is trained on the labels of all models of the experiment and predi
 
     python -m metafe.metafe --experiment lightgbm --dataset 146818 [--time_limits 100 250 ... 7200]
     python -m metafe.metafe --experiment multimodel --dataset 146818 --model TABICL
+    python -m metafe.metafe --experiment lightgbm_reuse --dataset 146818 --replay   # rebuild files from the log
 """
 import argparse
 import csv
@@ -119,6 +120,24 @@ def run(dataset_id, model_key, experiment, time_limits, min_improvement=config.M
     print(f"MetaFE finished after {elapsed():.0f} s and {step} steps")
 
 
+def replay(dataset_id, model_key, experiment, time_limits):
+    """Rebuild the FE files of a finished run from its step log with the current operators (e.g. after a change that
+    only affects the test rows: MetaFE's choices only depend on the training rows)."""
+    X_train, y_train, X_test, y_test, _ = load_task(dataset_id)
+    X_train = X_train.rename(columns=sanitize_column_name)
+    X_test = X_test.rename(columns=sanitize_column_name)
+    out_dir = experiment.metafe_dir(model_key)
+    log = pd.read_csv(os.path.join(out_dir, f"FE_{dataset_id}_MetaFE_log.csv"))
+    steps = log[log["step"].astype(str).str.fullmatch(r"[1-9]\d*")]
+    previous = 0.0
+    for limit in sorted(time_limits):
+        names = steps.loc[(steps["elapsed_s"] > previous) & (steps["elapsed_s"] <= limit), "feature"].tolist()
+        X_train, X_test = apply_features(X_train, X_test, names) if names else (X_train, X_test)
+        write_parquet(concat_data(X_train, y_train, X_test, y_test), output_path(out_dir, dataset_id, limit))
+        previous = limit
+    print(f"Dataset {dataset_id}: {len(steps)} steps replayed -> {out_dir}")
+
+
 def run_with_limits(target, time_limit_s, memory_limit_mb, clock_start, check_interval_s=5):
     """Run target() in a child process; kill it time_limit_s after clock_start.value (a shared value that the child
     sets when its clock starts; inf = not started yet) or above memory_limit_mb (RSS). Returns the exit code."""
@@ -149,6 +168,7 @@ def main():
     parser.add_argument("--time_limits", type=int, nargs="+", default=None, help="Default: the experiment's")
     parser.add_argument("--min_improvement", type=float, default=None, help="Default: the experiment's")
     parser.add_argument("--memory_limit_mb", type=int, default=64000)
+    parser.add_argument("--replay", action="store_true", help="Rebuild the FE files from the step log of a finished run")
     parser.add_argument("--count_surrogate_training", action="store_true",
                         help="Count the surrogate training time in the time limits")
     args = parser.parse_args()
@@ -160,6 +180,8 @@ def main():
         parser.error(f"Model {model_key} is not in experiment {experiment.name} ({', '.join(experiment.models)})")
     check_setup(experiment, [model_key])  # the surrogate is an AutoGluon CatBoost model
     time_limits = sorted(args.time_limits or experiment.time_limits)
+    if args.replay:
+        return replay(args.dataset, model_key, experiment, time_limits)
     # The clock starts now, or (default) when the child has trained the surrogate
     clock_start = multiprocessing.get_context("fork").Value("d", time.time() if args.count_surrogate_training else float("inf"))
     exit_code = run_with_limits(

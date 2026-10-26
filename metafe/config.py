@@ -5,7 +5,7 @@ Everything that depends on the models lives in an experiment (EXPERIMENTS, chose
               evaluation results were computed with this setup, and the LightGBM labels of the first core matrix are
               reused where the training feature is unchanged (the other labels are computed).
   lightgbm_reuse  Like lightgbm, but without any new label: only the reusable old labels (75-93 %), MetaFE up to
-              1 h, MIN_IMPROVEMENT 0.01 (with 0.1, MetaFE took no step on 21 of 44 datasets: only 0.5 % of the
+              1000 s (deadline of the calculco shutdown; 100-250 s were best in the earlier runs), MIN_IMPROVEMENT 0.01 (with 0.1, MetaFE took no step on 21 of 44 datasets: only 0.5 % of the
               clean labels are >= 0.1). Needs no AutoGluon fits before MetaFE, so it runs in hours (calculco,
               scripts/submit_oar.sh).
               Operators without any reusable label (Combine, CombineThenFreq) are never proposed by MetaFE.
@@ -99,7 +99,7 @@ class Experiment:
 EXPERIMENTS = {
     "lightgbm": Experiment("lightgbm", models=("GBM",), autogluon="1.2", reuse_legacy_labels=True),
     "lightgbm_reuse": Experiment("lightgbm_reuse", models=("GBM",), autogluon="1.2", reuse_legacy_labels=True,
-                                 compute_labels=False, time_limits=(100, 250, 500, 1000, 1800, 3600),
+                                 compute_labels=False, time_limits=(100, 250, 500, 1000),
                                  baseline_results_from="lightgbm", min_improvement=0.01),
     # max_candidates / max_label_rows: set from the pilot (python -m metafe.pilot summary)
     "multimodel": Experiment("multimodel", models=("LR", "RF", "GBM", "TABICL", "REALMLP"), autogluon="1.6",
