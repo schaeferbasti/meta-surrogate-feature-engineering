@@ -1,0 +1,43 @@
+step,feature,predicted_improvement,elapsed_s
+surrogate,,,36.97
+0,,,0.0
+1,sigmoid(parking_spaces),0.028526,4.05
+2,without - floor,0.020583,8.27
+3,"GroupByThenStd(hoa__BRL_, animal)",0.019617,11.57
+4,"add(fire_insurance__BRL_, GroupByThenStd(hoa__BRL_, animal))",0.020132,15.43
+5,"add(bathroom, add(fire_insurance__BRL_, GroupByThenStd(hoa__BRL_, animal)))",0.020132,19.95
+6,"round(add(bathroom, add(fire_insurance__BRL_, GroupByThenStd(hoa__BRL_, animal))))",0.020132,25.17
+7,"add(bathroom, add(bathroom, add(fire_insurance__BRL_, GroupByThenStd(hoa__BRL_, animal))))",0.020132,31.12
+8,"add(add(bathroom, add(bathroom, add(fire_insurance__BRL_, GroupByThenStd(hoa__BRL_, animal)))), bathroom)",0.020132,37.92
+9,"GroupByThenMedian(add(bathroom, add(bathroom, add(fire_insurance__BRL_, GroupByThenStd(hoa__BRL_, animal)))), animal)",0.020132,45.47
+10,"subtract(round(add(bathroom, add(fire_insurance__BRL_, GroupByThenStd(hoa__BRL_, animal)))), furniture)",0.020132,53.93
+11,"round(add(fire_insurance__BRL_, GroupByThenStd(hoa__BRL_, animal)))",0.020132,63.25
+12,"round(add(bathroom, add(bathroom, add(fire_insurance__BRL_, GroupByThenStd(hoa__BRL_, animal)))))",0.020132,73.5
+13,"add(sigmoid(parking_spaces), round(add(fire_insurance__BRL_, GroupByThenStd(hoa__BRL_, animal))))",0.020132,84.7
+14,"subtract(add(sigmoid(parking_spaces), round(add(fire_insurance__BRL_, GroupByThenStd(hoa__BRL_, animal)))), round(add(fire_insurance__BRL_, GroupByThenStd(hoa__BRL_, animal))))",0.028526,97.02
+15,"add(add(add(bathroom, add(bathroom, add(fire_insurance__BRL_, GroupByThenStd(hoa__BRL_, animal)))), bathroom), bathroom)",0.020132,110.68
+16,"round(add(add(add(bathroom, add(bathroom, add(fire_insurance__BRL_, GroupByThenStd(hoa__BRL_, animal)))), bathroom), bathroom))",0.020132,125.32
+17,"add(city, add(bathroom, add(bathroom, add(fire_insurance__BRL_, GroupByThenStd(hoa__BRL_, animal)))))",0.020132,141.03
+18,"round(add(city, add(bathroom, add(bathroom, add(fire_insurance__BRL_, GroupByThenStd(hoa__BRL_, animal))))))",0.020132,158.15
+19,"add(sigmoid(parking_spaces), add(city, add(bathroom, add(bathroom, add(fire_insurance__BRL_, GroupByThenStd(hoa__BRL_, animal))))))",0.020132,176.56
+20,"add(add(bathroom, add(fire_insurance__BRL_, GroupByThenStd(hoa__BRL_, animal))), rooms)",0.020132,197.55
+21,"round(add(sigmoid(parking_spaces), add(city, add(bathroom, add(bathroom, add(fire_insurance__BRL_, GroupByThenStd(hoa__BRL_, animal)))))))",0.020132,220.38
+22,"add(fire_insurance__BRL_, GroupByThenMedian(add(bathroom, add(bathroom, add(fire_insurance__BRL_, GroupByThenStd(hoa__BRL_, animal)))), animal))",0.020132,244.92
+23,"add(sigmoid(parking_spaces), round(add(sigmoid(parking_spaces), add(city, add(bathroom, add(bathroom, add(fire_insurance__BRL_, GroupByThenStd(hoa__BRL_, animal))))))))",0.020132,270.01
+24,"subtract(add(bathroom, add(bathroom, add(fire_insurance__BRL_, GroupByThenStd(hoa__BRL_, animal)))), rooms)",0.020132,295.99
+25,"round(add(add(bathroom, add(bathroom, add(fire_insurance__BRL_, GroupByThenStd(hoa__BRL_, animal)))), bathroom))",0.020132,323.64
+26,"add(round(add(city, add(bathroom, add(bathroom, add(fire_insurance__BRL_, GroupByThenStd(hoa__BRL_, animal)))))), subtract(add(sigmoid(parking_spaces), round(add(fire_insurance__BRL_, GroupByThenStd(hoa__BRL_, animal)))), round(add(fire_insurance__BRL_, GroupByThenStd(hoa__BRL_, animal)))))",0.020132,352.81
+27,"subtract(round(add(add(add(bathroom, add(bathroom, add(fire_insurance__BRL_, GroupByThenStd(hoa__BRL_, animal)))), bathroom), bathroom)), animal)",0.020132,383.83
+28,"subtract(add(bathroom, add(fire_insurance__BRL_, GroupByThenStd(hoa__BRL_, animal))), animal)",0.020132,416.35
+29,"round(subtract(add(bathroom, add(bathroom, add(fire_insurance__BRL_, GroupByThenStd(hoa__BRL_, animal)))), rooms))",0.020132,450.9
+30,"round(subtract(add(bathroom, add(fire_insurance__BRL_, GroupByThenStd(hoa__BRL_, animal))), animal))",0.020132,487.55
+31,"add(round(add(add(add(bathroom, add(bathroom, add(fire_insurance__BRL_, GroupByThenStd(hoa__BRL_, animal)))), bathroom), bathroom)), subtract(add(sigmoid(parking_spaces), round(add(fire_insurance__BRL_, GroupByThenStd(hoa__BRL_, animal)))), round(add(fire_insurance__BRL_, GroupByThenStd(hoa__BRL_, animal)))))",0.020132,525.57
+32,"add(parking_spaces, subtract(add(bathroom, add(fire_insurance__BRL_, GroupByThenStd(hoa__BRL_, animal))), animal))",0.020132,565.77
+33,"add(sigmoid(parking_spaces), add(sigmoid(parking_spaces), add(city, add(bathroom, add(bathroom, add(fire_insurance__BRL_, GroupByThenStd(hoa__BRL_, animal)))))))",0.020132,607.94
+34,"subtract(round(add(fire_insurance__BRL_, GroupByThenStd(hoa__BRL_, animal))), animal)",0.020132,652.5
+35,"add(add(fire_insurance__BRL_, GroupByThenStd(hoa__BRL_, animal)), sigmoid(parking_spaces))",0.020132,698.87
+36,"add(round(add(bathroom, add(fire_insurance__BRL_, GroupByThenStd(hoa__BRL_, animal)))), rooms)",0.020132,747.49
+37,"add(city, add(add(bathroom, add(bathroom, add(fire_insurance__BRL_, GroupByThenStd(hoa__BRL_, animal)))), bathroom))",0.020132,798.18
+38,"add(round(add(bathroom, add(fire_insurance__BRL_, GroupByThenStd(hoa__BRL_, animal)))), furniture)",0.020132,851.25
+39,"round(add(add(fire_insurance__BRL_, GroupByThenStd(hoa__BRL_, animal)), sigmoid(parking_spaces)))",0.020132,906.15
+40,"add(add(round(add(bathroom, add(fire_insurance__BRL_, GroupByThenStd(hoa__BRL_, animal)))), furniture), animal)",0.020132,963.28

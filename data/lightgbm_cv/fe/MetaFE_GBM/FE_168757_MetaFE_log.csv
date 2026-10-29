@@ -1,0 +1,50 @@
+step,feature,predicted_improvement,elapsed_s
+surrogate,,,38.16
+0,,,0.0
+1,log(property_magnitude),0.094262,6.07
+2,"divide(log(property_magnitude), num_dependents)",0.122618,12.2
+3,"divide(divide(log(property_magnitude), num_dependents), other_payment_plans)",0.122618,18.74
+4,"divide(divide(divide(log(property_magnitude), num_dependents), other_payment_plans), housing)",0.122618,25.82
+5,"multiply(divide(divide(divide(log(property_magnitude), num_dependents), other_payment_plans), housing), num_dependents)",0.122618,33.38
+6,"divide(divide(log(property_magnitude), num_dependents), housing)",0.122618,41.41
+7,"multiply(divide(divide(log(property_magnitude), num_dependents), housing), housing)",0.122618,49.97
+8,"multiply(foreign_worker, multiply(divide(divide(divide(log(property_magnitude), num_dependents), other_payment_plans), housing), num_dependents))",0.122618,58.98
+9,"divide(multiply(foreign_worker, multiply(divide(divide(divide(log(property_magnitude), num_dependents), other_payment_plans), housing), num_dependents)), housing)",0.122618,68.59
+10,"divide(divide(multiply(foreign_worker, multiply(divide(divide(divide(log(property_magnitude), num_dependents), other_payment_plans), housing), num_dependents)), housing), job)",0.122618,78.76
+11,"multiply(housing, divide(divide(divide(log(property_magnitude), num_dependents), other_payment_plans), housing))",0.122618,89.47
+12,"divide(divide(multiply(foreign_worker, multiply(divide(divide(divide(log(property_magnitude), num_dependents), other_payment_plans), housing), num_dependents)), housing), other_payment_plans)",0.122618,100.81
+13,"divide(divide(multiply(foreign_worker, multiply(divide(divide(divide(log(property_magnitude), num_dependents), other_payment_plans), housing), num_dependents)), housing), housing)",0.122618,112.9
+14,"multiply(divide(divide(log(property_magnitude), num_dependents), housing), num_dependents)",0.122618,125.45
+15,"divide(multiply(divide(divide(log(property_magnitude), num_dependents), housing), num_dependents), job)",0.122618,138.58
+16,"divide(divide(divide(divide(log(property_magnitude), num_dependents), other_payment_plans), housing), other_payment_plans)",0.122618,152.39
+17,"divide(multiply(housing, divide(divide(divide(log(property_magnitude), num_dependents), other_payment_plans), housing)), num_dependents)",0.122618,167.1
+18,"multiply(num_dependents, divide(divide(divide(divide(log(property_magnitude), num_dependents), other_payment_plans), housing), other_payment_plans))",0.122618,182.34
+19,"multiply(foreign_worker, divide(divide(divide(divide(log(property_magnitude), num_dependents), other_payment_plans), housing), other_payment_plans))",0.122618,198.27
+20,"multiply(divide(multiply(divide(divide(log(property_magnitude), num_dependents), housing), num_dependents), job), foreign_worker)",0.122618,214.96
+21,"divide(divide(multiply(divide(divide(log(property_magnitude), num_dependents), housing), num_dependents), job), job)",0.122618,232.32
+22,"divide(divide(multiply(divide(divide(log(property_magnitude), num_dependents), housing), num_dependents), job), housing)",0.122618,250.45
+23,"multiply(multiply(divide(divide(log(property_magnitude), num_dependents), housing), num_dependents), foreign_worker)",0.122618,269.37
+24,"divide(multiply(divide(divide(log(property_magnitude), num_dependents), housing), num_dependents), housing)",0.122618,288.92
+25,"divide(divide(multiply(housing, divide(divide(divide(log(property_magnitude), num_dependents), other_payment_plans), housing)), num_dependents), other_payment_plans)",0.122618,309.22
+26,"multiply(housing, divide(divide(divide(divide(log(property_magnitude), num_dependents), other_payment_plans), housing), other_payment_plans))",0.122618,330.36
+27,"divide(divide(divide(divide(divide(log(property_magnitude), num_dependents), other_payment_plans), housing), other_payment_plans), num_dependents)",0.122618,352.43
+28,"multiply(multiply(foreign_worker, divide(divide(divide(divide(log(property_magnitude), num_dependents), other_payment_plans), housing), other_payment_plans)), num_dependents)",0.122618,375.39
+29,"multiply(foreign_worker, multiply(housing, divide(divide(divide(log(property_magnitude), num_dependents), other_payment_plans), housing)))",0.122618,399.11
+30,"divide(divide(multiply(foreign_worker, multiply(divide(divide(divide(log(property_magnitude), num_dependents), other_payment_plans), housing), num_dependents)), housing), num_dependents)",0.122618,423.73
+31,"divide(divide(divide(log(property_magnitude), num_dependents), other_payment_plans), job)",0.122618,449.24
+32,"divide(multiply(foreign_worker, multiply(housing, divide(divide(divide(log(property_magnitude), num_dependents), other_payment_plans), housing))), other_payment_plans)",0.122618,475.54
+33,"multiply(divide(divide(multiply(divide(divide(log(property_magnitude), num_dependents), housing), num_dependents), job), job), foreign_worker)",0.122618,502.86
+34,"divide(divide(divide(divide(log(property_magnitude), num_dependents), other_payment_plans), housing), housing)",0.122618,530.98
+35,"divide(divide(divide(divide(divide(log(property_magnitude), num_dependents), other_payment_plans), housing), other_payment_plans), other_payment_plans)",0.122618,559.99
+36,"divide(multiply(foreign_worker, multiply(divide(divide(divide(log(property_magnitude), num_dependents), other_payment_plans), housing), num_dependents)), job)",0.122618,590.14
+37,"divide(divide(divide(multiply(foreign_worker, multiply(divide(divide(divide(log(property_magnitude), num_dependents), other_payment_plans), housing), num_dependents)), housing), housing), other_payment_plans)",0.122618,621.08
+38,"divide(multiply(divide(divide(multiply(divide(divide(log(property_magnitude), num_dependents), housing), num_dependents), job), job), foreign_worker), job)",0.122618,653.97
+39,"multiply(multiply(divide(divide(log(property_magnitude), num_dependents), housing), housing), foreign_worker)",0.122618,689.73
+40,"multiply(divide(divide(divide(divide(divide(log(property_magnitude), num_dependents), other_payment_plans), housing), other_payment_plans), other_payment_plans), housing)",0.122618,726.56
+41,"divide(divide(divide(divide(divide(log(property_magnitude), num_dependents), other_payment_plans), housing), housing), housing)",0.122618,761.59
+42,"multiply(divide(divide(divide(divide(divide(log(property_magnitude), num_dependents), other_payment_plans), housing), housing), housing), num_dependents)",0.122618,797.41
+43,"multiply(divide(divide(divide(log(property_magnitude), num_dependents), other_payment_plans), job), foreign_worker)",0.122618,834.67
+44,"divide(divide(divide(multiply(housing, divide(divide(divide(log(property_magnitude), num_dependents), other_payment_plans), housing)), num_dependents), other_payment_plans), other_payment_plans)",0.122618,872.99
+45,"divide(divide(divide(divide(log(property_magnitude), num_dependents), other_payment_plans), job), other_payment_plans)",0.122618,911.93
+46,"divide(divide(divide(divide(divide(divide(log(property_magnitude), num_dependents), other_payment_plans), housing), other_payment_plans), num_dependents), other_payment_plans)",0.122618,952.05
+47,"divide(divide(divide(multiply(foreign_worker, multiply(divide(divide(divide(log(property_magnitude), num_dependents), other_payment_plans), housing), num_dependents)), housing), job), other_payment_plans)",0.122618,993.41

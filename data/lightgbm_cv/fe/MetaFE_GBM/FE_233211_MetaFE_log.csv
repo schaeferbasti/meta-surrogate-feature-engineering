@@ -1,0 +1,26 @@
+step,feature,predicted_improvement,elapsed_s
+surrogate,,,39.74
+0,,,0.0
+1,"multiply(table, z)",0.033749,7.77
+2,"add(z, multiply(table, z))",0.054992,17.23
+3,"add(add(z, multiply(table, z)), clarity)",0.073399,28.72
+4,"subtract(add(add(z, multiply(table, z)), clarity), carat)",0.085054,42.51
+5,"round(subtract(add(add(z, multiply(table, z)), clarity), carat))",0.085147,58.82
+6,"abs(subtract(add(add(z, multiply(table, z)), clarity), carat))",0.084609,77.58
+7,"add(round(subtract(add(add(z, multiply(table, z)), clarity), carat)), carat)",0.084527,99.4
+8,"abs(add(round(subtract(add(add(z, multiply(table, z)), clarity), carat)), carat))",0.085592,123.9
+9,"round(add(round(subtract(add(add(z, multiply(table, z)), clarity), carat)), carat))",0.085224,151.65
+10,"subtract(abs(add(round(subtract(add(add(z, multiply(table, z)), clarity), carat)), carat)), carat)",0.085224,182.21
+11,"round(subtract(abs(add(round(subtract(add(add(z, multiply(table, z)), clarity), carat)), carat)), carat))",0.085224,216.02
+12,"subtract(add(round(subtract(add(add(z, multiply(table, z)), clarity), carat)), carat), carat)",0.085147,252.75
+13,"round(subtract(add(round(subtract(add(add(z, multiply(table, z)), clarity), carat)), carat), carat))",0.085147,292.78
+14,"abs(round(add(round(subtract(add(add(z, multiply(table, z)), clarity), carat)), carat)))",0.085094,336.44
+15,"add(round(subtract(add(round(subtract(add(add(z, multiply(table, z)), clarity), carat)), carat), carat)), carat)",0.084527,383.75
+16,"abs(add(round(subtract(add(round(subtract(add(add(z, multiply(table, z)), clarity), carat)), carat), carat)), carat))",0.085592,435.01
+17,"subtract(abs(add(round(subtract(add(round(subtract(add(add(z, multiply(table, z)), clarity), carat)), carat), carat)), carat)), carat)",0.085224,491.03
+18,"round(add(round(subtract(add(round(subtract(add(add(z, multiply(table, z)), clarity), carat)), carat), carat)), carat))",0.085224,550.78
+19,"round(subtract(abs(add(round(subtract(add(round(subtract(add(add(z, multiply(table, z)), clarity), carat)), carat), carat)), carat)), carat))",0.085224,614.52
+20,"subtract(add(round(subtract(add(round(subtract(add(add(z, multiply(table, z)), clarity), carat)), carat), carat)), carat), carat)",0.085147,686.53
+21,"round(subtract(add(round(subtract(add(round(subtract(add(add(z, multiply(table, z)), clarity), carat)), carat), carat)), carat), carat))",0.085147,762.35
+22,"abs(round(add(round(subtract(add(round(subtract(add(add(z, multiply(table, z)), clarity), carat)), carat), carat)), carat)))",0.085094,839.75
+23,"add(round(subtract(add(round(subtract(add(round(subtract(add(add(z, multiply(table, z)), clarity), carat)), carat), carat)), carat), carat)), carat)",0.084527,922.64

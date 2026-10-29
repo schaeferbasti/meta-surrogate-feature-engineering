@@ -1,0 +1,56 @@
+step,feature,predicted_improvement,elapsed_s
+surrogate,,,40.74
+0,,,0.0
+1,"multiply(GLCM_Pan, Mean_G)",0.010343,0.5
+2,"subtract(multiply(GLCM_Pan, Mean_G), Mean_NIR)",0.011588,1.17
+3,"add(SD_Plan, subtract(multiply(GLCM_Pan, Mean_G), Mean_NIR))",0.011588,2.05
+4,"round(subtract(multiply(GLCM_Pan, Mean_G), Mean_NIR))",0.011588,3.18
+5,"add(GLCM_Pan, round(subtract(multiply(GLCM_Pan, Mean_G), Mean_NIR)))",0.011588,4.57
+6,"add(add(GLCM_Pan, round(subtract(multiply(GLCM_Pan, Mean_G), Mean_NIR))), GLCM_Pan)",0.011588,6.26
+7,"round(add(SD_Plan, subtract(multiply(GLCM_Pan, Mean_G), Mean_NIR)))",0.011588,8.31
+8,"round(add(add(GLCM_Pan, round(subtract(multiply(GLCM_Pan, Mean_G), Mean_NIR))), GLCM_Pan))",0.011588,10.74
+9,"add(round(add(SD_Plan, subtract(multiply(GLCM_Pan, Mean_G), Mean_NIR))), SD_Plan)",0.011588,13.58
+10,"add(SD_Plan, add(GLCM_Pan, round(subtract(multiply(GLCM_Pan, Mean_G), Mean_NIR))))",0.011588,16.85
+11,"subtract(subtract(multiply(GLCM_Pan, Mean_G), Mean_NIR), SD_Plan)",0.011588,20.58
+12,"add(GLCM_Pan, subtract(multiply(GLCM_Pan, Mean_G), Mean_NIR))",0.011588,24.85
+13,"round(subtract(subtract(multiply(GLCM_Pan, Mean_G), Mean_NIR), SD_Plan))",0.011588,29.66
+14,"round(add(GLCM_Pan, round(subtract(multiply(GLCM_Pan, Mean_G), Mean_NIR))))",0.011588,35.01
+15,"round(add(round(add(SD_Plan, subtract(multiply(GLCM_Pan, Mean_G), Mean_NIR))), SD_Plan))",0.011588,40.99
+16,"add(GLCM_Pan, add(SD_Plan, add(GLCM_Pan, round(subtract(multiply(GLCM_Pan, Mean_G), Mean_NIR)))))",0.011588,47.47
+17,"subtract(add(GLCM_Pan, subtract(multiply(GLCM_Pan, Mean_G), Mean_NIR)), SD_Plan)",0.011588,54.59
+18,"add(round(subtract(subtract(multiply(GLCM_Pan, Mean_G), Mean_NIR), SD_Plan)), SD_Plan)",0.011588,62.38
+19,"add(GLCM_Pan, add(SD_Plan, subtract(multiply(GLCM_Pan, Mean_G), Mean_NIR)))",0.011588,71.28
+20,"round(subtract(add(GLCM_Pan, subtract(multiply(GLCM_Pan, Mean_G), Mean_NIR)), SD_Plan))",0.011588,80.86
+21,"add(GLCM_Pan, round(add(SD_Plan, subtract(multiply(GLCM_Pan, Mean_G), Mean_NIR))))",0.011588,91.14
+22,"add(GLCM_Pan, round(subtract(subtract(multiply(GLCM_Pan, Mean_G), Mean_NIR), SD_Plan)))",0.011588,102.41
+23,"round(add(GLCM_Pan, add(SD_Plan, subtract(multiply(GLCM_Pan, Mean_G), Mean_NIR))))",0.011588,114.39
+24,"add(GLCM_Pan, add(add(GLCM_Pan, round(subtract(multiply(GLCM_Pan, Mean_G), Mean_NIR))), GLCM_Pan))",0.011588,127.22
+25,"round(add(round(subtract(subtract(multiply(GLCM_Pan, Mean_G), Mean_NIR), SD_Plan)), SD_Plan))",0.011588,140.85
+26,"subtract(round(add(GLCM_Pan, add(SD_Plan, subtract(multiply(GLCM_Pan, Mean_G), Mean_NIR)))), SD_Plan)",0.011588,155.26
+27,"subtract(add(GLCM_Pan, add(SD_Plan, add(GLCM_Pan, round(subtract(multiply(GLCM_Pan, Mean_G), Mean_NIR))))), SD_Plan)",0.011588,170.45
+28,"round(add(SD_Plan, add(GLCM_Pan, round(subtract(multiply(GLCM_Pan, Mean_G), Mean_NIR)))))",0.011588,186.53
+29,"add(GLCM_Pan, add(round(add(SD_Plan, subtract(multiply(GLCM_Pan, Mean_G), Mean_NIR))), SD_Plan))",0.011588,203.67
+30,"add(SD_Plan, add(GLCM_Pan, round(subtract(subtract(multiply(GLCM_Pan, Mean_G), Mean_NIR), SD_Plan))))",0.011588,221.89
+31,"subtract(subtract(subtract(multiply(GLCM_Pan, Mean_G), Mean_NIR), SD_Plan), GLCM_Pan)",0.011588,241.0
+32,"add(GLCM_Pan, add(round(subtract(subtract(multiply(GLCM_Pan, Mean_G), Mean_NIR), SD_Plan)), SD_Plan))",0.011588,261.42
+33,"add(add(round(subtract(subtract(multiply(GLCM_Pan, Mean_G), Mean_NIR), SD_Plan)), SD_Plan), SD_Plan)",0.011588,282.85
+34,"round(add(GLCM_Pan, add(round(subtract(subtract(multiply(GLCM_Pan, Mean_G), Mean_NIR), SD_Plan)), SD_Plan)))",0.011588,305.53
+35,"add(GLCM_Pan, subtract(subtract(multiply(GLCM_Pan, Mean_G), Mean_NIR), SD_Plan))",0.011588,329.38
+36,"subtract(subtract(round(add(GLCM_Pan, add(SD_Plan, subtract(multiply(GLCM_Pan, Mean_G), Mean_NIR)))), SD_Plan), GLCM_Pan)",0.011588,354.37
+37,"subtract(add(round(add(SD_Plan, subtract(multiply(GLCM_Pan, Mean_G), Mean_NIR))), SD_Plan), GLCM_Pan)",0.011588,380.7
+38,"add(SD_Plan, round(add(GLCM_Pan, add(SD_Plan, subtract(multiply(GLCM_Pan, Mean_G), Mean_NIR)))))",0.011588,408.32
+39,"subtract(add(GLCM_Pan, add(SD_Plan, subtract(multiply(GLCM_Pan, Mean_G), Mean_NIR))), GLCM_Pan)",0.011588,437.36
+40,"round(subtract(subtract(round(add(GLCM_Pan, add(SD_Plan, subtract(multiply(GLCM_Pan, Mean_G), Mean_NIR)))), SD_Plan), GLCM_Pan))",0.011588,467.74
+41,"add(SD_Plan, round(subtract(multiply(GLCM_Pan, Mean_G), Mean_NIR)))",0.011588,499.75
+42,"subtract(add(round(subtract(subtract(multiply(GLCM_Pan, Mean_G), Mean_NIR), SD_Plan)), SD_Plan), SD_Plan)",0.011588,532.9
+43,"round(add(GLCM_Pan, add(round(add(SD_Plan, subtract(multiply(GLCM_Pan, Mean_G), Mean_NIR))), SD_Plan)))",0.011588,567.52
+44,"add(subtract(subtract(subtract(multiply(GLCM_Pan, Mean_G), Mean_NIR), SD_Plan), GLCM_Pan), GLCM_Pan)",0.011588,603.88
+45,"add(GLCM_Pan, round(add(SD_Plan, add(GLCM_Pan, round(subtract(multiply(GLCM_Pan, Mean_G), Mean_NIR))))))",0.011588,642.0
+46,"add(GLCM_Pan, round(add(round(subtract(subtract(multiply(GLCM_Pan, Mean_G), Mean_NIR), SD_Plan)), SD_Plan)))",0.011588,681.48
+47,"add(SD_Plan, add(SD_Plan, add(GLCM_Pan, round(subtract(multiply(GLCM_Pan, Mean_G), Mean_NIR)))))",0.011588,722.22
+48,"round(subtract(subtract(subtract(multiply(GLCM_Pan, Mean_G), Mean_NIR), SD_Plan), GLCM_Pan))",0.011588,764.66
+49,"add(SD_Plan, subtract(subtract(subtract(multiply(GLCM_Pan, Mean_G), Mean_NIR), SD_Plan), GLCM_Pan))",0.011588,808.78
+50,"add(SD_Plan, round(add(round(subtract(subtract(multiply(GLCM_Pan, Mean_G), Mean_NIR), SD_Plan)), SD_Plan)))",0.011588,854.49
+51,"add(add(GLCM_Pan, add(round(add(SD_Plan, subtract(multiply(GLCM_Pan, Mean_G), Mean_NIR))), SD_Plan)), SD_Plan)",0.011588,902.09
+52,"round(add(GLCM_Pan, round(add(SD_Plan, add(GLCM_Pan, round(subtract(multiply(GLCM_Pan, Mean_G), Mean_NIR)))))))",0.011588,951.23
+53,"round(add(SD_Plan, round(add(round(subtract(subtract(multiply(GLCM_Pan, Mean_G), Mean_NIR), SD_Plan)), SD_Plan))))",0.011588,1002.19

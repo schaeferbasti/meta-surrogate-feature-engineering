@@ -1,0 +1,14 @@
+step,feature,predicted_improvement,elapsed_s
+surrogate,,,43.08
+0,,,0.0
+1,"CombineThenFreq(body_type, speaks)",0.098618,57.6
+2,"add(height, CombineThenFreq(body_type, speaks))",0.155795,118.94
+3,"subtract(add(height, CombineThenFreq(body_type, speaks)), drinks)",0.159461,184.39
+4,"subtract(subtract(add(height, CombineThenFreq(body_type, speaks)), drinks), orientation)",0.161046,254.06
+5,"subtract(subtract(subtract(add(height, CombineThenFreq(body_type, speaks)), drinks), orientation), drinks)",0.161604,328.45
+6,"add(sex, subtract(subtract(subtract(add(height, CombineThenFreq(body_type, speaks)), drinks), orientation), drinks))",0.161604,407.27
+7,"add(subtract(subtract(add(height, CombineThenFreq(body_type, speaks)), drinks), orientation), smokes)",0.161046,493.42
+8,"subtract(subtract(subtract(add(height, CombineThenFreq(body_type, speaks)), drinks), orientation), sex)",0.161046,590.02
+9,"add(sex, add(sex, subtract(subtract(subtract(add(height, CombineThenFreq(body_type, speaks)), drinks), orientation), drinks)))",0.161046,690.6
+10,"add(subtract(subtract(subtract(add(height, CombineThenFreq(body_type, speaks)), drinks), orientation), sex), smokes)",0.161046,800.63
+11,"add(smokes, add(subtract(subtract(subtract(add(height, CombineThenFreq(body_type, speaks)), drinks), orientation), sex), smokes))",0.161046,908.34

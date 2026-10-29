@@ -1,0 +1,62 @@
+step,feature,predicted_improvement,elapsed_s
+surrogate,,,40.73
+0,,,0.0
+1,"GroupByThenMedian(A3, A6)",0.056131,2.26
+2,"multiply(A10, GroupByThenMedian(A3, A6))",0.119772,4.73
+3,"add(A5, multiply(A10, GroupByThenMedian(A3, A6)))",0.123281,7.47
+4,"add(add(A5, multiply(A10, GroupByThenMedian(A3, A6))), A6)",0.130575,10.52
+5,"subtract(add(add(A5, multiply(A10, GroupByThenMedian(A3, A6))), A6), A9)",0.131393,13.86
+6,"subtract(subtract(add(add(A5, multiply(A10, GroupByThenMedian(A3, A6))), A6), A9), A9)",0.131393,17.53
+7,"subtract(subtract(subtract(add(add(A5, multiply(A10, GroupByThenMedian(A3, A6))), A6), A9), A9), A9)",0.131393,21.55
+8,"add(subtract(subtract(subtract(add(add(A5, multiply(A10, GroupByThenMedian(A3, A6))), A6), A9), A9), A9), A8)",0.131393,25.89
+9,"round(add(subtract(subtract(subtract(add(add(A5, multiply(A10, GroupByThenMedian(A3, A6))), A6), A9), A9), A9), A8))",0.131393,30.58
+10,"add(subtract(subtract(add(add(A5, multiply(A10, GroupByThenMedian(A3, A6))), A6), A9), A9), A8)",0.131393,35.62
+11,"add(A8, round(add(subtract(subtract(subtract(add(add(A5, multiply(A10, GroupByThenMedian(A3, A6))), A6), A9), A9), A9), A8)))",0.131393,41.11
+12,"add(A11, add(subtract(subtract(subtract(add(add(A5, multiply(A10, GroupByThenMedian(A3, A6))), A6), A9), A9), A9), A8))",0.131393,46.92
+13,"round(add(A11, add(subtract(subtract(subtract(add(add(A5, multiply(A10, GroupByThenMedian(A3, A6))), A6), A9), A9), A9), A8)))",0.131393,53.12
+14,"add(A11, subtract(subtract(subtract(add(add(A5, multiply(A10, GroupByThenMedian(A3, A6))), A6), A9), A9), A9))",0.131393,59.72
+15,"subtract(subtract(subtract(subtract(add(add(A5, multiply(A10, GroupByThenMedian(A3, A6))), A6), A9), A9), A9), A9)",0.131393,66.9
+16,"round(subtract(add(add(A5, multiply(A10, GroupByThenMedian(A3, A6))), A6), A9))",0.131393,74.69
+17,"add(A11, subtract(subtract(add(add(A5, multiply(A10, GroupByThenMedian(A3, A6))), A6), A9), A9))",0.131393,82.79
+18,"add(A1, subtract(subtract(subtract(add(add(A5, multiply(A10, GroupByThenMedian(A3, A6))), A6), A9), A9), A9))",0.131393,91.35
+19,"round(subtract(subtract(subtract(add(add(A5, multiply(A10, GroupByThenMedian(A3, A6))), A6), A9), A9), A9))",0.131393,100.54
+20,"round(add(A1, subtract(subtract(subtract(add(add(A5, multiply(A10, GroupByThenMedian(A3, A6))), A6), A9), A9), A9)))",0.131393,110.11
+21,"round(subtract(subtract(add(add(A5, multiply(A10, GroupByThenMedian(A3, A6))), A6), A9), A9))",0.131393,120.3
+22,"subtract(add(A1, subtract(subtract(subtract(add(add(A5, multiply(A10, GroupByThenMedian(A3, A6))), A6), A9), A9), A9)), A9)",0.131393,130.8
+23,"add(round(subtract(subtract(subtract(add(add(A5, multiply(A10, GroupByThenMedian(A3, A6))), A6), A9), A9), A9)), A11)",0.131393,141.86
+24,"subtract(round(add(A11, add(subtract(subtract(subtract(add(add(A5, multiply(A10, GroupByThenMedian(A3, A6))), A6), A9), A9), A9), A8))), A9)",0.131393,153.26
+25,"subtract(add(A11, subtract(subtract(subtract(add(add(A5, multiply(A10, GroupByThenMedian(A3, A6))), A6), A9), A9), A9)), A9)",0.131393,165.14
+26,"subtract(subtract(round(add(A11, add(subtract(subtract(subtract(add(add(A5, multiply(A10, GroupByThenMedian(A3, A6))), A6), A9), A9), A9), A8))), A9), A8)",0.131393,177.63
+27,"round(add(A11, subtract(subtract(add(add(A5, multiply(A10, GroupByThenMedian(A3, A6))), A6), A9), A9)))",0.131393,190.63
+28,"add(A11, subtract(subtract(round(add(A11, add(subtract(subtract(subtract(add(add(A5, multiply(A10, GroupByThenMedian(A3, A6))), A6), A9), A9), A9), A8))), A9), A8))",0.131393,204.34
+29,"round(subtract(add(A1, subtract(subtract(subtract(add(add(A5, multiply(A10, GroupByThenMedian(A3, A6))), A6), A9), A9), A9)), A9))",0.131393,218.65
+30,"add(A8, subtract(subtract(subtract(subtract(add(add(A5, multiply(A10, GroupByThenMedian(A3, A6))), A6), A9), A9), A9), A9))",0.131393,233.51
+31,"round(add(A8, subtract(subtract(subtract(subtract(add(add(A5, multiply(A10, GroupByThenMedian(A3, A6))), A6), A9), A9), A9), A9)))",0.131393,249.01
+32,"add(round(subtract(add(A1, subtract(subtract(subtract(add(add(A5, multiply(A10, GroupByThenMedian(A3, A6))), A6), A9), A9), A9)), A9)), A8)",0.131393,265.21
+33,"add(round(subtract(add(A1, subtract(subtract(subtract(add(add(A5, multiply(A10, GroupByThenMedian(A3, A6))), A6), A9), A9), A9)), A9)), A11)",0.131393,281.94
+34,"subtract(round(subtract(add(A1, subtract(subtract(subtract(add(add(A5, multiply(A10, GroupByThenMedian(A3, A6))), A6), A9), A9), A9)), A9)), A9)",0.131393,299.43
+35,"subtract(subtract(add(A11, subtract(subtract(subtract(add(add(A5, multiply(A10, GroupByThenMedian(A3, A6))), A6), A9), A9), A9)), A9), A9)",0.131393,317.64
+36,"round(subtract(subtract(add(A11, subtract(subtract(subtract(add(add(A5, multiply(A10, GroupByThenMedian(A3, A6))), A6), A9), A9), A9)), A9), A9))",0.131393,336.54
+37,"add(A8, add(subtract(subtract(subtract(add(add(A5, multiply(A10, GroupByThenMedian(A3, A6))), A6), A9), A9), A9), A8))",0.131393,355.96
+38,"add(subtract(add(A11, subtract(subtract(subtract(add(add(A5, multiply(A10, GroupByThenMedian(A3, A6))), A6), A9), A9), A9)), A9), A11)",0.131393,376.18
+39,"subtract(add(A8, subtract(subtract(subtract(subtract(add(add(A5, multiply(A10, GroupByThenMedian(A3, A6))), A6), A9), A9), A9), A9)), A9)",0.131393,397.23
+40,"add(subtract(add(A1, subtract(subtract(subtract(add(add(A5, multiply(A10, GroupByThenMedian(A3, A6))), A6), A9), A9), A9)), A9), A8)",0.131393,418.9
+41,"add(subtract(round(add(A11, add(subtract(subtract(subtract(add(add(A5, multiply(A10, GroupByThenMedian(A3, A6))), A6), A9), A9), A9), A8))), A9), A11)",0.131393,441.42
+42,"subtract(round(add(A8, subtract(subtract(subtract(subtract(add(add(A5, multiply(A10, GroupByThenMedian(A3, A6))), A6), A9), A9), A9), A9))), A8)",0.131393,464.69
+43,"add(A8, add(subtract(add(A11, subtract(subtract(subtract(add(add(A5, multiply(A10, GroupByThenMedian(A3, A6))), A6), A9), A9), A9)), A9), A11))",0.131393,488.98
+44,"round(subtract(add(A8, subtract(subtract(subtract(subtract(add(add(A5, multiply(A10, GroupByThenMedian(A3, A6))), A6), A9), A9), A9), A9)), A9))",0.131393,513.93
+45,"add(subtract(add(A11, subtract(subtract(subtract(add(add(A5, multiply(A10, GroupByThenMedian(A3, A6))), A6), A9), A9), A9)), A9), A8)",0.131393,539.75
+46,"subtract(add(subtract(add(A11, subtract(subtract(subtract(add(add(A5, multiply(A10, GroupByThenMedian(A3, A6))), A6), A9), A9), A9)), A9), A11), A9)",0.131393,566.55
+47,"add(round(subtract(add(A8, subtract(subtract(subtract(subtract(add(add(A5, multiply(A10, GroupByThenMedian(A3, A6))), A6), A9), A9), A9), A9)), A9)), A11)",0.131393,594.51
+48,"round(subtract(add(subtract(add(A11, subtract(subtract(subtract(add(add(A5, multiply(A10, GroupByThenMedian(A3, A6))), A6), A9), A9), A9)), A9), A11), A9))",0.131393,623.49
+49,"add(round(add(subtract(subtract(subtract(add(add(A5, multiply(A10, GroupByThenMedian(A3, A6))), A6), A9), A9), A9), A8)), A9)",0.131393,653.24
+50,"add(add(round(subtract(add(A8, subtract(subtract(subtract(subtract(add(add(A5, multiply(A10, GroupByThenMedian(A3, A6))), A6), A9), A9), A9), A9)), A9)), A11), A11)",0.131393,683.41
+51,"subtract(subtract(add(subtract(add(A11, subtract(subtract(subtract(add(add(A5, multiply(A10, GroupByThenMedian(A3, A6))), A6), A9), A9), A9)), A9), A11), A9), A9)",0.131393,714.32
+52,"subtract(round(subtract(add(A8, subtract(subtract(subtract(subtract(add(add(A5, multiply(A10, GroupByThenMedian(A3, A6))), A6), A9), A9), A9), A9)), A9)), A9)",0.131393,746.29
+53,"subtract(subtract(round(subtract(add(A1, subtract(subtract(subtract(add(add(A5, multiply(A10, GroupByThenMedian(A3, A6))), A6), A9), A9), A9)), A9)), A9), A1)",0.131393,779.15
+54,"add(A1, subtract(add(subtract(add(A11, subtract(subtract(subtract(add(add(A5, multiply(A10, GroupByThenMedian(A3, A6))), A6), A9), A9), A9)), A9), A11), A9))",0.131393,813.06
+55,"round(add(A1, subtract(add(subtract(add(A11, subtract(subtract(subtract(add(add(A5, multiply(A10, GroupByThenMedian(A3, A6))), A6), A9), A9), A9)), A9), A11), A9)))",0.131393,847.93
+56,"subtract(add(A8, add(subtract(subtract(subtract(add(add(A5, multiply(A10, GroupByThenMedian(A3, A6))), A6), A9), A9), A9), A8)), A11)",0.131393,883.6
+57,"subtract(add(A8, add(subtract(subtract(subtract(add(add(A5, multiply(A10, GroupByThenMedian(A3, A6))), A6), A9), A9), A9), A8)), A9)",0.131393,920.26
+58,"round(subtract(add(A8, add(subtract(subtract(subtract(add(add(A5, multiply(A10, GroupByThenMedian(A3, A6))), A6), A9), A9), A9), A8)), A9))",0.131393,958.05
+59,"round(subtract(subtract(add(subtract(add(A11, subtract(subtract(subtract(add(add(A5, multiply(A10, GroupByThenMedian(A3, A6))), A6), A9), A9), A9)), A9), A11), A9), A9))",0.131393,996.83

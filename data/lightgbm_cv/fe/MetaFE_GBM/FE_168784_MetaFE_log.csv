@@ -1,0 +1,46 @@
+step,feature,predicted_improvement,elapsed_s
+surrogate,,,40.25
+0,,,0.0
+1,"multiply(V6, V5)",0.017867,6.48
+2,"divide(multiply(V6, V5), V24)",0.022388,13.33
+3,"subtract(divide(multiply(V6, V5), V24), V7)",0.023742,20.71
+4,"divide(subtract(divide(multiply(V6, V5), V24), V7), V20)",0.024357,28.59
+5,"add(divide(subtract(divide(multiply(V6, V5), V24), V7), V20), V16)",0.024357,37.03
+6,"add(V21, divide(subtract(divide(multiply(V6, V5), V24), V7), V20))",0.024357,46.1
+7,"add(add(V21, divide(subtract(divide(multiply(V6, V5), V24), V7), V20)), V16)",0.024357,55.78
+8,"subtract(add(add(V21, divide(subtract(divide(multiply(V6, V5), V24), V7), V20)), V16), V24)",0.024357,66.19
+9,"add(V21, add(add(V21, divide(subtract(divide(multiply(V6, V5), V24), V7), V20)), V16))",0.024357,77.18
+10,"add(add(V21, add(add(V21, divide(subtract(divide(multiply(V6, V5), V24), V7), V20)), V16)), V21)",0.024357,89.17
+11,"add(add(V21, divide(subtract(divide(multiply(V6, V5), V24), V7), V20)), V24)",0.024357,101.56
+12,"subtract(add(V21, divide(subtract(divide(multiply(V6, V5), V24), V7), V20)), V24)",0.024357,114.67
+13,"add(V24, add(add(V21, divide(subtract(divide(multiply(V6, V5), V24), V7), V20)), V16))",0.024357,128.54
+14,"round(add(V24, add(add(V21, divide(subtract(divide(multiply(V6, V5), V24), V7), V20)), V16)))",0.024357,143.12
+15,"round(add(add(V21, add(add(V21, divide(subtract(divide(multiply(V6, V5), V24), V7), V20)), V16)), V21))",0.024357,158.47
+16,"add(add(divide(subtract(divide(multiply(V6, V5), V24), V7), V20), V16), V24)",0.024357,174.58
+17,"round(add(V21, divide(subtract(divide(multiply(V6, V5), V24), V7), V20)))",0.024357,191.51
+18,"subtract(subtract(add(add(V21, divide(subtract(divide(multiply(V6, V5), V24), V7), V20)), V16), V24), V12)",0.024357,209.72
+19,"add(V16, subtract(subtract(add(add(V21, divide(subtract(divide(multiply(V6, V5), V24), V7), V20)), V16), V24), V12))",0.024357,228.29
+20,"subtract(subtract(add(add(V21, divide(subtract(divide(multiply(V6, V5), V24), V7), V20)), V16), V24), V21)",0.024357,247.77
+21,"round(add(add(V21, divide(subtract(divide(multiply(V6, V5), V24), V7), V20)), V16))",0.024357,268.2
+22,"subtract(subtract(add(V21, divide(subtract(divide(multiply(V6, V5), V24), V7), V20)), V24), V12)",0.024357,289.57
+23,"subtract(subtract(subtract(add(add(V21, divide(subtract(divide(multiply(V6, V5), V24), V7), V20)), V16), V24), V21), V21)",0.024357,311.75
+24,"subtract(subtract(subtract(subtract(add(add(V21, divide(subtract(divide(multiply(V6, V5), V24), V7), V20)), V16), V24), V21), V21), V24)",0.024357,334.95
+25,"round(subtract(subtract(add(add(V21, divide(subtract(divide(multiply(V6, V5), V24), V7), V20)), V16), V24), V21))",0.024357,359.19
+26,"subtract(add(V21, divide(subtract(divide(multiply(V6, V5), V24), V7), V20)), V16)",0.024357,384.26
+27,"subtract(round(add(V24, add(add(V21, divide(subtract(divide(multiply(V6, V5), V24), V7), V20)), V16))), V24)",0.024357,410.45
+28,"add(V12, subtract(round(add(V24, add(add(V21, divide(subtract(divide(multiply(V6, V5), V24), V7), V20)), V16))), V24))",0.024357,437.8
+29,"round(add(V12, subtract(round(add(V24, add(add(V21, divide(subtract(divide(multiply(V6, V5), V24), V7), V20)), V16))), V24)))",0.024357,466.34
+30,"round(subtract(round(add(V24, add(add(V21, divide(subtract(divide(multiply(V6, V5), V24), V7), V20)), V16))), V24))",0.024357,496.49
+31,"add(add(V12, subtract(round(add(V24, add(add(V21, divide(subtract(divide(multiply(V6, V5), V24), V7), V20)), V16))), V24)), V24)",0.024357,527.33
+32,"add(add(V24, add(add(V21, divide(subtract(divide(multiply(V6, V5), V24), V7), V20)), V16)), V21)",0.024357,559.39
+33,"subtract(subtract(subtract(subtract(subtract(add(add(V21, divide(subtract(divide(multiply(V6, V5), V24), V7), V20)), V16), V24), V21), V21), V24), V12)",0.024357,592.5
+34,"add(add(add(V21, add(add(V21, divide(subtract(divide(multiply(V6, V5), V24), V7), V20)), V16)), V21), V21)",0.024357,627.0
+35,"round(add(add(add(V21, add(add(V21, divide(subtract(divide(multiply(V6, V5), V24), V7), V20)), V16)), V21), V21))",0.024357,663.71
+36,"round(subtract(subtract(add(add(V21, divide(subtract(divide(multiply(V6, V5), V24), V7), V20)), V16), V24), V12))",0.024357,702.82
+37,"subtract(round(subtract(subtract(add(add(V21, divide(subtract(divide(multiply(V6, V5), V24), V7), V20)), V16), V24), V21)), V21)",0.024357,741.62
+38,"add(round(add(add(V21, divide(subtract(divide(multiply(V6, V5), V24), V7), V20)), V16)), V16)",0.024357,780.0
+39,"round(subtract(subtract(subtract(subtract(subtract(add(add(V21, divide(subtract(divide(multiply(V6, V5), V24), V7), V20)), V16), V24), V21), V21), V24), V12))",0.024357,819.57
+40,"subtract(add(V12, subtract(round(add(V24, add(add(V21, divide(subtract(divide(multiply(V6, V5), V24), V7), V20)), V16))), V24)), V24)",0.024357,860.65
+41,"round(subtract(add(V12, subtract(round(add(V24, add(add(V21, divide(subtract(divide(multiply(V6, V5), V24), V7), V20)), V16))), V24)), V24))",0.024357,902.76
+42,"round(subtract(add(add(V21, divide(subtract(divide(multiply(V6, V5), V24), V7), V20)), V16), V24))",0.024357,946.16
+43,"round(subtract(round(subtract(subtract(add(add(V21, divide(subtract(divide(multiply(V6, V5), V24), V7), V20)), V16), V24), V21)), V21))",0.024357,990.97

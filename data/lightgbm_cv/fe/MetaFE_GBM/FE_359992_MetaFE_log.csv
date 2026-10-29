@@ -1,0 +1,23 @@
+step,feature,predicted_improvement,elapsed_s
+surrogate,,,34.48
+0,,,0.0
+1,"multiply(impression, impression)",0.095115,18.42
+2,"GroupByThenMean(multiply(impression, impression), title_id)",0.096376,38.49
+3,"divide(GroupByThenMean(multiply(impression, impression), title_id), impression)",0.106484,60.86
+4,"GroupByThenMean(divide(GroupByThenMean(multiply(impression, impression), title_id), impression), user_id)",0.113845,85.56
+5,"multiply(GroupByThenMean(divide(GroupByThenMean(multiply(impression, impression), title_id), impression), user_id), impression)",0.105678,113.6
+6,"divide(multiply(GroupByThenMean(divide(GroupByThenMean(multiply(impression, impression), title_id), impression), user_id), impression), impression)",0.113845,143.61
+7,"GroupByThenMax(divide(multiply(GroupByThenMean(divide(GroupByThenMean(multiply(impression, impression), title_id), impression), user_id), impression), impression), user_id)",0.113845,176.86
+8,"GroupByThenMin(divide(multiply(GroupByThenMean(divide(GroupByThenMean(multiply(impression, impression), title_id), impression), user_id), impression), impression), user_id)",0.113845,213.29
+9,"GroupByThenMin(multiply(GroupByThenMean(divide(GroupByThenMean(multiply(impression, impression), title_id), impression), user_id), impression), user_id)",0.105678,253.36
+10,"divide(GroupByThenMin(multiply(GroupByThenMean(divide(GroupByThenMean(multiply(impression, impression), title_id), impression), user_id), impression), user_id), multiply(impression, impression))",0.106582,295.58
+11,"GroupByThenMedian(divide(GroupByThenMin(multiply(GroupByThenMean(divide(GroupByThenMean(multiply(impression, impression), title_id), impression), user_id), impression), user_id), multiply(impression, impression)), user_id)",0.107464,341.39
+12,"multiply(GroupByThenMedian(divide(GroupByThenMin(multiply(GroupByThenMean(divide(GroupByThenMean(multiply(impression, impression), title_id), impression), user_id), impression), user_id), multiply(impression, impression)), user_id), impression)",0.113845,390.57
+13,"GroupByThenMedian(multiply(GroupByThenMedian(divide(GroupByThenMin(multiply(GroupByThenMean(divide(GroupByThenMean(multiply(impression, impression), title_id), impression), user_id), impression), user_id), multiply(impression, impression)), user_id), impression), user_id)",0.113845,443.48
+14,"GroupByThenMean(GroupByThenMedian(multiply(GroupByThenMedian(divide(GroupByThenMin(multiply(GroupByThenMean(divide(GroupByThenMean(multiply(impression, impression), title_id), impression), user_id), impression), user_id), multiply(impression, impression)), user_id), impression), user_id), user_id)",0.113845,500.81
+15,"GroupByThenMin(multiply(GroupByThenMedian(divide(GroupByThenMin(multiply(GroupByThenMean(divide(GroupByThenMean(multiply(impression, impression), title_id), impression), user_id), impression), user_id), multiply(impression, impression)), user_id), impression), user_id)",0.113845,564.41
+16,"multiply(impression, GroupByThenMin(multiply(GroupByThenMedian(divide(GroupByThenMin(multiply(GroupByThenMean(divide(GroupByThenMean(multiply(impression, impression), title_id), impression), user_id), impression), user_id), multiply(impression, impression)), user_id), impression), user_id))",0.109978,634.52
+17,"divide(multiply(impression, GroupByThenMin(multiply(GroupByThenMedian(divide(GroupByThenMin(multiply(GroupByThenMean(divide(GroupByThenMean(multiply(impression, impression), title_id), impression), user_id), impression), user_id), multiply(impression, impression)), user_id), impression), user_id)), impression)",0.113845,704.14
+18,"GroupByThenMax(divide(multiply(impression, GroupByThenMin(multiply(GroupByThenMedian(divide(GroupByThenMin(multiply(GroupByThenMean(divide(GroupByThenMean(multiply(impression, impression), title_id), impression), user_id), impression), user_id), multiply(impression, impression)), user_id), impression), user_id)), impression), user_id)",0.113845,778.08
+19,"GroupByThenMedian(divide(multiply(impression, GroupByThenMin(multiply(GroupByThenMedian(divide(GroupByThenMin(multiply(GroupByThenMean(divide(GroupByThenMean(multiply(impression, impression), title_id), impression), user_id), impression), user_id), multiply(impression, impression)), user_id), impression), user_id)), impression), user_id)",0.113845,856.32
+20,"GroupByThenMin(divide(multiply(impression, GroupByThenMin(multiply(GroupByThenMedian(divide(GroupByThenMin(multiply(GroupByThenMean(divide(GroupByThenMean(multiply(impression, impression), title_id), impression), user_id), impression), user_id), multiply(impression, impression)), user_id), impression), user_id)), impression), user_id)",0.113845,939.3

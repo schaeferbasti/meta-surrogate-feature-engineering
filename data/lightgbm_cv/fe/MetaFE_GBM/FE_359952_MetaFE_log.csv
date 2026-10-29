@@ -1,0 +1,26 @@
+step,feature,predicted_improvement,elapsed_s
+surrogate,,,37.84
+0,,,0.0
+1,freq(H40p4),0.019711,13.06
+2,"divide(freq(H40p4), H40p4)",0.025484,27.0
+3,"add(H40p4, divide(freq(H40p4), H40p4))",0.026036,42.73
+4,"add(H40p4, add(H40p4, divide(freq(H40p4), H40p4)))",0.026387,60.16
+5,"add(add(H40p4, add(H40p4, divide(freq(H40p4), H40p4))), P15p1)",0.026737,79.66
+6,"add(add(add(H40p4, add(H40p4, divide(freq(H40p4), H40p4))), P15p1), P15p3)",0.026737,101.27
+7,"add(add(add(add(H40p4, add(H40p4, divide(freq(H40p4), H40p4))), P15p1), P15p3), H40p4)",0.027126,125.32
+8,"add(H13p1, add(add(add(add(H40p4, add(H40p4, divide(freq(H40p4), H40p4))), P15p1), P15p3), H40p4))",0.027496,151.84
+9,"add(P27p4, add(H13p1, add(add(add(add(H40p4, add(H40p4, divide(freq(H40p4), H40p4))), P15p1), P15p3), H40p4)))",0.027496,181.32
+10,"add(P11p4, add(P27p4, add(H13p1, add(add(add(add(H40p4, add(H40p4, divide(freq(H40p4), H40p4))), P15p1), P15p3), H40p4))))",0.027496,215.43
+11,"add(add(add(add(add(H40p4, add(H40p4, divide(freq(H40p4), H40p4))), P15p1), P15p3), H40p4), H10p1)",0.027496,252.68
+12,"add(add(add(add(add(add(H40p4, add(H40p4, divide(freq(H40p4), H40p4))), P15p1), P15p3), H40p4), H10p1), H10p1)",0.027502,290.86
+13,"add(add(add(add(add(add(add(H40p4, add(H40p4, divide(freq(H40p4), H40p4))), P15p1), P15p3), H40p4), H10p1), H10p1), H10p1)",0.027511,331.91
+14,"subtract(add(add(add(add(add(add(add(H40p4, add(H40p4, divide(freq(H40p4), H40p4))), P15p1), P15p3), H40p4), H10p1), H10p1), H10p1), P27p4)",0.027511,376.14
+15,"add(P6p2, add(add(add(add(add(add(add(H40p4, add(H40p4, divide(freq(H40p4), H40p4))), P15p1), P15p3), H40p4), H10p1), H10p1), H10p1))",0.027511,423.68
+16,"add(P18p2, add(add(add(add(add(add(add(H40p4, add(H40p4, divide(freq(H40p4), H40p4))), P15p1), P15p3), H40p4), H10p1), H10p1), H10p1))",0.027511,474.58
+17,"add(add(add(add(add(add(add(add(H40p4, add(H40p4, divide(freq(H40p4), H40p4))), P15p1), P15p3), H40p4), H10p1), H10p1), H10p1), P15p3)",0.027511,528.97
+18,"subtract(add(add(add(add(add(add(add(H40p4, add(H40p4, divide(freq(H40p4), H40p4))), P15p1), P15p3), H40p4), H10p1), H10p1), H10p1), P15p3)",0.027511,587.08
+19,"subtract(subtract(add(add(add(add(add(add(add(H40p4, add(H40p4, divide(freq(H40p4), H40p4))), P15p1), P15p3), H40p4), H10p1), H10p1), H10p1), P15p3), P15p3)",0.027511,649.23
+20,"add(add(add(add(add(add(add(add(add(H40p4, add(H40p4, divide(freq(H40p4), H40p4))), P15p1), P15p3), H40p4), H10p1), H10p1), H10p1), P15p3), P27p4)",0.027511,715.02
+21,"subtract(add(add(add(add(add(add(add(add(H40p4, add(H40p4, divide(freq(H40p4), H40p4))), P15p1), P15p3), H40p4), H10p1), H10p1), H10p1), P15p3), P6p2)",0.027511,784.91
+22,"add(P6p2, subtract(add(add(add(add(add(add(add(H40p4, add(H40p4, divide(freq(H40p4), H40p4))), P15p1), P15p3), H40p4), H10p1), H10p1), H10p1), P15p3))",0.027511,858.92
+23,"add(add(add(add(add(add(add(add(H40p4, add(H40p4, divide(freq(H40p4), H40p4))), P15p1), P15p3), H40p4), H10p1), H10p1), H10p1), P27p4)",0.027511,937.24

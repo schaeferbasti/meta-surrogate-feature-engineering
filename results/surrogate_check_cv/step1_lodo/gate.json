@@ -1,0 +1,12 @@
+{
+  "step1_pass": [
+    "sur_new_rank",
+    "sur_both_rank",
+    "sur_both",
+    "sur_new"
+  ],
+  "step2_pass": [],
+  "step1_gate": true,
+  "ranker_for_step3": "sur_new_rank",
+  "criteria": "wilcoxon(top10_excess) p < 0.05, median excess > 0, median spearman_nz > 0.15; add-feature candidates"
+}

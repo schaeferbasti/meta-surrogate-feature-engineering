@@ -2,6 +2,10 @@
 
 Label of a candidate feature (and model) = relative improvement of the AutoGluon validation score (out-of-fold, on the
 training rows) when the feature is added to (or, for "without - <col>", removed from) the original data.
+With label="cv" (experiment lightgbm_cv) it is instead the mean over CV_REPEATS repeats of the mean over CV_FOLDS folds
+of the paired relative loss decrease of plain LightGBM (same folds and seed for the original data and the candidate,
+metafe.models.cv_losses); the candidates run in parallel (--workers, default: the job's CPUs) and the per-repeat labels
+are kept in <label_repeats_dir>/<model>/<id>.parquet.
 
 The experiment (metafe/config.py) sets which labels are computed:
   - max_candidates: only a sample of the candidates of a dataset is labelled, balanced over the operators and the same
@@ -23,6 +27,7 @@ a model that fails on the original data is skipped for the dataset (nothing writ
 """
 import argparse
 import glob
+import multiprocessing
 import os
 import time
 from collections import Counter, defaultdict
@@ -31,9 +36,10 @@ import numpy as np
 import pandas as pd
 
 from metafe import config
-from metafe.data import label_data, is_classification, write_parquet, read_parquet_or_none
+from metafe.data import label_data, is_classification, encode_target, write_parquet, read_parquet_or_none
 from metafe.legacy_operators import legacy_train_feature
-from metafe.models import model_name, check_setup, fit_leaderboard, validation_scores, relative_improvement
+from metafe.models import model_name, check_setup, fit_leaderboard, validation_scores, relative_improvement, \
+    cv_folds, cv_losses
 from metafe.operators import candidate_featurenames, parse_featurename, compute_feature, same_feature, DELETE
 
 COLUMNS = ["dataset - id", "feature - name", "operator", "model", "improvement"]
@@ -166,6 +172,79 @@ def build(dataset_id, model_key, experiment, dry_run=False):
         print(f"Left out (no reusable label): {sum(not_reusable.values())}, per operator {dict(not_reusable)}")
 
 
+_CV = {}  # data of the CV labels, shared with the worker processes (fork)
+
+
+def _cv_label(name):
+    """(name, per-repeat labels or None, error message) of one candidate."""
+    try:
+        X = with_candidate(name, _CV["X"])
+        if X.shape[1] == 0:
+            return name, None, "no column left"
+        gain = (_CV["base"] - cv_losses(X, _CV["y"], _CV["classification"], _CV["n_classes"], _CV["folds"])) \
+            / _CV["base"]  # paired relative loss decrease per repeat and fold
+        return name, gain.mean(1), None
+    except Exception as e:
+        return name, None, str(e)[:200]
+
+
+def build_cv(dataset_id, model_key, experiment, workers):
+    """Labels of all candidates with the repeated LightGBM CV (label="cv"), in parallel, resumable."""
+    if model_key != "GBM":
+        raise ValueError(f'label="cv" is a LightGBM label, not one of {model_key}')
+    out_path = os.path.join(experiment.core_matrix_dir, model_key, f"{dataset_id}.parquet")
+    repeats_path = os.path.join(experiment.label_repeats_dir, model_key, f"{dataset_id}.parquet")
+    model = model_name(model_key)
+    X_train, y_train, metadata = label_data(dataset_id, experiment)
+    classification = is_classification(metadata)
+    y, n_classes = encode_target(y_train) if classification else (pd.to_numeric(y_train).to_numpy(dtype="float64"), 0)
+    result = read_parquet_or_none(out_path)
+    repeats = read_parquet_or_none(repeats_path)
+    if result is None or repeats is None:
+        result, repeats = pd.DataFrame(columns=COLUMNS), pd.DataFrame()
+    candidates = sample_candidates(candidate_featurenames(X_train), experiment.max_candidates)
+    if X_train.shape[1] <= 1:
+        candidates = [n for n in candidates if parse_featurename(n)[0] != DELETE]
+    todo = [n for n in candidates if n not in set(result["feature - name"])]
+    start = time.time()
+    folds = cv_folds(y, classification, config.CV_REPEATS, config.CV_FOLDS)
+    base = cv_losses(X_train, y, classification, n_classes, folds)
+    _CV.update(X=X_train, y=y, classification=classification, n_classes=n_classes, folds=folds, base=base)
+    print(f"Dataset {dataset_id} ({metadata['task_type']}, {len(X_train)} label rows), {model}, CV label: "
+          f"{len(todo)} of {len(candidates)} candidates to do, {workers} workers; original loss {base.mean():.5f} "
+          f"({time.time() - start:.0f} s)", flush=True)
+    rows, repeat_rows, failed = [], [], 0
+
+    def save():
+        nonlocal result, repeats
+        if rows:
+            result = pd.concat([result, pd.DataFrame(rows, columns=COLUMNS)], ignore_index=True) if len(result) \
+                else pd.DataFrame(rows, columns=COLUMNS)
+            repeats = pd.concat([repeats, pd.DataFrame(repeat_rows)], ignore_index=True).drop_duplicates(
+                "feature - name", keep="last")  # a job killed between the two writes leaves a repeat row behind
+            write_parquet(repeats, repeats_path)
+            write_parquet(result, out_path)
+            rows.clear()
+            repeat_rows.clear()
+
+    with multiprocessing.get_context("fork").Pool(workers) as pool:
+        for i, (name, per_repeat, error) in enumerate(pool.imap_unordered(_cv_label, todo), 1):
+            if error is not None:
+                failed += 1
+                print(f"[Warning] {name}: {error}", flush=True)
+            label = np.nan if per_repeat is None else float(per_repeat.mean())
+            rows.append([metadata["task_id"], name, parse_featurename(name)[0], model, label])
+            repeat_rows.append({"feature - name": name, "original_loss": float(base.mean()),
+                                **{f"repeat_{r}": (np.nan if per_repeat is None else float(v))
+                                   for r, v in enumerate(per_repeat if per_repeat is not None
+                                                         else [np.nan] * config.CV_REPEATS)}})
+            if i % 100 == 0 or i == len(todo):
+                save()
+                print(f"{i}/{len(todo)} labels ({time.time() - start:.0f} s)", flush=True)
+    print(f"Dataset {dataset_id}, {model} done in {time.time() - start:.0f} s: {len(todo) - failed} computed, "
+          f"{failed} failed")
+
+
 def merge(experiment):
     files = sorted(glob.glob(os.path.join(experiment.core_matrix_dir, "*", "*.parquet")))
     matrix = pd.concat([pd.read_parquet(f) for f in files], ignore_index=True)
@@ -186,12 +265,18 @@ def main():
     p.add_argument("--dataset", type=int, required=True)
     p.add_argument("--models", nargs="+", default=None, help="AutoGluon model keys (default: the experiment's)")
     p.add_argument("--dry_run", action="store_true", help="No AutoGluon fits, only count labels to reuse / compute")
+    p.add_argument("--workers", type=int, default=int(os.environ.get("SLURM_CPUS_PER_TASK", 8)),
+                   help='Parallel candidates with label="cv" (default: the job\'s CPUs, else 8)')
     p = sub.add_parser("merge", help="Merge the labels of all datasets and models")
     config.add_experiment_argument(p)
     args = parser.parse_args()
     experiment = config.EXPERIMENTS[args.experiment]
     if args.command == "build":
         model_keys = args.models or experiment.models
+        if experiment.label == "cv":
+            for model_key in model_keys:
+                build_cv(args.dataset, model_key, experiment, args.workers)
+            return
         if not args.dry_run:
             check_setup(experiment, model_keys)
         for model_key in model_keys:

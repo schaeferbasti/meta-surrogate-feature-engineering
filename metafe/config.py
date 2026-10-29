@@ -9,12 +9,18 @@ Everything that depends on the models lives in an experiment (EXPERIMENTS, chose
               clean labels are >= 0.1). Needs no AutoGluon fits before MetaFE, so it runs in hours (calculco,
               scripts/submit_oar.sh).
               Operators without any reusable label (Combine, CombineThenFreq) are never proposed by MetaFE.
+  lightgbm_cv Like lightgbm, but with a less noisy label: plain LightGBM, 5-fold CV repeated 10 times (label="cv",
+              metafe.models.cv_losses), on all candidates and at most 20,000 label rows; no AutoGluon fit for the
+              labels. A single AutoGluon label is about 3/4 seed noise on the add-feature candidates (label
+              reliability test 2026-10-27: ICC 0.23 across seeds, Spearman 0.21); the 10-repeat CV mean had ICC
+              ~0.77. Per-repeat labels: data/lightgbm_cv/label_repeats/.
   multimodel  Linear model, random forest, LightGBM, TabICLv2 and RealMLP, AutoGluon 1.6 (TabICL and RealMLP on GPU).
               MetaFE runs once per target model; the evaluation uses all models and averages over them.
 
 Layout (the environment variables METAFE_DATA_DIR / METAFE_RESULTS_DIR move data/ and results/, e.g. for tests):
   data/fe/{OpenFE,TabPrep}/FE_<id>_<method>.parquet                  baselines (model-independent, shared)
   data/<experiment>/core_matrix/<model>/<id>.parquet                 1. labels
+  data/<experiment>/label_repeats/<model>/<id>.parquet               1. per-repeat labels (label="cv")
   data/<experiment>/metafeature_matrix[/<id>].parquet                2. surrogate training data
   data/<experiment>/fe/MetaFE_<model>/FE_<id>_MetaFE_<t>.parquet     4. MetaFE data per target model and time limit
   results/<experiment>/pilot/                                        timing pilot (multimodel)
@@ -47,6 +53,10 @@ NUM_CPUS = 8
 MEMORY_LIMIT_GB = 48
 FIT_TIME_LIMIT_S = 4 * 60 * 60
 
+# Labels with label="cv": repeats of the 5-fold CV (fold split and LightGBM seed = repeat number)
+CV_REPEATS = 10
+CV_FOLDS = 5
+
 # Evaluation: number of repeats ("folds") on the fixed OpenML split; fold k uses AutoGluon seed k
 FOLDS = [0, 1, 2]
 
@@ -63,6 +73,7 @@ class Experiment:
     time_limits: tuple = tuple(TIME_LIMITS)  # MetaFE time limits (s); one run writes the data of every limit
     baseline_results_from: str | None = None  # experiment whose Original/OpenFE/TabPrep results are reused
     min_improvement: float = MIN_IMPROVEMENT  # MetaFE stops when no candidate is predicted to improve by this much
+    label: str = "autogluon"            # "autogluon": AutoGluon validation score; "cv": repeated LightGBM CV (GBM only)
 
     @property
     def core_matrix_dir(self):
@@ -79,6 +90,10 @@ class Experiment:
     @property
     def metafeature_matrix(self):
         return DATA_DIR / self.name / "metafeature_matrix.parquet"
+
+    @property
+    def label_repeats_dir(self):
+        return DATA_DIR / self.name / "label_repeats"
 
     def metafe_dir(self, model_key):
         return DATA_DIR / self.name / "fe" / f"MetaFE_{model_key}"
@@ -101,6 +116,10 @@ EXPERIMENTS = {
     "lightgbm_reuse": Experiment("lightgbm_reuse", models=("GBM",), autogluon="1.2", reuse_legacy_labels=True,
                                  compute_labels=False, time_limits=(100, 250, 500, 1000),
                                  baseline_results_from="lightgbm", min_improvement=0.01),
+    # Original/OpenFE/TabPrep are evaluated again (not copied from lightgbm): on kis3bat1 with the ag12 venv the test
+    # scores differ from the cached ones in the 3rd decimal (146818 fold 0: -0.2967 vs -0.2960, validation equal)
+    "lightgbm_cv": Experiment("lightgbm_cv", models=("GBM",), autogluon="1.2", label="cv", max_label_rows=20_000,
+                              time_limits=(100, 250, 500, 1000), min_improvement=0.01),
     # max_candidates / max_label_rows: set from the pilot (python -m metafe.pilot summary)
     "multimodel": Experiment("multimodel", models=("LR", "RF", "GBM", "TABICL", "REALMLP"), autogluon="1.6",
                              max_candidates=500, max_label_rows=50_000),

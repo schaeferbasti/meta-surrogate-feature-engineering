@@ -1,0 +1,10 @@
+step,feature,predicted_improvement,elapsed_s
+surrogate,,,37.86
+0,,,0.0
+1,"divide(attribute_1, attribute_2)",0.042272,108.98
+2,"add(divide(attribute_1, attribute_2), attribute_18)",0.050557,225.49
+3,"add(attribute_9, divide(attribute_1, attribute_2))",0.050409,351.83
+4,"add(divide(attribute_1, attribute_2), attribute_4)",0.050359,489.93
+5,"add(divide(attribute_1, attribute_2), attribute_12)",0.050332,640.52
+6,"add(divide(attribute_1, attribute_2), attribute_19)",0.050108,803.29
+7,"add(divide(attribute_1, attribute_2), attribute_15)",0.050108,977.75

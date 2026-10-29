@@ -7,6 +7,11 @@ import pandas as pd
 
 from metafe.config import TARGET
 
+# OpenML cache (default: openml's). Its pickles depend on the numpy major version, so venvs with numpy 1 and 2 need
+# separate caches.
+if os.environ.get("METAFE_OPENML_CACHE"):
+    openml.config.set_root_cache_directory(os.environ["METAFE_OPENML_CACHE"])
+
 
 def load_task(task_id):
     """Original OpenML train/test split of a task: X_train, y_train, X_test, y_test, metadata.
@@ -43,6 +48,12 @@ def label_data(dataset_id, experiment):
 
 def is_classification(metadata):
     return metadata["task_type"] == "Supervised Classification"
+
+
+def encode_target(y):
+    """Classification target as codes 0..K-1 of the sorted classes: (codes, K)."""
+    classes = np.sort(y.astype(str).unique())
+    return y.astype(str).map({c: i for i, c in enumerate(classes)}).to_numpy(), len(classes)
 
 
 def concat_data(X_train, y_train, X_test, y_test):

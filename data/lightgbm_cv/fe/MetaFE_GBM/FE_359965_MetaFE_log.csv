@@ -1,0 +1,26 @@
+step,feature,predicted_improvement,elapsed_s
+surrogate,,,35.15
+0,,,0.0
+1,"Combine(wkovl, bxqsq)",0.021781,28.84
+2,"log(Combine(wkovl, bxqsq))",0.07814,58.28
+3,"subtract(log(Combine(wkovl, bxqsq)), bkspr)",0.084014,88.4
+4,"subtract(subtract(log(Combine(wkovl, bxqsq)), bkspr), wkna8)",0.084014,119.94
+5,"subtract(subtract(subtract(log(Combine(wkovl, bxqsq)), bkspr), wkna8), wkna8)",0.084014,152.33
+6,"subtract(subtract(subtract(log(Combine(wkovl, bxqsq)), bkspr), wkna8), bkona)",0.084014,186.3
+7,"subtract(log(Combine(wkovl, bxqsq)), bkxbq)",0.084014,220.96
+8,"add(subtract(subtract(subtract(log(Combine(wkovl, bxqsq)), bkspr), wkna8), bkona), bkona)",0.084014,256.96
+9,"subtract(add(subtract(subtract(subtract(log(Combine(wkovl, bxqsq)), bkspr), wkna8), bkona), bkona), qxmsq)",0.084014,294.15
+10,"add(wkna8, subtract(add(subtract(subtract(subtract(log(Combine(wkovl, bxqsq)), bkspr), wkna8), bkona), bkona), qxmsq))",0.084014,332.59
+11,"add(qxmsq, add(wkna8, subtract(add(subtract(subtract(subtract(log(Combine(wkovl, bxqsq)), bkspr), wkna8), bkona), bkona), qxmsq)))",0.084014,372.42
+12,"subtract(add(qxmsq, add(wkna8, subtract(add(subtract(subtract(subtract(log(Combine(wkovl, bxqsq)), bkspr), wkna8), bkona), bkona), qxmsq))), skach)",0.084014,413.58
+13,"divide(subtract(subtract(subtract(log(Combine(wkovl, bxqsq)), bkspr), wkna8), wkna8), katri)",0.084014,456.24
+14,"divide(subtract(add(subtract(subtract(subtract(log(Combine(wkovl, bxqsq)), bkspr), wkna8), bkona), bkona), qxmsq), katri)",0.084014,501.04
+15,"add(add(subtract(subtract(subtract(log(Combine(wkovl, bxqsq)), bkspr), wkna8), bkona), bkona), stlmt)",0.084014,546.2
+16,"subtract(subtract(add(qxmsq, add(wkna8, subtract(add(subtract(subtract(subtract(log(Combine(wkovl, bxqsq)), bkspr), wkna8), bkona), bkona), qxmsq))), skach), bkona)",0.084014,593.03
+17,"subtract(add(qxmsq, add(wkna8, subtract(add(subtract(subtract(subtract(log(Combine(wkovl, bxqsq)), bkspr), wkna8), bkona), bkona), qxmsq))), rxmsq)",0.084014,641.17
+18,"multiply(divide(subtract(subtract(subtract(log(Combine(wkovl, bxqsq)), bkspr), wkna8), wkna8), katri), katri)",0.084014,690.8
+19,"subtract(add(add(subtract(subtract(subtract(log(Combine(wkovl, bxqsq)), bkspr), wkna8), bkona), bkona), stlmt), skrxp)",0.084014,741.75
+20,"add(subtract(add(subtract(subtract(subtract(log(Combine(wkovl, bxqsq)), bkspr), wkna8), bkona), bkona), qxmsq), stlmt)",0.084014,793.89
+21,"divide(subtract(subtract(subtract(log(Combine(wkovl, bxqsq)), bkspr), wkna8), bkona), katri)",0.084014,848.0
+22,"add(bkona, subtract(subtract(add(qxmsq, add(wkna8, subtract(add(subtract(subtract(subtract(log(Combine(wkovl, bxqsq)), bkspr), wkna8), bkona), bkona), qxmsq))), skach), bkona))",0.084014,904.05
+23,"subtract(add(subtract(add(subtract(subtract(subtract(log(Combine(wkovl, bxqsq)), bkspr), wkna8), bkona), bkona), qxmsq), stlmt), bkon8)",0.084014,960.95

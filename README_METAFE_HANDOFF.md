@@ -6,7 +6,120 @@ It summarizes a multi-day working session, so a new agent on a new cluster can c
 are done and valid. MetaFE results are **invalid** because of target leakage plus a test-set bug in the MetaFE
 pipeline, and MetaFE has to be fixed and rerun (including parts of the surrogate's training metadata).
 
-## 00. Start here (latest state, 2026-10-25 evening)
+## 000. Newest (2026-10-26 evening, new cluster kis3bat1 / SLURM): why MetaFE fails, and the plan
+
+**Diagnosis of the third `lightgbm_reuse` run** (`results/lightgbm_reuse/plots/LightGBM/summary.csv`: MetaFE mean
+−7.5 … −9.4 %, median ≈ 0 %, 20–23/44 better; TabPrep +5.0 % / +3.6 %, 30/44):
+1. **The surrogate does not rank candidates on unseen datasets.** Leave-one-dataset-out (LightGBM surrogate on the
+   metafeature matrix, without `dataset - id` / `feature - name`): median per-dataset Spearman 0.006; the median real
+   label of its top-10 picks is 0.0 %, the same as random; the best candidate per dataset is worth a median of +3.5 %.
+2. **The metafeatures cannot carry that information:** only operator, task type and pandas `describe()` of the
+   candidate on its own. There is nothing about y, the other columns or the dataset, so there is no actual
+   "dataset similarity".
+3. **Labels are mostly noise:** 39 % are exactly 0 (trees ignore monotone transforms); the non-zero labels have
+   median |label| 0.59 % and are 53 % positive / 47 % negative; Original's seed std is 0.75 % (val). Single seed-0
+   labels. Dataset 359930 (quake) has all 75 labels at +0.89 (broken baseline score? check).
+4. **The recursion goes out of distribution:** the logs show copies like `subtract(add(X, Mean_R), Mean_R)` and
+   `GroupByThenMean(persons, persons)`; the predictions are nearly constant (e.g. 0.042952 repeated).
+
+**Plan the user approved** (run in order, each only if the previous one works; do NOT recompute the knowledge base
+before):
+1. Target-aware metafeatures for the existing KB rows (MI with y, correlation ratio with the residual of an OOF
+   LightGBM on the original columns, gain over the operands, redundancy with the existing columns, scale-free stats,
+   dataset-level metafeatures), then rerun the leave-one-dataset-out check (old vs new vs both). Gate: top-10 picks
+   clearly beat random (Wilcoxon over datasets) and Spearman on the non-zero labels > ~0.15.
+2. Baseline without meta-learning: rank by the residual-gain statistic alone, same metrics.
+3. MetaFE v2: depth ≤ 2, near-duplicate filter (|Spearman| > 0.98), surrogate/heuristic only pre-selects the top-k,
+   each one is verified by a 5-fold LightGBM CV on the training rows; evaluate with a proxy (plain LightGBM, 3 seeds, OpenML
+   split) on Original/TabPrep/OpenFE/old MetaFE/new MetaFE.
+
+**State of the code:** `experiments/surrogate_check/common.py` (metafeature code, `DatasetContext`) and
+`step1_metafeatures.py` (tested on 146818: 8 s). Pending fix in `common.py` `mutual_info`: replace non-finite
+values by the median of the **finite** values (`log(A9)` failed with inf). Not yet written: the step 1 LODO check,
+step 2, step 3, and the SLURM driver.
+**Environment:** venv `/work/dlclarge1/matusd-schaefeb-metafe/venvs/analysis` (pandas 3, lightgbm, sklearn, openml,
+no AutoGluon); all 44 OpenML tasks cached in `/work/dlclarge1/matusd-schaefeb-metafe/openml_cache` (`common.py`
+sets it). Run with `PYTHONPATH=.` from the repo. Login node has 16 cores; use SLURM for the full run
+(`mldlc2_cpu-epyc9655`, 192 cores/node, or `gki_cpu-cascadelake`; both accept 32 CPUs/23 h). The user authorized
+running the experiments overnight.
+
+**Result (2026-10-26 22:20): the step 1 gate FAILED, so step 3 was not run.** Step 1a (`mf_v2`, all 44 datasets,
+0 failures, 2 min on SLURM; `mutual_info` fix and nested operands done) and the LODO check
+`step1_lodo.py` (also step 2) → `results/surrogate_check/step1_lodo/{summary,per_dataset}.csv, gate.json`. On the
+add-feature candidates, median per-dataset Spearman on the non-zero labels is 0.03–0.06 for every surrogate
+(old/new/both, label or per-dataset rank target) and every heuristic (gate: > 0.15). Top-10 picks vs random
+(Wilcoxon on top-10 mean label minus the dataset's mean label): surrogates p = 0.09–0.43 (new 0.09, both 0.43, old
+0.08); heuristics `eta_res` p = 0.005 (30/44 above the mean), `eta_y_gain` 0.009, `eta_res_gain` 0.018. Their
+gain is tiny (median top-10 excess +0.2 % vs an oracle +2.3 %). NaNs in `mf_v2` are only skew/kurt of
+constant features. Step 3 is written and smoke-tested (146818, `--ranker heu_eta_res_gain`): `step3_metafe_v2.py`
+(depth ≤ 2, |Spearman| > 0.98 filter, top-10 → 5-fold LightGBM CV verification, greedy add),
+`step3_evaluate.py` (plain LightGBM, 3 seeds, OpenML split; `--summary`), SLURM wrapper `run.sh` (array index →
+dataset). To run it anyway with a heuristic: `sbatch --array=0-43 ... run.sh step3_metafe_v2.py --ranker heu_eta_res`.
+
+**Label reliability test and new knowledge base (2026-10-27).** `experiments/label_reliability/label_reliability.py`
+reran the knowledge-base label process exactly (AutoGluon 1.2.1 LightGBM, 8-fold bagging; a seed-0 rerun reproduced
+5/5 labels bit-exactly) with seeds 1–3 on 200 random + top-20 candidates of 10 datasets. It was stopped by the user
+at ~10 % (enough): on the add-feature candidates of 146818, 168757, 359950 the labels agree with themselves across seeds
+only with Spearman 0.21 (non-zero labels 0.27), sign agreement 0.60, ICC 0.23 (seed noise sd 0.60 % > real spread
+between candidates 0.42 %). The top-20 candidates hold up (+2.0 % in the KB, +1.7 % with new seeds, 89 % stay
+positive); delete labels are reliable (ICC 0.94). Plain LightGBM 5-fold CV × 10 repeats: ICC of the mean ≈ 0.77
+(only 146818 measured). Hence the knowledge base is being recomputed with that label: experiment `lightgbm_cv`
+(see README.md), submitted 2026-10-27 07:46 (`UNTIL=mf_merge`, jobs 30096235 labels, 30096236 merge, 30096255/6
+metafeatures; venv `/work/dlclarge1/matusd-schaefeb-metafe/venvs/ag12` = AutoGluon 1.2.1b20250430 with the original
+pins, `OPENML_CACHE=/work/dlclarge1/matusd-schaefeb-metafe/openml_cache_np1` because the cache pickles depend on the numpy
+major version). The package code reproduces the reliability test's CV labels to 1e-16.
+
+**Result (finished 2026-10-27 11:49, all 90 jobs COMPLETED, 0 failed candidates):** `data/lightgbm_cv/core_matrix.parquet`
+and `metafeature_matrix.parquet` have 119,932 labels on 44 datasets (95,453 shared with the old KB, 24,479 new). The
+reliability of the mean of 10 repeats on the add-feature candidates (from `label_repeats`, per dataset in
+`results/label_reliability/lightgbm_cv_kb_reliability.csv`) has a median ICC of 0.84 and a split-half Spearman of 0.72
+(0.84 after Spearman-Brown); 36/44 datasets have ICC ≥ 0.5. It is low on 167120 (numerai, no signal),
+359935, 359949, 359956 and 359987. Per dataset, the new labels agree with the old ones with a median Spearman of 0.26,
+about the old labels' own reliability. **Problem: 359987 (shuttle, 7 classes, some with 4–5 rows)**: LightGBM multiclass diverges at random (fold log loss of
+the original data jumps between 0.003 and 4.3), giving labels down to −1039; 543/576 of its labels are < −0.5. These
+labels are noise and must be dropped or relabelled (e.g. with the rare classes merged, or a smaller learning rate) before the KB is used.
+
+**Fix and full rerun (2026-10-27 afternoon):** `cv_losses` now uses `min_sum_hessian_in_leaf=1.0` for every dataset
+(no special case): shuttle's fold log loss becomes stable (0.003), on 146818 the original loss even drops (0.369 vs
+0.392) and the per-repeat labels vary less; no effect on regression. The first KB was moved to
+`data/lightgbm_cv_unstable_v1/`. The whole pipeline was resubmitted (labels → metafeatures → MetaFE 100/250/500/1000 s →
+evaluation → plots): jobs 30103248 (labels) … 30103275 (plots), same venv/cache as above. The ag12 venv got
+catboost 1.2.8 and setuptools < 80 (AutoGluon 1.2 imports `pkg_resources`). Original/OpenFE/TabPrep are evaluated
+again in this venv instead of copied from `lightgbm`: the cached test score of 146818 fold 0 differs in the 3rd
+decimal (-0.2960 cached vs -0.2967 here, validation equal). Results: `results/lightgbm_cv/plots/`.
+
+**Result (2026-10-28, all jobs done; plots rerun locally after installing adjustText 1.3.0 into ag12):** test error
+change vs Original, median / mean / better-of-n: TabPrep +3.7 % / +4.4 % / 29 of 44 (p 0.006), OpenFE +1.1 % / −8.5 % /
+25 of 36, MetaFE 100 s 0.0 % / +0.2 % / 16 of 44, 1000 s 0.0 % / −1.3 % / 15 of 44 (significantly worse, p 0.04).
+Why: MetaFE's first pick has a median true label of −0.1 % (predicted +2.9 %), median percentile 45 among the
+dataset's candidates (chance); every step is predicted ≥ 1 %, so 36/44 runs go to the time limit and build deep
+GroupBy chains on ID columns. **LODO on the new labels** (`SURROGATE_CHECK_KB=lightgbm_cv
+SURROGATE_CHECK_DIR=results/surrogate_check_cv`, see `experiments/surrogate_check/common.py`): the step-1 gate now
+passes. Target-aware surrogate with rank target: median Spearman 0.31 (old labels 0.02), top-10 excess +0.24 % (oracle
++2.32 %), p 3e-6; the `describe()` surrogate as in MetaFE: Spearman 0.08; the residual heuristics have the best top 10
+(+0.35 %). Write-up: https://claude.ai/artifact/T74Kew7xE8MJ1s4DbAC3Ve. Proposed next step: MetaFE v2
+(`step3_metafe_v2.py`, ranker `sur_new_rank`, with CV verification of every pick) next to the heuristic with the same verification.
+
+**Two follow-up tests (2026-10-29; MetaFE v2 not run, the user doubts it can help):** both run locally in minutes
+(analysis venv, same env variables as above).
+- `experiments/surrogate_check/within_dataset.py`: surrogate trained on 4/5 of a dataset's own candidates, tested on
+  the rest. Median Spearman 0.81 (random folds) / 0.74 (grouped by first operand), every dataset ≥ 0.43; top-10
+  excess +1.39 % (oracle +2.32 %); LODO `sur_new_rank` on the same candidates 0.31. Label ceiling (split-half of the
+  10 repeats, Spearman-Brown) 0.89. So neither the labels nor the metafeatures are the bottleneck: candidate quality
+  does not transfer across datasets.
+- `experiments/surrogate_check/dataset_selection.py`: dataset-level KB (44 rows: size, columns, classes, categorical
+  share, baseline difficulty, max/q90 residual gain of the candidates → test gain of TabPrep/OpenFE), random-forest
+  selector LODO. Original vs TabPrep: meta mean +3.9 % (always TabPrep +4.4 %, oracle +8.9 %, permutation p 0.36); it
+  only skips amazon and brazilian, both wrongly. Choosing by the validation score (no meta-learning): +7.6 %, catches
+  kr_vs_kp and shuttle. With OpenFE (36 datasets): meta +2.7 % (p 0.21); validation −4.1 % (picks OpenFE on
+  click_pred/okcupid, which fail on test). Dataset-level meta-learning does not work with 44 datasets.
+- 2026-10-29: the user stopped the MetaFE experiments ("MetaFE as described in the paper is not working") and plans
+  an ESANN 2027 paper (deadline 18 Nov 2026) on why it fails. `experiments/surrogate_check/learning_curve.py`: 25
+  labels of the new dataset rank as well as the KB of 43 datasets (Spearman 0.30), 100 labels 0.58; the KB surrogate
+  as an extra input adds <= 0.015. Paper figures, captions and all numbers: `experiments/paper/figures.py` ->
+  `results/paper/` (README.md there).
+
+## 00. Start here (2026-10-25 evening)
 
 **Read `README.md` first** (layout, commands, design decisions). Everything below §00 is history.
 

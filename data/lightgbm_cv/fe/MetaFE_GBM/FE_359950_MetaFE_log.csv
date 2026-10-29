@@ -1,0 +1,67 @@
+step,feature,predicted_improvement,elapsed_s
+surrogate,,,40.57
+0,,,0.0
+1,"GroupByThenMedian(B, RAD)",0.041186,1.45
+2,"add(GroupByThenMedian(B, RAD), RM)",0.060629,2.96
+3,"add(CHAS, add(GroupByThenMedian(B, RAD), RM))",0.060629,4.67
+4,"round(add(GroupByThenMedian(B, RAD), RM))",0.060629,6.59
+5,"add(CHAS, add(CHAS, add(GroupByThenMedian(B, RAD), RM)))",0.060629,8.73
+6,"GroupByThenMean(add(CHAS, add(GroupByThenMedian(B, RAD), RM)), RAD)",0.060629,11.11
+7,"round(add(CHAS, add(GroupByThenMedian(B, RAD), RM)))",0.060629,13.75
+8,"add(round(add(GroupByThenMedian(B, RAD), RM)), NOX)",0.060629,16.65
+9,"add(add(CHAS, add(CHAS, add(GroupByThenMedian(B, RAD), RM))), NOX)",0.060629,19.82
+10,"add(add(add(CHAS, add(CHAS, add(GroupByThenMedian(B, RAD), RM))), NOX), CHAS)",0.060629,23.3
+11,"round(GroupByThenMean(add(CHAS, add(GroupByThenMedian(B, RAD), RM)), RAD))",0.060629,27.08
+12,"round(add(CHAS, add(CHAS, add(GroupByThenMedian(B, RAD), RM))))",0.060629,31.2
+13,"GroupByThenMean(round(add(CHAS, add(GroupByThenMedian(B, RAD), RM))), RAD)",0.060629,35.62
+14,"GroupByThenMean(add(round(add(GroupByThenMedian(B, RAD), RM)), NOX), RAD)",0.060629,40.38
+15,"round(GroupByThenMean(add(round(add(GroupByThenMedian(B, RAD), RM)), NOX), RAD))",0.060629,45.5
+16,"round(add(add(CHAS, add(CHAS, add(GroupByThenMedian(B, RAD), RM))), NOX))",0.060629,51.02
+17,"add(CHAS, GroupByThenMean(add(CHAS, add(GroupByThenMedian(B, RAD), RM)), RAD))",0.060629,56.89
+18,"round(add(CHAS, GroupByThenMean(add(CHAS, add(GroupByThenMedian(B, RAD), RM)), RAD)))",0.060629,63.18
+19,"add(NOX, add(GroupByThenMedian(B, RAD), RM))",0.060629,69.8
+20,"GroupByThenMedian(add(round(add(GroupByThenMedian(B, RAD), RM)), NOX), RAD)",0.060629,76.86
+21,"round(add(NOX, add(GroupByThenMedian(B, RAD), RM)))",0.060629,84.36
+22,"round(add(add(add(CHAS, add(CHAS, add(GroupByThenMedian(B, RAD), RM))), NOX), CHAS))",0.060629,92.28
+23,"round(GroupByThenMedian(add(round(add(GroupByThenMedian(B, RAD), RM)), NOX), RAD))",0.060629,100.65
+24,"subtract(round(GroupByThenMedian(add(round(add(GroupByThenMedian(B, RAD), RM)), NOX), RAD)), CHAS)",0.060629,109.51
+25,"add(add(round(add(GroupByThenMedian(B, RAD), RM)), NOX), NOX)",0.060629,118.88
+26,"subtract(add(CHAS, add(CHAS, add(GroupByThenMedian(B, RAD), RM))), NOX)",0.060629,128.7
+27,"add(add(add(add(CHAS, add(CHAS, add(GroupByThenMedian(B, RAD), RM))), NOX), CHAS), CHAS)",0.060629,139.06
+28,"round(add(add(add(add(CHAS, add(CHAS, add(GroupByThenMedian(B, RAD), RM))), NOX), CHAS), CHAS))",0.060629,149.96
+29,"add(CHAS, round(add(CHAS, add(CHAS, add(GroupByThenMedian(B, RAD), RM)))))",0.060629,161.48
+30,"round(add(add(round(add(GroupByThenMedian(B, RAD), RM)), NOX), NOX))",0.060629,173.51
+31,"round(subtract(add(CHAS, add(CHAS, add(GroupByThenMedian(B, RAD), RM))), NOX))",0.060629,186.66
+32,"add(round(add(CHAS, add(GroupByThenMedian(B, RAD), RM))), NOX)",0.060629,200.72
+33,"GroupByThenMin(subtract(round(GroupByThenMedian(add(round(add(GroupByThenMedian(B, RAD), RM)), NOX), RAD)), CHAS), RAD)",0.060629,215.54
+34,"GroupByThenMedian(subtract(add(CHAS, add(CHAS, add(GroupByThenMedian(B, RAD), RM))), NOX), RAD)",0.060629,230.79
+35,"subtract(round(GroupByThenMean(add(round(add(GroupByThenMedian(B, RAD), RM)), NOX), RAD)), NOX)",0.060629,246.8
+36,"round(subtract(round(GroupByThenMean(add(round(add(GroupByThenMedian(B, RAD), RM)), NOX), RAD)), NOX))",0.060629,262.94
+37,"subtract(round(add(CHAS, GroupByThenMean(add(CHAS, add(GroupByThenMedian(B, RAD), RM)), RAD))), NOX)",0.060629,279.15
+38,"subtract(round(GroupByThenMean(add(CHAS, add(GroupByThenMedian(B, RAD), RM)), RAD)), NOX)",0.060629,295.91
+39,"round(GroupByThenMedian(subtract(add(CHAS, add(CHAS, add(GroupByThenMedian(B, RAD), RM))), NOX), RAD))",0.060629,313.32
+40,"round(subtract(round(GroupByThenMean(add(CHAS, add(GroupByThenMedian(B, RAD), RM)), RAD)), NOX))",0.060629,331.5
+41,"GroupByThenMedian(round(add(NOX, add(GroupByThenMedian(B, RAD), RM))), RAD)",0.060629,350.24
+42,"GroupByThenMedian(add(CHAS, add(CHAS, add(GroupByThenMedian(B, RAD), RM))), RAD)",0.060629,369.66
+43,"GroupByThenMin(round(subtract(add(CHAS, add(CHAS, add(GroupByThenMedian(B, RAD), RM))), NOX)), RAD)",0.060629,389.76
+44,"GroupByThenMedian(round(add(GroupByThenMedian(B, RAD), RM)), RAD)",0.060629,410.6
+45,"round(subtract(round(add(CHAS, GroupByThenMean(add(CHAS, add(GroupByThenMedian(B, RAD), RM)), RAD))), NOX))",0.060629,432.27
+46,"add(CHAS, add(CHAS, GroupByThenMean(add(CHAS, add(GroupByThenMedian(B, RAD), RM)), RAD)))",0.060629,454.56
+47,"subtract(round(GroupByThenMedian(subtract(add(CHAS, add(CHAS, add(GroupByThenMedian(B, RAD), RM))), NOX), RAD)), CHAS)",0.060629,477.81
+48,"GroupByThenMean(add(CHAS, add(CHAS, GroupByThenMean(add(CHAS, add(GroupByThenMedian(B, RAD), RM)), RAD))), RAD)",0.060629,501.81
+49,"round(GroupByThenMean(add(CHAS, add(CHAS, GroupByThenMean(add(CHAS, add(GroupByThenMedian(B, RAD), RM)), RAD))), RAD))",0.060629,526.69
+50,"add(round(add(add(CHAS, add(CHAS, add(GroupByThenMedian(B, RAD), RM))), NOX)), NOX)",0.060629,552.25
+51,"GroupByThenMin(subtract(round(GroupByThenMedian(subtract(add(CHAS, add(CHAS, add(GroupByThenMedian(B, RAD), RM))), NOX), RAD)), CHAS), RAD)",0.060629,578.81
+52,"GroupByThenMean(subtract(round(GroupByThenMean(add(round(add(GroupByThenMedian(B, RAD), RM)), NOX), RAD)), NOX), RAD)",0.060629,606.14
+53,"GroupByThenMax(add(CHAS, GroupByThenMean(add(CHAS, add(GroupByThenMedian(B, RAD), RM)), RAD)), RAD)",0.060629,634.46
+54,"round(add(CHAS, add(CHAS, GroupByThenMean(add(CHAS, add(GroupByThenMedian(B, RAD), RM)), RAD))))",0.060629,663.41
+55,"subtract(round(subtract(round(GroupByThenMean(add(round(add(GroupByThenMedian(B, RAD), RM)), NOX), RAD)), NOX)), CHAS)",0.060629,693.31
+56,"round(GroupByThenMax(add(CHAS, GroupByThenMean(add(CHAS, add(GroupByThenMedian(B, RAD), RM)), RAD)), RAD))",0.060629,723.78
+57,"subtract(add(round(add(GroupByThenMedian(B, RAD), RM)), NOX), CHAS)",0.060629,755.15
+58,"round(subtract(add(round(add(GroupByThenMedian(B, RAD), RM)), NOX), CHAS))",0.060629,787.39
+59,"add(NOX, add(round(add(add(CHAS, add(CHAS, add(GroupByThenMedian(B, RAD), RM))), NOX)), NOX))",0.060629,820.68
+60,"GroupByThenMean(add(CHAS, add(CHAS, add(GroupByThenMedian(B, RAD), RM))), RAD)",0.060629,854.75
+61,"GroupByThenMean(add(add(round(add(GroupByThenMedian(B, RAD), RM)), NOX), NOX), RAD)",0.060629,890.06
+62,"round(GroupByThenMean(add(add(round(add(GroupByThenMedian(B, RAD), RM)), NOX), NOX), RAD))",0.060629,926.18
+63,"subtract(round(add(add(add(CHAS, add(CHAS, add(GroupByThenMedian(B, RAD), RM))), NOX), CHAS)), RM)",0.060629,963.12
+64,"add(subtract(round(GroupByThenMedian(add(round(add(GroupByThenMedian(B, RAD), RM)), NOX), RAD)), CHAS), NOX)",0.060629,1001.44

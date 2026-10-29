@@ -1,0 +1,28 @@
+step,feature,predicted_improvement,elapsed_s
+surrogate,,,35.6
+0,,,0.0
+1,"multiply(A7, A1)",0.014041,5.88
+2,"subtract(multiply(A7, A1), A2)",0.015746,12.98
+3,"subtract(subtract(multiply(A7, A1), A2), A7)",0.015893,21.74
+4,"subtract(subtract(subtract(multiply(A7, A1), A2), A7), A3)",0.016159,32.26
+5,"subtract(subtract(subtract(subtract(multiply(A7, A1), A2), A7), A3), A5)",0.016272,44.8
+6,"subtract(subtract(subtract(subtract(multiply(A7, A1), A2), A7), A3), A7)",0.016272,59.66
+7,"subtract(subtract(subtract(subtract(subtract(multiply(A7, A1), A2), A7), A3), A7), A4)",0.016272,76.7
+8,"add(A5, subtract(subtract(subtract(subtract(multiply(A7, A1), A2), A7), A3), A7))",0.016159,96.64
+9,"subtract(add(A5, subtract(subtract(subtract(subtract(multiply(A7, A1), A2), A7), A3), A7)), A7)",0.016272,119.01
+10,"subtract(subtract(add(A5, subtract(subtract(subtract(subtract(multiply(A7, A1), A2), A7), A3), A7)), A7), A4)",0.016272,144.26
+11,"subtract(subtract(multiply(A7, A1), A2), subtract(subtract(add(A5, subtract(subtract(subtract(subtract(multiply(A7, A1), A2), A7), A3), A7)), A7), A4))",0.018025,172.5
+12,"add(A5, subtract(subtract(multiply(A7, A1), A2), subtract(subtract(add(A5, subtract(subtract(subtract(subtract(multiply(A7, A1), A2), A7), A3), A7)), A7), A4)))",0.055465,203.92
+13,"abs(add(A5, subtract(subtract(multiply(A7, A1), A2), subtract(subtract(add(A5, subtract(subtract(subtract(subtract(multiply(A7, A1), A2), A7), A3), A7)), A7), A4))))",0.058313,238.64
+14,"subtract(abs(add(A5, subtract(subtract(multiply(A7, A1), A2), subtract(subtract(add(A5, subtract(subtract(subtract(subtract(multiply(A7, A1), A2), A7), A3), A7)), A7), A4)))), A4)",0.059952,276.77
+15,"add(A8, subtract(subtract(multiply(A7, A1), A2), subtract(subtract(add(A5, subtract(subtract(subtract(subtract(multiply(A7, A1), A2), A7), A3), A7)), A7), A4)))",0.055187,319.46
+16,"abs(add(A8, subtract(subtract(multiply(A7, A1), A2), subtract(subtract(add(A5, subtract(subtract(subtract(subtract(multiply(A7, A1), A2), A7), A3), A7)), A7), A4))))",0.056341,364.86
+17,"subtract(abs(add(A8, subtract(subtract(multiply(A7, A1), A2), subtract(subtract(add(A5, subtract(subtract(subtract(subtract(multiply(A7, A1), A2), A7), A3), A7)), A7), A4)))), A4)",0.057998,414.43
+18,"abs(subtract(abs(add(A8, subtract(subtract(multiply(A7, A1), A2), subtract(subtract(add(A5, subtract(subtract(subtract(subtract(multiply(A7, A1), A2), A7), A3), A7)), A7), A4)))), A4))",0.058474,468.01
+19,"add(abs(subtract(abs(add(A8, subtract(subtract(multiply(A7, A1), A2), subtract(subtract(add(A5, subtract(subtract(subtract(subtract(multiply(A7, A1), A2), A7), A3), A7)), A7), A4)))), A4)), A2)",0.056365,526.53
+20,"abs(add(abs(subtract(abs(add(A8, subtract(subtract(multiply(A7, A1), A2), subtract(subtract(add(A5, subtract(subtract(subtract(subtract(multiply(A7, A1), A2), A7), A3), A7)), A7), A4)))), A4)), A2))",0.059291,592.86
+21,"subtract(abs(add(abs(subtract(abs(add(A8, subtract(subtract(multiply(A7, A1), A2), subtract(subtract(add(A5, subtract(subtract(subtract(subtract(multiply(A7, A1), A2), A7), A3), A7)), A7), A4)))), A4)), A2)), A2)",0.058096,662.92
+22,"add(subtract(abs(add(abs(subtract(abs(add(A8, subtract(subtract(multiply(A7, A1), A2), subtract(subtract(add(A5, subtract(subtract(subtract(subtract(multiply(A7, A1), A2), A7), A3), A7)), A7), A4)))), A4)), A2)), A2), A4)",0.057857,735.79
+23,"add(A2, subtract(abs(add(A8, subtract(subtract(multiply(A7, A1), A2), subtract(subtract(add(A5, subtract(subtract(subtract(subtract(multiply(A7, A1), A2), A7), A3), A7)), A7), A4)))), A4))",0.056365,813.87
+24,"add(A4, abs(subtract(abs(add(A8, subtract(subtract(multiply(A7, A1), A2), subtract(subtract(add(A5, subtract(subtract(subtract(subtract(multiply(A7, A1), A2), A7), A3), A7)), A7), A4)))), A4)))",0.056341,897.22
+25,"subtract(subtract(abs(add(A8, subtract(subtract(multiply(A7, A1), A2), subtract(subtract(add(A5, subtract(subtract(subtract(subtract(multiply(A7, A1), A2), A7), A3), A7)), A7), A4)))), A4), A2)",0.055597,985.75

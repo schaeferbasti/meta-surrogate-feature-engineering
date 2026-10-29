@@ -1,0 +1,229 @@
+{
+  "knowledge_base": {
+    "datasets": 44,
+    "labels": 119261
+  },
+  "label_reliability": {
+    "ag_datasets": 3,
+    "ag_seed_spearman_median": 0.2711953659820958,
+    "ag_icc_single_fit_median": 0.2861518861394128,
+    "cv_datasets": 44,
+    "cv_split_half_spearman_median": 0.6677405408837807,
+    "cv_icc10_median": 0.8280994973063758,
+    "cv_icc10_ge_0_5": 35
+  },
+  "fe_comparison": {
+    "TabPrep": {
+      "datasets": 44,
+      "median": 3.6769621587718264,
+      "mean": 4.349512060596537,
+      "better": 28,
+      "worse": 14,
+      "wilcoxon_p": 0.0058244200529316
+    },
+    "OpenFE": {
+      "datasets": 36,
+      "median": 1.091549835160342,
+      "mean": -8.482493235038577,
+      "better": 24,
+      "worse": 9,
+      "wilcoxon_p": 0.036035174876138276
+    },
+    "MetaFE_100": {
+      "datasets": 44,
+      "median": 0.0,
+      "mean": 0.16177646021560108,
+      "better": 13,
+      "worse": 17,
+      "wilcoxon_p": 0.3943720518447251
+    },
+    "MetaFE_250": {
+      "datasets": 44,
+      "median": 0.0,
+      "mean": -0.6605484134072311,
+      "better": 13,
+      "worse": 16,
+      "wilcoxon_p": 0.2263885523962469
+    },
+    "MetaFE_500": {
+      "datasets": 44,
+      "median": 0.0,
+      "mean": -0.9426432298754716,
+      "better": 12,
+      "worse": 18,
+      "wilcoxon_p": 0.2579871672986084
+    },
+    "MetaFE_1000": {
+      "datasets": 44,
+      "median": 0.0,
+      "mean": -1.255131850794887,
+      "better": 11,
+      "worse": 21,
+      "wilcoxon_p": 0.04269676953177257
+    }
+  },
+  "metafe_first_pick": {
+    "datasets": 37,
+    "datasets_without_step": 7,
+    "predicted_median_pct": 2.8526,
+    "true_median_pct": -0.08968409265003027,
+    "true_positive": 11,
+    "percentile_median": 0.44992997198879553,
+    "best_candidate_median_pct": 2.4853511655096447,
+    "median_steps": 25.5,
+    "median_predicted_step_pct": 4.9312000000000005
+  },
+  "spearman_medians": {
+    "describe() MF, AutoGluon labels": 0.0174563673844857,
+    "target-aware MF, AutoGluon labels": 0.0210950210580082,
+    "describe() MF, CV labels": 0.07786304723234415,
+    "residual heuristic (no surrogate)": 0.1417599476489384,
+    "target-aware MF, CV labels": 0.30916198253299243,
+    "same dataset: target-aware MF, CV labels": 0.7431259529926906,
+    "label-noise ceiling": 0.8948394448636101
+  },
+  "top10_excess_pct": {
+    "lodo_target_aware": 0.24382802638150497,
+    "residual_heuristic": 0.34441825903316997,
+    "same_dataset": 1.38988411053912,
+    "oracle": 2.3212812391532003
+  },
+  "learning_curve_median": {
+    "kb_0": 0.3028344303093749,
+    "local_10": 0.193384188528056,
+    "local_25": 0.3044826254583298,
+    "local_50": 0.47728337691682193,
+    "local_100": 0.5758584120696406,
+    "local_200": 0.6217978378159355,
+    "local_400": 0.6819383993631308,
+    "local+kb_10": 0.19850403485216822,
+    "local+kb_25": 0.3178185469473793,
+    "local+kb_50": 0.4835922920270097,
+    "local+kb_100": 0.5805280223889238,
+    "local+kb_200": 0.6228927331781081,
+    "local+kb_400": 0.6835646112511287
+  },
+  "dataset_selection": {
+    "TabPrep|always_Original": {
+      "datasets": 44,
+      "mean_gain": 0.0,
+      "median_gain": 0.0,
+      "better": 0,
+      "worse": 0,
+      "worse_5pct": 0,
+      "perm_p": NaN,
+      "perm_null_mean": NaN,
+      "perm_null_q95": NaN
+    },
+    "TabPrep|always_TabPrep": {
+      "datasets": 44,
+      "mean_gain": 4.349512060596537,
+      "median_gain": 3.6769621587718255,
+      "better": 28,
+      "worse": 14,
+      "worse_5pct": 4,
+      "perm_p": NaN,
+      "perm_null_mean": NaN,
+      "perm_null_q95": NaN
+    },
+    "TabPrep|validation": {
+      "datasets": 44,
+      "mean_gain": 7.649260191571605,
+      "median_gain": 2.8507237938681524,
+      "better": 26,
+      "worse": 8,
+      "worse_5pct": 2,
+      "perm_p": NaN,
+      "perm_null_mean": NaN,
+      "perm_null_q95": NaN
+    },
+    "TabPrep|meta": {
+      "datasets": 44,
+      "mean_gain": 3.877372501891406,
+      "median_gain": 2.8507237938681524,
+      "better": 26,
+      "worse": 14,
+      "worse_5pct": 4,
+      "perm_p": 0.356,
+      "perm_null_mean": 3.394203360626777,
+      "perm_null_q95": 5.564833448126598
+    },
+    "TabPrep|oracle": {
+      "datasets": 44,
+      "mean_gain": 8.870501152239582,
+      "median_gain": 3.6769621587718255,
+      "better": 28,
+      "worse": 0,
+      "worse_5pct": 0,
+      "perm_p": NaN,
+      "perm_null_mean": NaN,
+      "perm_null_q95": NaN
+    },
+    "TabPrep+OpenFE|always_Original": {
+      "datasets": 36,
+      "mean_gain": 0.0,
+      "median_gain": 0.0,
+      "better": 0,
+      "worse": 0,
+      "worse_5pct": 0,
+      "perm_p": NaN,
+      "perm_null_mean": NaN,
+      "perm_null_q95": NaN
+    },
+    "TabPrep+OpenFE|always_TabPrep": {
+      "datasets": 36,
+      "mean_gain": 4.419702516305163,
+      "median_gain": 3.6769621587718255,
+      "better": 24,
+      "worse": 10,
+      "worse_5pct": 4,
+      "perm_p": NaN,
+      "perm_null_mean": NaN,
+      "perm_null_q95": NaN
+    },
+    "TabPrep+OpenFE|always_OpenFE": {
+      "datasets": 36,
+      "mean_gain": -8.482493235038577,
+      "median_gain": 1.091549835160342,
+      "better": 24,
+      "worse": 9,
+      "worse_5pct": 4,
+      "perm_p": NaN,
+      "perm_null_mean": NaN,
+      "perm_null_q95": NaN
+    },
+    "TabPrep+OpenFE|validation": {
+      "datasets": 36,
+      "mean_gain": -4.121592760380018,
+      "median_gain": 2.742168772126767,
+      "better": 23,
+      "worse": 7,
+      "worse_5pct": 4,
+      "perm_p": NaN,
+      "perm_null_mean": NaN,
+      "perm_null_q95": NaN
+    },
+    "TabPrep+OpenFE|meta": {
+      "datasets": 36,
+      "mean_gain": 2.672791847729917,
+      "median_gain": 3.6823256240938864,
+      "better": 24,
+      "worse": 8,
+      "worse_5pct": 2,
+      "perm_p": 0.214,
+      "perm_null_mean": -2.795704943679707,
+      "perm_null_q95": 6.757607633093493
+    },
+    "TabPrep+OpenFE|oracle": {
+      "datasets": 36,
+      "mean_gain": 12.030905383832788,
+      "median_gain": 4.235384938754627,
+      "better": 29,
+      "worse": 0,
+      "worse_5pct": 0,
+      "perm_p": NaN,
+      "perm_null_mean": NaN,
+      "perm_null_q95": NaN
+    }
+  }
+}

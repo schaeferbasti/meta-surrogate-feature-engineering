@@ -1,0 +1,21 @@
+step,feature,predicted_improvement,elapsed_s
+surrogate,,,36.96
+0,,,0.0
+1,"subtract(V10, V15)",0.044968,24.14
+2,"subtract(subtract(V10, V15), V13)",0.053107,50.46
+3,"subtract(subtract(subtract(V10, V15), V13), V8)",0.053107,80.1
+4,"add(subtract(subtract(V10, V15), V13), V5)",0.053107,112.08
+5,"add(subtract(subtract(subtract(V10, V15), V13), V8), V5)",0.053107,147.2
+6,"subtract(subtract(subtract(subtract(V10, V15), V13), V8), V5)",0.053107,185.54
+7,"subtract(subtract(subtract(V10, V15), V13), V5)",0.053107,226.83
+8,"subtract(subtract(subtract(subtract(V10, V15), V13), V5), V5)",0.053107,271.0
+9,"subtract(subtract(subtract(subtract(subtract(V10, V15), V13), V5), V5), V8)",0.053107,318.85
+10,"subtract(subtract(subtract(subtract(subtract(V10, V15), V13), V5), V5), V5)",0.053107,369.77
+11,"subtract(subtract(V10, V15), V16)",0.052792,427.73
+12,"subtract(subtract(subtract(V10, V15), V16), V3)",0.054872,484.6
+13,"add(V5, subtract(subtract(subtract(V10, V15), V16), V3))",0.054872,545.9
+14,"subtract(subtract(subtract(subtract(V10, V15), V16), V3), V5)",0.054872,616.74
+15,"subtract(subtract(subtract(subtract(subtract(V10, V15), V16), V3), V5), V5)",0.054872,685.54
+16,"add(subtract(subtract(subtract(subtract(subtract(V10, V15), V16), V3), V5), V5), V8)",0.054872,759.65
+17,"add(V5, add(V5, subtract(subtract(subtract(V10, V15), V16), V3)))",0.054872,839.34
+18,"subtract(add(subtract(subtract(subtract(subtract(subtract(V10, V15), V16), V3), V5), V5), V8), V5)",0.054872,919.46

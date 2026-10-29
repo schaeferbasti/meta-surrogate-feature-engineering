@@ -1,0 +1,17 @@
+\begin{table}[t]
+\centering
+\caption{Test error decrease over the original data (\%, LightGBM, mean over 3 seeds); better/worse: datasets with a change $>0.05$\,\%; $p$: two-sided Wilcoxon signed-rank test.}
+\label{tab:fe}
+\begin{tabular}{lrrrrrr}
+\hline
+Method & Datasets & Median & Mean & Better & Worse & $p$ \\
+\hline
+TabPrep & 44 & +3.68 & +4.35 & 28 & 14 & 0.006 \\
+OpenFE & 36 & +1.09 & -8.48 & 24 & 9 & 0.036 \\
+MetaFE 100 s & 44 & +0.00 & +0.16 & 13 & 17 & 0.394 \\
+MetaFE 250 s & 44 & +0.00 & -0.66 & 13 & 16 & 0.226 \\
+MetaFE 500 s & 44 & +0.00 & -0.94 & 12 & 18 & 0.258 \\
+MetaFE 1000 s & 44 & +0.00 & -1.26 & 11 & 21 & 0.043 \\
+\hline
+\end{tabular}
+\end{table}

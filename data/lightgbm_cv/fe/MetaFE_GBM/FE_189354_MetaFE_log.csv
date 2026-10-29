@@ -1,0 +1,10 @@
+step,feature,predicted_improvement,elapsed_s
+surrogate,,,40.7
+0,,,0.0
+1,"divide(Flight, Airline)",0.018888,55.56
+2,"subtract(divide(Flight, Airline), Airline)",0.022467,126.3
+3,"subtract(subtract(divide(Flight, Airline), Airline), DayOfWeek)",0.02455,213.43
+4,"divide(Length, subtract(subtract(divide(Flight, Airline), Airline), DayOfWeek))",0.032512,320.96
+5,"multiply(divide(Length, subtract(subtract(divide(Flight, Airline), Airline), DayOfWeek)), divide(Length, subtract(subtract(divide(Flight, Airline), Airline), DayOfWeek)))",0.073778,459.38
+6,"round(multiply(divide(Length, subtract(subtract(divide(Flight, Airline), Airline), DayOfWeek)), divide(Length, subtract(subtract(divide(Flight, Airline), Airline), DayOfWeek))))",0.077476,629.98
+7,"add(divide(Length, subtract(subtract(divide(Flight, Airline), Airline), DayOfWeek)), round(multiply(divide(Length, subtract(subtract(divide(Flight, Airline), Airline), DayOfWeek)), divide(Length, subtract(subtract(divide(Flight, Airline), Airline), DayOfWeek)))))",0.069006,831.45

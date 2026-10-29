@@ -34,6 +34,14 @@ A third experiment, `lightgbm_reuse`, is `lightgbm` without any new label: only 
 without one, mainly `Combine`/`CombineThenFreq`, are never proposed) and MetaFE up to 1 h. It needs no model fits
 before MetaFE and runs in hours on calculco with OAR (`scripts/submit_oar.sh`, see `README_METAFE_HANDOFF.md` §00).
 
+A fourth experiment, `lightgbm_cv`, replaces the AutoGluon label by a less noisy one: plain LightGBM, 5-fold CV
+repeated 10 times, paired with the original data on the same folds (`label="cv"` in `metafe/config.py`,
+`metafe.models.cv_losses`), on all candidates and at most 20,000 label rows. A single AutoGluon label turned out to
+be about 3/4 seed noise on the add-feature candidates (`README_METAFE_HANDOFF.md` §000). The labels need no AutoGluon
+fit (about 450–600 core-hours for the 44 datasets, one 32-CPU job per dataset):
+`UNTIL=mf_merge scripts/submit_lightgbm_cv.sh` builds the knowledge base (labels, then metafeatures); the per-repeat
+labels are kept in `data/lightgbm_cv/label_repeats/`.
+
 **Order:** run `lightgbm` first. It completes the OpenFE/TabPrep experiments with the same setup and shows whether
 MetaFE works before the expensive labels of the other models are computed. Then run the `multimodel` pilot, set
 `max_candidates` / `max_label_rows` from its estimate, and run `multimodel`.
@@ -62,6 +70,7 @@ tests/test_operators.py      operator self-test (order independence, test rows, 
 scripts/run_step.sh          runs one step (venv, array index -> dataset/fold)
 scripts/submit_slurm.sh      submits the pipeline of an experiment (used by the two scripts below)
 scripts/submit_lightgbm.sh   experiment lightgbm
+scripts/submit_lightgbm_cv.sh  experiment lightgbm_cv (repeated LightGBM CV labels)
 scripts/submit_pilot.sh      multimodel timing pilot
 scripts/submit_multimodel.sh experiment multimodel
 scripts/setup_venv_multimodel.sh   venv of the multimodel experiment (+ TabICLv2 checkpoints, OpenML cache)

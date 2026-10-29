@@ -21,7 +21,8 @@
 #   MODELS="LR RF" scripts/submit_multimodel.sh         # only some models of the experiment
 # Cluster options: SBATCH_OPTS (every job, e.g. "--account=xyz"), CPU_OPTS (CPU jobs, e.g. "--partition=cpu"),
 # GPU_OPTS (GPU jobs, default "--gres=gpu:1"), MODULES (modules loaded in every job, e.g. a CUDA module).
-# Time limits per stage: CORE_TIME, METAFE_TIME, EVAL_TIME (sbatch format).
+# Time limits per stage: CORE_TIME, METAFE_TIME, EVAL_TIME (sbatch format); core stage resources: CORE_CPUS, CORE_MEM.
+# OPENML_CACHE: OpenML cache directory of the jobs (metafe.data, METAFE_OPENML_CACHE).
 set -euo pipefail
 
 REPO=$(cd "$(dirname "$0")/.." && pwd)
@@ -33,6 +34,8 @@ DATASETS=${DATASETS:-$(py 'print(*sorted(DATASETS))')}
 MODELS=${MODELS:-$(py "print(*EXPERIMENTS['$EXPERIMENT'].models)")}
 GPU_MODEL_KEYS=$(py 'print(*sorted(GPU_MODELS))')
 CORE_TIME=${CORE_TIME:-3-00:00:00}
+CORE_CPUS=${CORE_CPUS:-8}
+CORE_MEM=${CORE_MEM:-64G}
 METAFE_TIME=${METAFE_TIME:-04:00:00}
 EVAL_TIME=${EVAL_TIME:-12:00:00}
 CPU_OPTS=${CPU_OPTS:-}
@@ -42,6 +45,7 @@ FROM=${FROM:-core}
 UNTIL=${UNTIL:-plots}
 n=$(wc -w <<< "$DATASETS")
 export REPO VENV DATASETS MODULES="${MODULES:-}"  # passed to the jobs (sbatch --export=ALL)
+[ -n "${OPENML_CACHE:-}" ] && export METAFE_OPENML_CACHE=$OPENML_CACHE
 mkdir -p logs
 echo "Experiment $EXPERIMENT, models: $MODELS, $n datasets, venv $VENV"
 
@@ -72,7 +76,7 @@ last=""
 if run_stage core; then
     ids=()
     for model in $MODELS; do
-        ids+=("$(submit "$last" -J "core_$model" --array=0-$((n - 1)) -c 8 --mem=64G -t "$CORE_TIME" $(device_opts "$model") -- \
+        ids+=("$(submit "$last" -J "core_$model" --array=0-$((n - 1)) -c "$CORE_CPUS" --mem="$CORE_MEM" -t "$CORE_TIME" $(device_opts "$model") -- \
             metafe.core_matrix build --dataset {dataset} --models "$model")")
     done
     last=$(join "${ids[@]}")

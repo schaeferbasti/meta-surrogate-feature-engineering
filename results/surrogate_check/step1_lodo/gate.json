@@ -1,0 +1,7 @@
+{
+  "step1_pass": [],
+  "step2_pass": [],
+  "step1_gate": false,
+  "ranker_for_step3": null,
+  "criteria": "wilcoxon(top10_excess) p < 0.05, median excess > 0, median spearman_nz > 0.15; add-feature candidates"
+}

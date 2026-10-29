@@ -1,0 +1,53 @@
+step,feature,predicted_improvement,elapsed_s
+surrogate,,,40.01
+0,,,0.0
+1,"subtract(rawblue.mean, hedge.sd)",0.026165,2.58
+2,"subtract(subtract(rawblue.mean, hedge.sd), exblue.mean)",0.026435,5.49
+3,"add(short.line.density.2, subtract(subtract(rawblue.mean, hedge.sd), exblue.mean))",0.026435,8.74
+4,"subtract(subtract(subtract(rawblue.mean, hedge.sd), exblue.mean), short.line.density.2)",0.026435,12.39
+5,"add(subtract(subtract(subtract(rawblue.mean, hedge.sd), exblue.mean), short.line.density.2), short.line.density.5)",0.026435,16.46
+6,"subtract(subtract(subtract(subtract(rawblue.mean, hedge.sd), exblue.mean), short.line.density.2), short.line.density.2)",0.026435,20.95
+7,"subtract(subtract(subtract(subtract(subtract(rawblue.mean, hedge.sd), exblue.mean), short.line.density.2), short.line.density.2), short.line.density.5)",0.026435,25.9
+8,"add(subtract(subtract(subtract(subtract(rawblue.mean, hedge.sd), exblue.mean), short.line.density.2), short.line.density.2), short.line.density.5)",0.026435,31.32
+9,"subtract(add(subtract(subtract(subtract(subtract(rawblue.mean, hedge.sd), exblue.mean), short.line.density.2), short.line.density.2), short.line.density.5), short.line.density.5)",0.026435,37.22
+10,"add(add(subtract(subtract(subtract(subtract(rawblue.mean, hedge.sd), exblue.mean), short.line.density.2), short.line.density.2), short.line.density.5), short.line.density.5)",0.026435,43.71
+11,"add(short.line.density.5, subtract(subtract(subtract(subtract(subtract(rawblue.mean, hedge.sd), exblue.mean), short.line.density.2), short.line.density.2), short.line.density.5))",0.026435,50.71
+12,"add(short.line.density.2, add(short.line.density.2, subtract(subtract(rawblue.mean, hedge.sd), exblue.mean)))",0.026435,58.35
+13,"subtract(add(add(subtract(subtract(subtract(subtract(rawblue.mean, hedge.sd), exblue.mean), short.line.density.2), short.line.density.2), short.line.density.5), short.line.density.5), short.line.density.2)",0.026435,66.51
+14,"add(subtract(subtract(rawblue.mean, hedge.sd), exblue.mean), short.line.density.5)",0.026435,75.29
+15,"add(short.line.density.5, add(short.line.density.2, subtract(subtract(rawblue.mean, hedge.sd), exblue.mean)))",0.026435,84.71
+16,"subtract(subtract(add(subtract(subtract(subtract(subtract(rawblue.mean, hedge.sd), exblue.mean), short.line.density.2), short.line.density.2), short.line.density.5), short.line.density.5), short.line.density.2)",0.026435,94.79
+17,"subtract(subtract(subtract(add(subtract(subtract(subtract(subtract(rawblue.mean, hedge.sd), exblue.mean), short.line.density.2), short.line.density.2), short.line.density.5), short.line.density.5), short.line.density.2), short.line.density.5)",0.026435,105.58
+18,"subtract(add(short.line.density.2, add(short.line.density.2, subtract(subtract(rawblue.mean, hedge.sd), exblue.mean))), short.line.density.5)",0.026435,117.07
+19,"add(add(short.line.density.5, add(short.line.density.2, subtract(subtract(rawblue.mean, hedge.sd), exblue.mean))), short.line.density.5)",0.026435,129.19
+20,"add(add(add(subtract(subtract(subtract(subtract(rawblue.mean, hedge.sd), exblue.mean), short.line.density.2), short.line.density.2), short.line.density.5), short.line.density.5), short.line.density.5)",0.026435,142.04
+21,"add(short.line.density.5, add(short.line.density.5, subtract(subtract(subtract(subtract(subtract(rawblue.mean, hedge.sd), exblue.mean), short.line.density.2), short.line.density.2), short.line.density.5)))",0.026435,155.68
+22,"subtract(add(add(short.line.density.5, add(short.line.density.2, subtract(subtract(rawblue.mean, hedge.sd), exblue.mean))), short.line.density.5), short.line.density.2)",0.026435,170.15
+23,"subtract(add(add(add(subtract(subtract(subtract(subtract(rawblue.mean, hedge.sd), exblue.mean), short.line.density.2), short.line.density.2), short.line.density.5), short.line.density.5), short.line.density.5), short.line.density.5)",0.026435,185.57
+24,"add(short.line.density.5, add(subtract(subtract(subtract(rawblue.mean, hedge.sd), exblue.mean), short.line.density.2), short.line.density.5))",0.026435,201.64
+25,"subtract(add(short.line.density.5, add(short.line.density.5, subtract(subtract(subtract(subtract(subtract(rawblue.mean, hedge.sd), exblue.mean), short.line.density.2), short.line.density.2), short.line.density.5))), short.line.density.2)",0.026435,218.64
+26,"add(add(add(short.line.density.5, add(short.line.density.2, subtract(subtract(rawblue.mean, hedge.sd), exblue.mean))), short.line.density.5), short.line.density.5)",0.026435,236.5
+27,"subtract(subtract(subtract(subtract(rawblue.mean, hedge.sd), exblue.mean), short.line.density.2), short.line.density.5)",0.026435,255.41
+28,"subtract(subtract(add(add(subtract(subtract(subtract(subtract(rawblue.mean, hedge.sd), exblue.mean), short.line.density.2), short.line.density.2), short.line.density.5), short.line.density.5), short.line.density.2), short.line.density.5)",0.026435,276.73
+29,"add(subtract(add(short.line.density.2, add(short.line.density.2, subtract(subtract(rawblue.mean, hedge.sd), exblue.mean))), short.line.density.5), short.line.density.5)",0.026435,297.32
+30,"subtract(subtract(subtract(rawblue.mean, hedge.sd), exblue.mean), short.line.density.5)",0.026435,319.01
+31,"subtract(add(subtract(subtract(subtract(rawblue.mean, hedge.sd), exblue.mean), short.line.density.2), short.line.density.5), short.line.density.5)",0.026435,341.67
+32,"add(add(add(add(subtract(subtract(subtract(subtract(rawblue.mean, hedge.sd), exblue.mean), short.line.density.2), short.line.density.2), short.line.density.5), short.line.density.5), short.line.density.5), short.line.density.2)",0.026435,365.15
+33,"subtract(subtract(subtract(add(add(subtract(subtract(subtract(subtract(rawblue.mean, hedge.sd), exblue.mean), short.line.density.2), short.line.density.2), short.line.density.5), short.line.density.5), short.line.density.2), short.line.density.5), short.line.density.2)",0.026435,389.77
+34,"add(short.line.density.2, subtract(add(short.line.density.2, add(short.line.density.2, subtract(subtract(rawblue.mean, hedge.sd), exblue.mean))), short.line.density.5))",0.026435,415.47
+35,"subtract(subtract(add(short.line.density.2, add(short.line.density.2, subtract(subtract(rawblue.mean, hedge.sd), exblue.mean))), short.line.density.5), short.line.density.2)",0.026435,442.33
+36,"add(add(short.line.density.2, add(short.line.density.2, subtract(subtract(rawblue.mean, hedge.sd), exblue.mean))), short.line.density.2)",0.026435,470.15
+37,"subtract(add(add(add(add(subtract(subtract(subtract(subtract(rawblue.mean, hedge.sd), exblue.mean), short.line.density.2), short.line.density.2), short.line.density.5), short.line.density.5), short.line.density.5), short.line.density.2), short.line.density.5)",0.026435,499.2
+38,"subtract(add(short.line.density.5, add(short.line.density.5, subtract(subtract(subtract(subtract(subtract(rawblue.mean, hedge.sd), exblue.mean), short.line.density.2), short.line.density.2), short.line.density.5))), short.line.density.5)",0.026435,529.33
+39,"subtract(subtract(subtract(subtract(add(add(subtract(subtract(subtract(subtract(rawblue.mean, hedge.sd), exblue.mean), short.line.density.2), short.line.density.2), short.line.density.5), short.line.density.5), short.line.density.2), short.line.density.5), short.line.density.2), short.line.density.2)",0.026435,560.73
+40,"add(subtract(subtract(subtract(add(subtract(subtract(subtract(subtract(rawblue.mean, hedge.sd), exblue.mean), short.line.density.2), short.line.density.2), short.line.density.5), short.line.density.5), short.line.density.2), short.line.density.5), short.line.density.5)",0.026435,593.48
+41,"add(subtract(subtract(add(short.line.density.2, add(short.line.density.2, subtract(subtract(rawblue.mean, hedge.sd), exblue.mean))), short.line.density.5), short.line.density.2), short.line.density.5)",0.026435,627.3
+42,"subtract(subtract(subtract(subtract(add(subtract(subtract(subtract(subtract(rawblue.mean, hedge.sd), exblue.mean), short.line.density.2), short.line.density.2), short.line.density.5), short.line.density.5), short.line.density.2), short.line.density.5), short.line.density.2)",0.026435,662.49
+43,"add(short.line.density.2, add(add(short.line.density.2, add(short.line.density.2, subtract(subtract(rawblue.mean, hedge.sd), exblue.mean))), short.line.density.2))",0.026435,698.81
+44,"add(short.line.density.2, add(short.line.density.5, add(short.line.density.5, subtract(subtract(subtract(subtract(subtract(rawblue.mean, hedge.sd), exblue.mean), short.line.density.2), short.line.density.2), short.line.density.5))))",0.026435,736.43
+45,"add(add(short.line.density.5, add(short.line.density.2, subtract(subtract(rawblue.mean, hedge.sd), exblue.mean))), short.line.density.2)",0.026435,775.29
+46,"add(add(short.line.density.5, add(short.line.density.5, subtract(subtract(subtract(subtract(subtract(rawblue.mean, hedge.sd), exblue.mean), short.line.density.2), short.line.density.2), short.line.density.5))), short.line.density.5)",0.026435,815.52
+47,"subtract(subtract(subtract(subtract(subtract(subtract(rawblue.mean, hedge.sd), exblue.mean), short.line.density.2), short.line.density.2), short.line.density.5), short.line.density.5)",0.026435,857.3
+48,"add(add(short.line.density.2, subtract(add(short.line.density.2, add(short.line.density.2, subtract(subtract(rawblue.mean, hedge.sd), exblue.mean))), short.line.density.5)), short.line.density.2)",0.026435,900.42
+49,"subtract(add(short.line.density.2, subtract(add(short.line.density.2, add(short.line.density.2, subtract(subtract(rawblue.mean, hedge.sd), exblue.mean))), short.line.density.5)), short.line.density.5)",0.026435,944.62
+50,"add(add(add(short.line.density.5, add(short.line.density.2, subtract(subtract(rawblue.mean, hedge.sd), exblue.mean))), short.line.density.5), short.line.density.2)",0.026435,990.34

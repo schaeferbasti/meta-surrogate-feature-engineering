@@ -1,0 +1,27 @@
+step,feature,predicted_improvement,elapsed_s
+surrogate,,,34.72
+0,,,0.0
+1,sqrt(ROLE_CODE),0.036693,10.33
+2,"GroupByThenMean(sqrt(ROLE_CODE), ROLE_CODE)",0.036693,21.87
+3,"divide(ROLE_CODE, GroupByThenMean(sqrt(ROLE_CODE), ROLE_CODE))",0.036693,36.05
+4,"divide(ROLE_CODE, sqrt(ROLE_CODE))",0.036693,51.13
+5,"GroupByThenMean(divide(ROLE_CODE, GroupByThenMean(sqrt(ROLE_CODE), ROLE_CODE)), ROLE_TITLE)",0.036693,68.33
+6,"GroupByThenMean(divide(ROLE_CODE, sqrt(ROLE_CODE)), ROLE_CODE)",0.036693,87.85
+7,"divide(ROLE_CODE, GroupByThenMean(divide(ROLE_CODE, sqrt(ROLE_CODE)), ROLE_CODE))",0.036693,110.49
+8,"GroupByThenMean(divide(ROLE_CODE, GroupByThenMean(divide(ROLE_CODE, sqrt(ROLE_CODE)), ROLE_CODE)), ROLE_CODE)",0.036693,133.89
+9,"divide(ROLE_CODE, GroupByThenMean(divide(ROLE_CODE, GroupByThenMean(sqrt(ROLE_CODE), ROLE_CODE)), ROLE_TITLE))",0.036693,160.0
+10,"divide(ROLE_CODE, GroupByThenMean(divide(ROLE_CODE, GroupByThenMean(divide(ROLE_CODE, sqrt(ROLE_CODE)), ROLE_CODE)), ROLE_CODE))",0.036693,189.12
+11,"GroupByThenMean(divide(ROLE_CODE, GroupByThenMean(divide(ROLE_CODE, GroupByThenMean(sqrt(ROLE_CODE), ROLE_CODE)), ROLE_TITLE)), ROLE_TITLE)",0.036693,220.72
+12,"GroupByThenMean(divide(ROLE_CODE, GroupByThenMean(divide(ROLE_CODE, GroupByThenMean(divide(ROLE_CODE, sqrt(ROLE_CODE)), ROLE_CODE)), ROLE_CODE)), ROLE_CODE)",0.036693,255.37
+13,"divide(ROLE_CODE, GroupByThenMean(divide(ROLE_CODE, GroupByThenMean(divide(ROLE_CODE, GroupByThenMean(divide(ROLE_CODE, sqrt(ROLE_CODE)), ROLE_CODE)), ROLE_CODE)), ROLE_CODE))",0.036693,295.23
+14,"divide(ROLE_CODE, GroupByThenMean(divide(ROLE_CODE, GroupByThenMean(divide(ROLE_CODE, GroupByThenMean(sqrt(ROLE_CODE), ROLE_CODE)), ROLE_TITLE)), ROLE_TITLE))",0.036693,338.41
+15,"round(divide(ROLE_CODE, GroupByThenMean(divide(ROLE_CODE, GroupByThenMean(divide(ROLE_CODE, GroupByThenMean(sqrt(ROLE_CODE), ROLE_CODE)), ROLE_TITLE)), ROLE_TITLE)))",0.034993,384.14
+16,"divide(ROLE_CODE, round(divide(ROLE_CODE, GroupByThenMean(divide(ROLE_CODE, GroupByThenMean(divide(ROLE_CODE, GroupByThenMean(sqrt(ROLE_CODE), ROLE_CODE)), ROLE_TITLE)), ROLE_TITLE))))",0.031092,433.19
+17,"round(divide(ROLE_CODE, round(divide(ROLE_CODE, GroupByThenMean(divide(ROLE_CODE, GroupByThenMean(divide(ROLE_CODE, GroupByThenMean(sqrt(ROLE_CODE), ROLE_CODE)), ROLE_TITLE)), ROLE_TITLE)))))",0.034993,483.21
+18,"divide(ROLE_CODE, round(divide(ROLE_CODE, round(divide(ROLE_CODE, GroupByThenMean(divide(ROLE_CODE, GroupByThenMean(divide(ROLE_CODE, GroupByThenMean(sqrt(ROLE_CODE), ROLE_CODE)), ROLE_TITLE)), ROLE_TITLE))))))",0.036693,536.41
+19,"GroupByThenMean(divide(ROLE_CODE, round(divide(ROLE_CODE, round(divide(ROLE_CODE, GroupByThenMean(divide(ROLE_CODE, GroupByThenMean(divide(ROLE_CODE, GroupByThenMean(sqrt(ROLE_CODE), ROLE_CODE)), ROLE_TITLE)), ROLE_TITLE)))))), ROLE_TITLE)",0.036693,597.61
+20,"divide(ROLE_CODE, GroupByThenMean(divide(ROLE_CODE, round(divide(ROLE_CODE, round(divide(ROLE_CODE, GroupByThenMean(divide(ROLE_CODE, GroupByThenMean(divide(ROLE_CODE, GroupByThenMean(sqrt(ROLE_CODE), ROLE_CODE)), ROLE_TITLE)), ROLE_TITLE)))))), ROLE_TITLE))",0.034993,663.08
+21,"round(divide(ROLE_CODE, GroupByThenMean(divide(ROLE_CODE, round(divide(ROLE_CODE, round(divide(ROLE_CODE, GroupByThenMean(divide(ROLE_CODE, GroupByThenMean(divide(ROLE_CODE, GroupByThenMean(sqrt(ROLE_CODE), ROLE_CODE)), ROLE_TITLE)), ROLE_TITLE)))))), ROLE_TITLE)))",0.034993,728.54
+22,"divide(ROLE_CODE, round(divide(ROLE_CODE, GroupByThenMean(divide(ROLE_CODE, round(divide(ROLE_CODE, round(divide(ROLE_CODE, GroupByThenMean(divide(ROLE_CODE, GroupByThenMean(divide(ROLE_CODE, GroupByThenMean(sqrt(ROLE_CODE), ROLE_CODE)), ROLE_TITLE)), ROLE_TITLE)))))), ROLE_TITLE))))",0.036693,796.73
+23,"GroupByThenMean(divide(ROLE_CODE, round(divide(ROLE_CODE, GroupByThenMean(divide(ROLE_CODE, round(divide(ROLE_CODE, round(divide(ROLE_CODE, GroupByThenMean(divide(ROLE_CODE, GroupByThenMean(divide(ROLE_CODE, GroupByThenMean(sqrt(ROLE_CODE), ROLE_CODE)), ROLE_TITLE)), ROLE_TITLE)))))), ROLE_TITLE)))), ROLE_CODE)",0.036693,869.02
+24,"divide(ROLE_CODE, GroupByThenMean(divide(ROLE_CODE, round(divide(ROLE_CODE, GroupByThenMean(divide(ROLE_CODE, round(divide(ROLE_CODE, round(divide(ROLE_CODE, GroupByThenMean(divide(ROLE_CODE, GroupByThenMean(divide(ROLE_CODE, GroupByThenMean(sqrt(ROLE_CODE), ROLE_CODE)), ROLE_TITLE)), ROLE_TITLE)))))), ROLE_TITLE)))), ROLE_CODE))",0.034993,949.01

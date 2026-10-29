@@ -1,0 +1,26 @@
+step,feature,predicted_improvement,elapsed_s
+surrogate,,,39.94
+0,,,0.0
+1,"subtract(date_year, sqft_lot)",0.060696,13.29
+2,"add(waterfront, subtract(date_year, sqft_lot))",0.060696,28.12
+3,"add(grade, add(waterfront, subtract(date_year, sqft_lot)))",0.060696,44.73
+4,"divide(add(grade, add(waterfront, subtract(date_year, sqft_lot))), date_month)",0.061144,63.12
+5,"divide(divide(add(grade, add(waterfront, subtract(date_year, sqft_lot))), date_month), yr_renovated)",0.062918,83.72
+6,"add(date_month, divide(divide(add(grade, add(waterfront, subtract(date_year, sqft_lot))), date_month), yr_renovated))",0.062918,106.61
+7,"add(floors, add(date_month, divide(divide(add(grade, add(waterfront, subtract(date_year, sqft_lot))), date_month), yr_renovated)))",0.062918,131.93
+8,"add(add(floors, add(date_month, divide(divide(add(grade, add(waterfront, subtract(date_year, sqft_lot))), date_month), yr_renovated))), grade)",0.062918,159.8
+9,"add(condition, divide(divide(add(grade, add(waterfront, subtract(date_year, sqft_lot))), date_month), yr_renovated))",0.062918,191.06
+10,"add(view, add(add(floors, add(date_month, divide(divide(add(grade, add(waterfront, subtract(date_year, sqft_lot))), date_month), yr_renovated))), grade))",0.062918,226.56
+11,"add(divide(divide(add(grade, add(waterfront, subtract(date_year, sqft_lot))), date_month), yr_renovated), lat)",0.062918,264.69
+12,"add(floors, add(view, add(add(floors, add(date_month, divide(divide(add(grade, add(waterfront, subtract(date_year, sqft_lot))), date_month), yr_renovated))), grade)))",0.062918,303.75
+13,"divide(add(floors, add(date_month, divide(divide(add(grade, add(waterfront, subtract(date_year, sqft_lot))), date_month), yr_renovated))), view)",0.062918,345.91
+14,"round(add(view, add(add(floors, add(date_month, divide(divide(add(grade, add(waterfront, subtract(date_year, sqft_lot))), date_month), yr_renovated))), grade)))",0.062918,391.39
+15,"add(condition, divide(add(floors, add(date_month, divide(divide(add(grade, add(waterfront, subtract(date_year, sqft_lot))), date_month), yr_renovated))), view))",0.062918,442.01
+16,"round(add(condition, divide(divide(add(grade, add(waterfront, subtract(date_year, sqft_lot))), date_month), yr_renovated)))",0.062918,493.95
+17,"round(add(divide(divide(add(grade, add(waterfront, subtract(date_year, sqft_lot))), date_month), yr_renovated), lat))",0.062918,549.58
+18,"subtract(add(condition, divide(divide(add(grade, add(waterfront, subtract(date_year, sqft_lot))), date_month), yr_renovated)), yr_renovated)",0.062918,607.26
+19,"round(add(floors, add(view, add(add(floors, add(date_month, divide(divide(add(grade, add(waterfront, subtract(date_year, sqft_lot))), date_month), yr_renovated))), grade))))",0.062918,668.59
+20,"round(divide(add(floors, add(date_month, divide(divide(add(grade, add(waterfront, subtract(date_year, sqft_lot))), date_month), yr_renovated))), view))",0.062918,733.23
+21,"round(add(condition, divide(add(floors, add(date_month, divide(divide(add(grade, add(waterfront, subtract(date_year, sqft_lot))), date_month), yr_renovated))), view)))",0.062918,801.25
+22,"add(grade, add(divide(divide(add(grade, add(waterfront, subtract(date_year, sqft_lot))), date_month), yr_renovated), lat))",0.062918,872.92
+23,"add(add(add(floors, add(date_month, divide(divide(add(grade, add(waterfront, subtract(date_year, sqft_lot))), date_month), yr_renovated))), grade), condition)",0.062918,948.96

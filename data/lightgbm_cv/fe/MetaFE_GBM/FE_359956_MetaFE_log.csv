@@ -1,0 +1,41 @@
+step,feature,predicted_improvement,elapsed_s
+surrogate,,,32.65
+0,,,0.0
+1,"subtract(V22, V32)",0.032302,11.74
+2,"multiply(subtract(V22, V32), V18)",0.033606,23.45
+3,"divide(multiply(subtract(V22, V32), V18), V21)",0.033606,35.75
+4,"divide(divide(multiply(subtract(V22, V32), V18), V21), V21)",0.033606,48.77
+5,"divide(multiply(subtract(V22, V32), V18), V19)",0.033606,62.42
+6,"divide(divide(multiply(subtract(V22, V32), V18), V21), V19)",0.033606,76.7
+7,"divide(divide(divide(multiply(subtract(V22, V32), V18), V21), V19), V26)",0.033606,91.68
+8,"divide(divide(divide(multiply(subtract(V22, V32), V18), V21), V21), V19)",0.033606,107.41
+9,"divide(divide(divide(divide(multiply(subtract(V22, V32), V18), V21), V19), V26), V19)",0.033606,123.85
+10,"divide(divide(multiply(subtract(V22, V32), V18), V21), V26)",0.033606,140.97
+11,"divide(divide(divide(divide(divide(multiply(subtract(V22, V32), V18), V21), V19), V26), V19), V19)",0.033606,158.95
+12,"divide(divide(divide(multiply(subtract(V22, V32), V18), V21), V19), V19)",0.033606,177.56
+13,"divide(divide(divide(divide(divide(divide(multiply(subtract(V22, V32), V18), V21), V19), V26), V19), V19), V19)",0.033606,197.23
+14,"divide(divide(divide(divide(multiply(subtract(V22, V32), V18), V21), V19), V19), V19)",0.033606,217.52
+15,"divide(divide(divide(divide(divide(multiply(subtract(V22, V32), V18), V21), V19), V19), V19), V19)",0.033606,238.66
+16,"divide(divide(divide(divide(divide(divide(multiply(subtract(V22, V32), V18), V21), V19), V19), V19), V19), V19)",0.033606,260.64
+17,"divide(divide(divide(divide(divide(divide(divide(multiply(subtract(V22, V32), V18), V21), V19), V19), V19), V19), V19), V19)",0.033606,283.48
+18,"divide(divide(divide(divide(divide(divide(divide(divide(multiply(subtract(V22, V32), V18), V21), V19), V19), V19), V19), V19), V19), V19)",0.033606,307.19
+19,"divide(divide(divide(divide(divide(divide(divide(divide(divide(multiply(subtract(V22, V32), V18), V21), V19), V19), V19), V19), V19), V19), V19), V19)",0.033606,331.88
+20,"divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(multiply(subtract(V22, V32), V18), V21), V19), V19), V19), V19), V19), V19), V19), V19), V19)",0.033606,357.16
+21,"divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(multiply(subtract(V22, V32), V18), V21), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19)",0.033606,383.54
+22,"divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(multiply(subtract(V22, V32), V18), V21), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19)",0.033606,411.04
+23,"divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(multiply(subtract(V22, V32), V18), V21), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19)",0.033606,439.23
+24,"divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(multiply(subtract(V22, V32), V18), V21), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19)",0.033606,468.26
+25,"divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(multiply(subtract(V22, V32), V18), V21), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19)",0.033606,498.58
+26,"divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(multiply(subtract(V22, V32), V18), V21), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19)",0.033606,530.02
+27,"divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(multiply(subtract(V22, V32), V18), V21), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19)",0.033606,562.23
+28,"divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(multiply(subtract(V22, V32), V18), V21), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19)",0.033606,595.67
+29,"divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(multiply(subtract(V22, V32), V18), V21), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19)",0.033606,630.09
+30,"divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(multiply(subtract(V22, V32), V18), V21), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19)",0.033606,665.75
+31,"divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(multiply(subtract(V22, V32), V18), V21), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19)",0.033606,702.76
+32,"divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(multiply(subtract(V22, V32), V18), V21), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19)",0.033606,740.89
+33,"divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(multiply(subtract(V22, V32), V18), V21), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19)",0.033606,779.94
+34,"divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(multiply(subtract(V22, V32), V18), V21), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19)",0.033606,820.16
+35,"divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(multiply(subtract(V22, V32), V18), V21), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19)",0.033606,861.55
+36,"divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(multiply(subtract(V22, V32), V18), V21), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19)",0.033606,904.33
+37,"divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(multiply(subtract(V22, V32), V18), V21), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19)",0.033606,948.33
+38,"divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(divide(multiply(subtract(V22, V32), V18), V21), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19), V19)",0.033606,993.68

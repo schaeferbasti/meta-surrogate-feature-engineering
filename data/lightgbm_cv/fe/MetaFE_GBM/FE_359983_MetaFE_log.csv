@@ -1,0 +1,22 @@
+step,feature,predicted_improvement,elapsed_s
+surrogate,,,37.02
+0,,,0.0
+1,"GroupByThenMean(capital-loss, native-country)",0.03368,20.69
+2,"GroupByThenMax(GroupByThenMean(capital-loss, native-country), relationship)",0.084548,43.83
+3,"GroupByThenMedian(GroupByThenMax(GroupByThenMean(capital-loss, native-country), relationship), native-country)",0.099111,69.97
+4,"subtract(GroupByThenMedian(GroupByThenMax(GroupByThenMean(capital-loss, native-country), relationship), native-country), education-num)",0.11329,98.78
+5,"add(subtract(GroupByThenMedian(GroupByThenMax(GroupByThenMean(capital-loss, native-country), relationship), native-country), education-num), relationship)",0.11329,130.49
+6,"round(add(subtract(GroupByThenMedian(GroupByThenMax(GroupByThenMean(capital-loss, native-country), relationship), native-country), education-num), relationship))",0.11329,165.24
+7,"add(subtract(GroupByThenMedian(GroupByThenMax(GroupByThenMean(capital-loss, native-country), relationship), native-country), education-num), sex)",0.11329,203.06
+8,"add(round(add(subtract(GroupByThenMedian(GroupByThenMax(GroupByThenMean(capital-loss, native-country), relationship), native-country), education-num), relationship)), sex)",0.11329,244.42
+9,"subtract(add(round(add(subtract(GroupByThenMedian(GroupByThenMax(GroupByThenMean(capital-loss, native-country), relationship), native-country), education-num), relationship)), sex), marital-status)",0.11329,288.22
+10,"subtract(add(subtract(GroupByThenMedian(GroupByThenMax(GroupByThenMean(capital-loss, native-country), relationship), native-country), education-num), relationship), marital-status)",0.11329,334.16
+11,"subtract(add(subtract(GroupByThenMedian(GroupByThenMax(GroupByThenMean(capital-loss, native-country), relationship), native-country), education-num), relationship), sex)",0.11329,385.48
+12,"round(add(subtract(GroupByThenMedian(GroupByThenMax(GroupByThenMean(capital-loss, native-country), relationship), native-country), education-num), sex))",0.11329,438.72
+13,"add(sex, add(subtract(GroupByThenMedian(GroupByThenMax(GroupByThenMean(capital-loss, native-country), relationship), native-country), education-num), sex))",0.11329,498.24
+14,"add(add(subtract(GroupByThenMedian(GroupByThenMax(GroupByThenMean(capital-loss, native-country), relationship), native-country), education-num), sex), relationship)",0.11329,563.05
+15,"add(sex, subtract(add(round(add(subtract(GroupByThenMedian(GroupByThenMax(GroupByThenMean(capital-loss, native-country), relationship), native-country), education-num), relationship)), sex), marital-status))",0.11329,632.39
+16,"add(add(sex, add(subtract(GroupByThenMedian(GroupByThenMax(GroupByThenMean(capital-loss, native-country), relationship), native-country), education-num), sex)), sex)",0.11329,702.54
+17,"round(subtract(add(subtract(GroupByThenMedian(GroupByThenMax(GroupByThenMean(capital-loss, native-country), relationship), native-country), education-num), relationship), marital-status))",0.11329,775.95
+18,"round(add(sex, add(subtract(GroupByThenMedian(GroupByThenMax(GroupByThenMean(capital-loss, native-country), relationship), native-country), education-num), sex)))",0.11329,853.91
+19,"subtract(round(add(subtract(GroupByThenMedian(GroupByThenMax(GroupByThenMean(capital-loss, native-country), relationship), native-country), education-num), sex)), marital-status)",0.11329,936.22

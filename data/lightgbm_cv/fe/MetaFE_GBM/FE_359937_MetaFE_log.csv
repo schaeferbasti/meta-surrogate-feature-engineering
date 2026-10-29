@@ -1,0 +1,19 @@
+step,feature,predicted_improvement,elapsed_s
+surrogate,,,40.36
+0,,,0.0
+1,"CombineThenFreq(Stay_In_Current_City_Years, Marital_Status)",0.017194,17.21
+2,"add(City_Category, CombineThenFreq(Stay_In_Current_City_Years, Marital_Status))",0.017194,36.84
+3,"add(Stay_In_Current_City_Years, add(City_Category, CombineThenFreq(Stay_In_Current_City_Years, Marital_Status)))",0.017194,61.51
+4,"add(CombineThenFreq(Stay_In_Current_City_Years, Marital_Status), Marital_Status)",0.017194,90.43
+5,"subtract(add(City_Category, CombineThenFreq(Stay_In_Current_City_Years, Marital_Status)), Stay_In_Current_City_Years)",0.017194,124.07
+6,"add(Marital_Status, subtract(add(City_Category, CombineThenFreq(Stay_In_Current_City_Years, Marital_Status)), Stay_In_Current_City_Years))",0.017194,166.28
+7,"add(Product_Category_1, add(Stay_In_Current_City_Years, add(City_Category, CombineThenFreq(Stay_In_Current_City_Years, Marital_Status))))",0.017194,213.62
+8,"GroupByThenNUnique(add(Product_Category_1, add(Stay_In_Current_City_Years, add(City_Category, CombineThenFreq(Stay_In_Current_City_Years, Marital_Status)))), Gender)",0.017682,268.1
+9,"multiply(GroupByThenNUnique(add(Product_Category_1, add(Stay_In_Current_City_Years, add(City_Category, CombineThenFreq(Stay_In_Current_City_Years, Marital_Status)))), Gender), Product_Category_1)",0.030735,325.15
+10,"add(multiply(GroupByThenNUnique(add(Product_Category_1, add(Stay_In_Current_City_Years, add(City_Category, CombineThenFreq(Stay_In_Current_City_Years, Marital_Status)))), Gender), Product_Category_1), Product_Category_3)",0.037576,389.34
+11,"add(add(multiply(GroupByThenNUnique(add(Product_Category_1, add(Stay_In_Current_City_Years, add(City_Category, CombineThenFreq(Stay_In_Current_City_Years, Marital_Status)))), Gender), Product_Category_1), Product_Category_3), Product_Category_3)",0.043736,461.16
+12,"add(Occupation, add(add(multiply(GroupByThenNUnique(add(Product_Category_1, add(Stay_In_Current_City_Years, add(City_Category, CombineThenFreq(Stay_In_Current_City_Years, Marital_Status)))), Gender), Product_Category_1), Product_Category_3), Product_Category_3))",0.090523,540.71
+13,"subtract(add(Occupation, add(add(multiply(GroupByThenNUnique(add(Product_Category_1, add(Stay_In_Current_City_Years, add(City_Category, CombineThenFreq(Stay_In_Current_City_Years, Marital_Status)))), Gender), Product_Category_1), Product_Category_3), Product_Category_3)), Product_Category_1)",0.090523,630.57
+14,"subtract(add(Occupation, add(add(multiply(GroupByThenNUnique(add(Product_Category_1, add(Stay_In_Current_City_Years, add(City_Category, CombineThenFreq(Stay_In_Current_City_Years, Marital_Status)))), Gender), Product_Category_1), Product_Category_3), Product_Category_3)), Gender)",0.090523,728.16
+15,"add(subtract(add(Occupation, add(add(multiply(GroupByThenNUnique(add(Product_Category_1, add(Stay_In_Current_City_Years, add(City_Category, CombineThenFreq(Stay_In_Current_City_Years, Marital_Status)))), Gender), Product_Category_1), Product_Category_3), Product_Category_3)), Product_Category_1), City_Category)",0.090523,836.31
+16,"subtract(subtract(add(Occupation, add(add(multiply(GroupByThenNUnique(add(Product_Category_1, add(Stay_In_Current_City_Years, add(City_Category, CombineThenFreq(Stay_In_Current_City_Years, Marital_Status)))), Gender), Product_Category_1), Product_Category_3), Product_Category_3)), Gender), Gender)",0.090523,955.73
